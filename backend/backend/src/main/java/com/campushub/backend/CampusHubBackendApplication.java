@@ -8,6 +8,7 @@ public class CampusHubBackendApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(CampusHubBackendApplication.class, args);
+		System.out.println("We running");
 	}
 
 }

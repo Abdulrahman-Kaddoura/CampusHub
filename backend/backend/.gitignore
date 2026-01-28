@@ -1,24 +1,17 @@
-HELP.md
+# -----------------------------
+# Gradle
+# -----------------------------
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
-
-### IntelliJ IDEA ###
-.idea
+# -----------------------------
+# IDEs
+# -----------------------------
+# IntelliJ
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -26,12 +19,60 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
-### NetBeans ###
+# STS / Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+# NetBeans
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
 
-### VS Code ###
+# VS Code
 .vscode/
+
+# -----------------------------
+# Logs
+# -----------------------------
+*.log
+logs/
+
+# -----------------------------
+# OS files
+# -----------------------------
+.DS_Store
+Thumbs.db
+
+# -----------------------------
+# Spring Boot / DevTools
+# -----------------------------
+restart/
+
+# Ignore Spring Boot application properties / secrets
+#application.properties
+application-*.properties
+application.yml
+application-*.yml
+
+# -----------------------------
+# Docker / local secrets
+# -----------------------------
+docker-compose.override.yml
+
+# -----------------------------
+# Java
+# -----------------------------
+*.class
+*.jar
+*.war
+*.ear
