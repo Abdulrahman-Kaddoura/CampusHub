@@ -1,0 +1,16 @@
+# OS / editor
+.DS_Store
+.idea
+.vscode
+
+# Git
+.git
+.gitignore
+
+# Env secrets
+.env
+
+# Build outputs
+build/
+out/
+target/
