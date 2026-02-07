@@ -8,7 +8,6 @@ import lombok.Setter;
 import org.hibernate.envers.Audited;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -48,4 +47,8 @@ public class ListingImage {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "listing_id", nullable = false)
     private Listing listing;
+
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "wanted_item_id", nullable = false)
+//    private WantedItem wantedItem;
 }
