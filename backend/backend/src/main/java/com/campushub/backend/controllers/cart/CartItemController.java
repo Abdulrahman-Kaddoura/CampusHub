@@ -19,10 +19,11 @@ import org.springframework.web.bind.annotation.*;
 import org.togglz.core.manager.FeatureManager;
 
 import java.math.BigDecimal;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-import static com.campushub.backend.configurations.togglz.Features.CREATE_CART_ITEM;
-import static com.campushub.backend.configurations.togglz.Features.DELETE_CART_ITEM;
+import static com.campushub.backend.configurations.togglz.Features.*;
 
 @RestController
 @RequestMapping("/cart-item")
@@ -82,5 +83,31 @@ public class CartItemController {
         cartItemResponseDTO.setTotalPrice(totalPrice);
         cartItemResponseDTO.setParentCartId(cart.getCartId());
         return new ResponseEntity<>(cartItemResponseDTO, HttpStatus.OK);
+    }
+
+    @GetMapping("/get-cart-items/{cartId}")
+    @Operation(summary = "Get Cart Items",
+            description = "Retrieves all items in the cart by the given cart ID and returns them all in a set.")
+    public ResponseEntity<Set<CartItemResponseDTO>> getCartItems(@PathVariable UUID cartId) {
+
+        if (!featureManager.isActive(GET_CART_ITEMS)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        Cart cart = cartService.findCartById(cartId);
+        Set<CartItem> cartItems = cart.getCartItems();
+
+        Set<CartItemResponseDTO> response = cartItems.stream()
+                .map(item -> {
+                    CartItemResponseDTO dto = modelMapper.map(item, CartItemResponseDTO.class);
+                    dto.setListingId(item.getListing().getListingId());
+                    dto.setTotalPrice(
+                            item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()))
+                    );
+                    return dto;
+                })
+                .collect(Collectors.toSet());
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
