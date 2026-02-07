@@ -1,6 +1,7 @@
 package com.campushub.backend.services.cart;
 
-import com.campushub.backend.exceptions.cart.CartItemNotFoundException;
+import com.campushub.backend.exceptions.cartItem.CartItemIdNullException;
+import com.campushub.backend.exceptions.cartItem.CartItemNotFoundException;
 import com.campushub.backend.exceptions.cart.CartNotFoundException;
 import com.campushub.backend.models.cart.Cart;
 import com.campushub.backend.models.cart.CartItem;
@@ -57,5 +58,16 @@ public class CartItemService {
         cart.setListingsQuantity(cart.getListingsQuantity() - cartItem.getQuantity());
         cartItemRepository.deleteById(cartItemId);
         return cartItem;
+    }
+
+    public CartItem findById(UUID cartItemId) {
+        if (cartItemId == null) {
+            throw new CartItemIdNullException("CartItem ID must not be null");
+        }
+
+        return cartItemRepository.findById(cartItemId)
+                .orElseThrow(() ->
+                        new CartItemNotFoundException(
+                                "CartItem not found with id: " + cartItemId));
     }
 }

@@ -2,6 +2,7 @@ package com.campushub.backend.controllers.cart;
 
 import com.campushub.backend.dtos.cartItem.CartItemRequestDTO;
 import com.campushub.backend.dtos.cartItem.CartItemResponseDTO;
+import com.campushub.backend.models.cart.Cart;
 import com.campushub.backend.models.cart.CartItem;
 import com.campushub.backend.models.listings.Listing;
 import com.campushub.backend.services.cart.CartItemService;
@@ -73,8 +74,13 @@ public class CartItemController {
         if (!featureManager.isActive(DELETE_CART_ITEM)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
-        CartItem cartItem = cartItemService.deleteCartItem(cartItemId);
-        CartItemResponseDTO cartItemResponseDTO = modelMapper.map(cartItem, CartItemResponseDTO.class);
+        CartItem cartItem = cartItemService.findById(cartItemId);
+        Cart cart = cartService.findCartById(cartItem.getCart().getCartId());
+        BigDecimal totalPrice = cart.getTotalPrice();
+        CartItem deletedCartItem = cartItemService.deleteCartItem(cartItemId);
+        CartItemResponseDTO cartItemResponseDTO = modelMapper.map(deletedCartItem, CartItemResponseDTO.class);
+        cartItemResponseDTO.setTotalPrice(totalPrice);
+        cartItemResponseDTO.setParentCartId(cart.getCartId());
         return new ResponseEntity<>(cartItemResponseDTO, HttpStatus.OK);
     }
 }
