@@ -1,0 +1,53 @@
+.product-section{
+    padding: 2rem;
+}
+
+.product-section .sectionTitle{
+    /* background-color: blue; */
+    padding: 0;
+    margin: 0;    
+}
+
+.sectionTitle > .title-name > h3{
+    font-size: 1.4rem;
+    margin: 0;
+}
+
+.sectionTitle > .title-name{
+    display: flex;
+    justify-content: space-between;
+}
+
+.sectionTitle > .title-name > h3 > span{
+    color: #008ECC;
+}
+.sectionTitle > hr{
+    height: 1px;
+    background-color: #EDEDED;
+    margin: 0 0 1.3rem 0 ;
+    padding: 0;
+}
+.title-name > .view{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.title-name > .view > p{
+    padding: 0 5px;
+}
+
+.cards-container{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.cards{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: auto;
+    gap: .8rem;
+}

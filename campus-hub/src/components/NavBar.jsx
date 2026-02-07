@@ -6,12 +6,12 @@ import { NavLink } from "react-router-dom";
 function NavBar() {
   return (
     <nav className = "nav">
-        <div className = "container">
+        <div className = "navbar-container">
             <a href="#"><img className= 'logo' src={logo} alt="logo" /></a>
 
             <ul className = "list">
                 <li className = "list-item">
-                    <NavLink to="/MarketPlace" className={({ isActive }) => isActive ? "active" : ""}>Market Place</NavLink>
+                    <NavLink to="/" className={({ isActive }) => isActive ? "active" : ""}>Market Place</NavLink>
                 </li>
                 <li className = "list-item">
                     <NavLink to="/CourseExchange" className={({ isActive }) => isActive ? "active" : ""}>Course Exchange</NavLink>
