@@ -4,11 +4,13 @@ import './ProductSection.css';
 import arrow from '../assets/arrow.svg';
 
 export const Section = ({ search = "", category = "Books" }) => {
-  // Filter products by category and search
-  const filteredProducts = products.filter(
+  // Make sure products is an array
+  const allProducts = Array.isArray(products) ? products : [];
+
+  const filteredProducts = allProducts.filter(
     (p) =>
-      p.title.toLowerCase().includes(search.toLowerCase()) &&
-      p.category.toLowerCase() === category.toLowerCase()
+      p.title?.toLowerCase().includes(search.toLowerCase()) &&
+      p.category?.toLowerCase() === category.toLowerCase()
   );
 
   return (
