@@ -29,12 +29,12 @@ function MarketPlace() {
         <button onClick={handleSearch}>Search</button>
       </div>
 
-      {/* Section Component */}
-      {/* We'll pass the filteredQuery as a prop */}
-      <Section search={filteredQuery} />
+      {/* Category Sections */}
+      <Section search={filteredQuery} category="Books" />
+      <Section search={filteredQuery} category="Clothing" />
+      <Section search={filteredQuery} category="Room Decor" />
     </div>
   );
 }
 
 export default MarketPlace;
-
