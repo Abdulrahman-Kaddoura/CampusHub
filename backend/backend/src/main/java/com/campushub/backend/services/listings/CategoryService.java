@@ -14,7 +14,12 @@ public class CategoryService {
     @Autowired
     CategoryRepository categoryRepository;
 
-    public Category createCategory(Category category) {
+    public Category createCategory(Category category, UUID parentId) {
+        if (parentId != null) {
+            Category parent = categoryRepository.findById(parentId)
+                    .orElseThrow(() -> new CategoryNotFoundException("Parent category not found with id: " + parentId));
+            category.setParent(parent);
+        }
         return categoryRepository.save(category);
     }
 

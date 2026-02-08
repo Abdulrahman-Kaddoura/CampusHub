@@ -1,11 +1,8 @@
 package com.campushub.backend.controllers.cart;
 
 import com.campushub.backend.dtos.cart.CartResponseDTO;
-import com.campushub.backend.dtos.cartItem.CartItemResponseDTO;
 import com.campushub.backend.models.cart.Cart;
-import com.campushub.backend.models.cart.CartItem;
 import com.campushub.backend.services.cart.CartService;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.togglz.core.manager.FeatureManager;
 
-import java.math.BigDecimal;
-import java.util.Set;
+
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static com.campushub.backend.configurations.togglz.Features.*;
 
