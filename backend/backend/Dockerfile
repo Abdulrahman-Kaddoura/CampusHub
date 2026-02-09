@@ -14,4 +14,7 @@ USER app
 
 EXPOSE 9090
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+COPY wait-for-postgres.sh /app/wait-for-postgres.sh
+RUN chmod +x /app/wait-for-postgres.sh
+
+ENTRYPOINT ["/app/wait-for-postgres.sh", "java", "-jar", "app.jar"]
