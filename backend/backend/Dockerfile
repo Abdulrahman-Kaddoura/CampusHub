@@ -6,15 +6,13 @@ WORKDIR /app
 
 COPY build/libs/*.jar app.jar
 
-#COPY src/main/resources/application-local.properties /app/application.properties
+COPY wait-for-postgres.sh /app/wait-for-postgres.sh
 
-RUN chown -R app:app /app
+RUN chmod +x /app/wait-for-postgres.sh \
+    && chown -R app:app /app
 
 USER app
 
 EXPOSE 9090
-
-COPY wait-for-postgres.sh /app/wait-for-postgres.sh
-RUN chmod +x /app/wait-for-postgres.sh
 
 ENTRYPOINT ["/app/wait-for-postgres.sh", "java", "-jar", "app.jar"]
