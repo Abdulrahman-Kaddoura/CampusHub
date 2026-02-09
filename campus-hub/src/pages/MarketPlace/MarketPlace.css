@@ -1,43 +1,15 @@
-/* Hero Banner */
-.marketplace-hero {
+.marketplace {
+  padding: 40px;
+}
+
+.add-item {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
   background: #2e2a33;
   color: white;
-  padding: 60px 40px;
-  border-radius: 12px;
-  margin-bottom: 40px;
-}
-
-.marketplace-hero h1 {
-  font-size: 36px;
-  margin-bottom: 10px;
-}
-
-.marketplace-hero p {
-  font-size: 18px;
-  opacity: 0.9;
-}
-
-/* Search Bar */
-.marketplace-search {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 30px;
-}
-
-.marketplace-search input {
-  padding: 10px 15px;
-  font-size: 16px;
-  border-radius: 6px 0 0 6px;
-  border: 1px solid #ccc;
-  width: 300px;
-}
-
-.marketplace-search button {
-  padding: 10px 20px;
-  font-size: 16px;
-  border-radius: 0 6px 6px 0;
-  border: 1px solid #ccc;
-  background-color: #2e2a33;
-  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
 }
