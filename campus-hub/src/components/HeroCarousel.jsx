@@ -1,11 +1,11 @@
 import { useState } from "react";
 import "./HeroCarousel.css";
-import banner1 from "../assets/banner1.jpg"; // replace with your own images
-import banner2 from "../assets/banner2.jpg";
-import banner3 from "../assets/banner3.jpg";
+import book1 from "../assets/book.jpg";
+import book2 from "../assets/book2.jpg";
+import book3 from "../assets/book3.webp";
 
 export const HeroCarousel = () => {
-  const banners = [banner1, banner2, banner3];
+  const banners = [book1, book2, book3];
   const [current, setCurrent] = useState(0);
 
   const prevSlide = () =>
@@ -16,8 +16,12 @@ export const HeroCarousel = () => {
   return (
     <div className="hero-carousel">
       <img src={banners[current]} alt="banner" className="banner-image" />
-      <button className="arrow left" onClick={prevSlide}>&lt;</button>
-      <button className="arrow right" onClick={nextSlide}>&gt;</button>
+      <button className="arrow left" onClick={prevSlide}>
+        &lt;
+      </button>
+      <button className="arrow right" onClick={nextSlide}>
+        &gt;
+      </button>
       <div className="hero-text">
         <h1>Market Place</h1>
         <p>Buy from and sell to other students</p>
