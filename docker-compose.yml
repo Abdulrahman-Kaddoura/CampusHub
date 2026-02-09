@@ -26,28 +26,12 @@ services:
     networks:
       - campus-net
 
-
-  backend2:
-    build:
-      context: ./backend/backend
-    environment:
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SERVER_PORT: ${SERVER_PORT}
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-    depends_on:
-      - postgres
-    networks:
-      - campus-net
-
   frontend:
     build:
       context: ./campus-hub
       dockerfile: Dockerfile
     depends_on:
       - backend1
-      - backend2
     networks:
       - campus-net
 
@@ -60,7 +44,6 @@ services:
     depends_on:
       - frontend
       - backend1
-      - backend2
     networks:
       - campus-net
 

@@ -1,18 +1,23 @@
-const BASE_URL = "/api";
+const BASE_URL = "/api/listings";
 
 export const fetchListings = async () => {
-  const response = await fetch(`${BASE_URL}/listings/get-listings`);
+  const response = await fetch(`${BASE_URL}/get-listings`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(errorText || "Failed to fetch listings.");
+    throw new Error(errorText || "Failed to fetch listings");
   }
 
-  return response.json();
+  return await response.json();
 };
 
 export const createListing = async (payload) => {
-  const response = await fetch(`${BASE_URL}/listings/create-listing`, {
+  const response = await fetch(`${BASE_URL}/create-listing`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -22,8 +27,8 @@ export const createListing = async (payload) => {
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(errorText || "Failed to create listing.");
+    throw new Error(errorText || "Failed to create listing");
   }
 
-  return response.json();
+  return await response.json();
 };

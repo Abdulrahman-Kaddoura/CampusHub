@@ -1,4 +1,4 @@
-const BASE_URL = "/api";
+const BASE_URL = "/api/user";
 const TEMP_USER_STORAGE_KEY = "campusHubTempUserId";
 
 const buildTempUserPayload = () => {
@@ -16,12 +16,14 @@ const buildTempUserPayload = () => {
 };
 
 export const createTempUser = async () => {
+  // Check if we already have a temp user ID stored
   const storedUserId = localStorage.getItem(TEMP_USER_STORAGE_KEY);
   if (storedUserId) {
     return storedUserId;
   }
 
-  const response = await fetch(`${BASE_URL}/user/create-user`, {
+  // Create a new temp user via API
+  const response = await fetch(`${BASE_URL}/create-user`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -40,6 +42,7 @@ export const createTempUser = async () => {
     throw new Error("Temporary user creation did not return a user ID.");
   }
 
+  // Store the user ID in localStorage
   localStorage.setItem(TEMP_USER_STORAGE_KEY, userId);
   return userId;
 };
