@@ -27,6 +27,13 @@ public class CartService {
                 ));
     }
 
+    public Cart findCartByUserId(UUID userId) {
+        return cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new CartNotFoundException(
+                        "Cart not found with user id: " + userId
+                ));
+    }
+
     public Set<CartItem> getCartItems(Cart cart) {
         return cart.getCartItems();
     }

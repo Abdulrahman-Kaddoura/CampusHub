@@ -117,14 +117,21 @@ public enum Features implements Feature {
     //-----------------------
     // Cart APIs
     //-----------------------
-    @Label("CART - GetCartItems")
+    @Label("CART - GetCartByCartId")
     @EnabledByDefault
-    GET_CART_ITEMS,
+    GET_CART_BY_CART_ID,
 
+    @Label("CART - GetCartByUserId")
+    @EnabledByDefault
+    GET_CART_BY_USER_ID,
 
     //-----------------------
     // CartItem APIs
     //-----------------------
+    @Label("CARTITEM - GetCartItems")
+    @EnabledByDefault
+    GET_CART_ITEMS,
+
     @Label("CARTITEM - CreateCartItem")
     @EnabledByDefault
     CREATE_CART_ITEM,

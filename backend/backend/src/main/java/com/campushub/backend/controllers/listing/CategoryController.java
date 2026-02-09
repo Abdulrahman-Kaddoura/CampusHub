@@ -39,10 +39,18 @@ public class CategoryController {
         if (!featureManager.isActive(CREATE_CATEGORY)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
-        Category category = modelMapper.map(categoryRequestDTO, Category.class);
-        Category createdCategory = categoryService.createCategory(category);
-        CategoryResponseDTO categoryResponseDTO = modelMapper.map(createdCategory, CategoryResponseDTO.class);
-        return new ResponseEntity<>(categoryResponseDTO, HttpStatus.CREATED);
+        Category category = new Category();
+        category.setName(categoryRequestDTO.getCategoryName());
+        Category createdCategory = categoryService.createCategory(category, categoryRequestDTO.getParentId());
+        CategoryResponseDTO responseDTO = new CategoryResponseDTO();
+        responseDTO.setCategoryId(createdCategory.getCategoryId());
+        responseDTO.setCategoryName(createdCategory.getName());
+
+        if (createdCategory.getParent() != null) {
+            responseDTO.setParentId(createdCategory.getParent().getCategoryId());
+            responseDTO.setParentName(createdCategory.getParent().getName());
+        }
+        return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/delete-category-by-id/{categoryId}")

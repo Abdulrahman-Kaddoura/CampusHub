@@ -1,10 +1,8 @@
 package com.campushub.backend.controllers.cart;
 
-import com.campushub.backend.dtos.cartItem.CartItemResponseDTO;
+import com.campushub.backend.dtos.cart.CartResponseDTO;
 import com.campushub.backend.models.cart.Cart;
-import com.campushub.backend.models.cart.CartItem;
 import com.campushub.backend.services.cart.CartService;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.togglz.core.manager.FeatureManager;
 
-import java.math.BigDecimal;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
-import static com.campushub.backend.configurations.togglz.Features.GET_CART_ITEMS;
+import java.util.UUID;
+
+import static com.campushub.backend.configurations.togglz.Features.*;
 
 @RestController
 @RequestMapping("/cart")
@@ -36,29 +32,23 @@ public class CartController {
     @Autowired
     FeatureManager featureManager;
 
-    @GetMapping("/get-cart-items/{cartId}")
-    @Operation(summary = "Get Cart Items",
-            description = "Retrieves all items in the cart by the given cart ID and returns them all in a set.")
-    public ResponseEntity<Set<CartItemResponseDTO>> getCartItems(@PathVariable UUID cartId) {
-
-        if (!featureManager.isActive(GET_CART_ITEMS)) {
+    @GetMapping("/get-cart-by-cart-id/{cartId}")
+    public ResponseEntity<CartResponseDTO> getCartByCartId(@PathVariable UUID cardId) {
+        if (!featureManager.isActive(GET_CART_BY_CART_ID)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
+        Cart cart = cartService.findCartById(cardId);
+        CartResponseDTO cartResponseDTO = modelMapper.map(cart, CartResponseDTO.class);
+        return new ResponseEntity<>(cartResponseDTO, HttpStatus.OK);
+    }
 
-        Cart cart = cartService.findCartById(cartId);
-        Set<CartItem> cartItems = cart.getCartItems();
-
-        Set<CartItemResponseDTO> response = cartItems.stream()
-                .map(item -> {
-                    CartItemResponseDTO dto = modelMapper.map(item, CartItemResponseDTO.class);
-                    dto.setListingId(item.getListing().getListingId());
-                    dto.setTotalPrice(
-                            item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()))
-                    );
-                    return dto;
-                })
-                .collect(Collectors.toSet());
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    @GetMapping("/get-cart-by-user-id/{userId}")
+    public ResponseEntity<CartResponseDTO> getCartByUserId(@PathVariable UUID userId) {
+        if (!featureManager.isActive(GET_CART_BY_USER_ID)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        Cart cart = cartService.findCartByUserId(userId);
+        CartResponseDTO cartResponseDTO = modelMapper.map(cart, CartResponseDTO.class);
+        return new ResponseEntity<>(cartResponseDTO, HttpStatus.OK);
     }
 }

@@ -26,4 +26,13 @@ public class Category {
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     private List<Listing> listings = new ArrayList<>();
+
+    // Parent category
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private Category parent;
+
+    // Child categories
+    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
+    private List<Category> subcategories = new ArrayList<>();
 }

@@ -2,6 +2,7 @@ package com.campushub.backend.controllers.cart;
 
 import com.campushub.backend.dtos.cartItem.CartItemRequestDTO;
 import com.campushub.backend.dtos.cartItem.CartItemResponseDTO;
+import com.campushub.backend.models.cart.Cart;
 import com.campushub.backend.models.cart.CartItem;
 import com.campushub.backend.models.listings.Listing;
 import com.campushub.backend.services.cart.CartItemService;
@@ -18,10 +19,11 @@ import org.springframework.web.bind.annotation.*;
 import org.togglz.core.manager.FeatureManager;
 
 import java.math.BigDecimal;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-import static com.campushub.backend.configurations.togglz.Features.CREATE_CART_ITEM;
-import static com.campushub.backend.configurations.togglz.Features.DELETE_CART_ITEM;
+import static com.campushub.backend.configurations.togglz.Features.*;
 
 @RestController
 @RequestMapping("/cart-item")
@@ -73,8 +75,39 @@ public class CartItemController {
         if (!featureManager.isActive(DELETE_CART_ITEM)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
-        CartItem cartItem = cartItemService.deleteCartItem(cartItemId);
-        CartItemResponseDTO cartItemResponseDTO = modelMapper.map(cartItem, CartItemResponseDTO.class);
+        CartItem cartItem = cartItemService.findById(cartItemId);
+        Cart cart = cartService.findCartById(cartItem.getCart().getCartId());
+        BigDecimal totalPrice = cart.getTotalPrice();
+        CartItem deletedCartItem = cartItemService.deleteCartItem(cartItemId);
+        CartItemResponseDTO cartItemResponseDTO = modelMapper.map(deletedCartItem, CartItemResponseDTO.class);
+        cartItemResponseDTO.setTotalPrice(totalPrice);
+        cartItemResponseDTO.setParentCartId(cart.getCartId());
         return new ResponseEntity<>(cartItemResponseDTO, HttpStatus.OK);
+    }
+
+    @GetMapping("/get-cart-items/{cartId}")
+    @Operation(summary = "Get Cart Items",
+            description = "Retrieves all items in the cart by the given cart ID and returns them all in a set.")
+    public ResponseEntity<Set<CartItemResponseDTO>> getCartItems(@PathVariable UUID cartId) {
+
+        if (!featureManager.isActive(GET_CART_ITEMS)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        Cart cart = cartService.findCartById(cartId);
+        Set<CartItem> cartItems = cart.getCartItems();
+
+        Set<CartItemResponseDTO> response = cartItems.stream()
+                .map(item -> {
+                    CartItemResponseDTO dto = modelMapper.map(item, CartItemResponseDTO.class);
+                    dto.setListingId(item.getListing().getListingId());
+                    dto.setTotalPrice(
+                            item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()))
+                    );
+                    return dto;
+                })
+                .collect(Collectors.toSet());
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

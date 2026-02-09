@@ -11,4 +11,8 @@ public class CategoryResponseDTO {
 
     private UUID categoryId;
     private String categoryName;
+
+    // Optional parent category info
+    private UUID parentId;
+    private String parentName;
 }

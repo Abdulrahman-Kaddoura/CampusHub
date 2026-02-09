@@ -1,4 +1,4 @@
-package com.campushub.backend.exceptions.cart;
+package com.campushub.backend.exceptions.cartItem;
 
 public class CartItemNotFoundException extends RuntimeException {
     public CartItemNotFoundException(String message) {
