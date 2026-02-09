@@ -2,9 +2,9 @@
   padding: 20px 40px;
 }
 
+/* Search bar (left) + Add Item button (right) */
 .top-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
 }
@@ -16,7 +16,9 @@
   border: 1px solid #ccc;
 }
 
+/* Add Item button forced to the far right */
 .add-item {
+  margin-left: auto;
   padding: 10px 20px;
   border: none;
   border-radius: 6px;
@@ -24,6 +26,8 @@
   color: white;
   cursor: pointer;
 }
+
+/* ---------- Listing form styles (leave as-is) ---------- */
 
 .listing-form {
   display: flex;
