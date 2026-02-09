@@ -1,8 +1,9 @@
 const BASE_URL = "/api/user";
 const TEMP_USER_STORAGE_KEY = "campusHubTempUserId";
+import { v4 as uuidv4 } from 'uuid';
 
 const buildTempUserPayload = () => {
-  const randomId = crypto.randomUUID();
+  const id = crypto?.randomUUID?.() || uuidv4();
   const username = `temp_${randomId}`;
 
   return {
