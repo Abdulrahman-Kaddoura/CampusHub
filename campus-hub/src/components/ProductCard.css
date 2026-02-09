@@ -1,67 +1,48 @@
-.card-container{
-    width: 17rem;
-    height: 31rem;
-    padding-bottom: 1rem;
-    border-color: #EDEDED;
-    border-radius: 1rem;
-    border-style: solid;
-    font-family: "Instrument Sans", sans-serif;
+.card-container {
+  width: 200px;
+  min-width: 200px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
-.card-container > .image-container{
-    background-color: #F5F5F5;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 1rem 1rem 0 0 ;
-    border-color: #EDEDED;
+.image-container {
+  width: 100%;
+  height: 150px;
+  overflow: hidden;
 }
 
-.image-container > .product-image{
-    padding: 1rem 0;
-    width: 9rem;
-    height: 14rem;
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.product-image > img{
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.product-info {
+  padding: 10px;
 }
 
-.product-info{
-    padding: .8rem .8rem 0 .8rem;
-
+.product-name {
+  font-size: 16px;
+  margin-bottom: 4px;
 }
 
-.product-info > .product-name{
-    font-size: 1.2rem;
-    margin-bottom: 0;
-    font-weight: 700;
+.author {
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 6px;
 }
 
-.product-info > .author{
-    font-size: smaller;
-    font-style: italic;
-    margin-bottom: 0;
-    padding-bottom: 5px;
+.price {
+  font-size: 14px;
+  color: green;
+  margin-bottom: 4px;
 }
 
-.product-info > .price{
-    font-weight: bold;
-    color: #008ECC; 
-    font-size: 1.1rem;
+.description {
+  font-size: 12px;
+  color: #777;
 }
-
-.card-container > .details{
-    padding-left: .6rem;
-}
-
-.details > hr{
-    width: 95%;
-    margin-bottom: 5px;
-}
-.details > .description{
-    font-size:.9rem;
-}
-
