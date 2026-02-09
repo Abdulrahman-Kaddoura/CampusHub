@@ -1,41 +1,27 @@
-import { useRef } from "react";
+import { products } from "../products";
 import { ProductCard } from "./ProductCard";
 import "./ProductSection.css";
-import arrow from "../assets/arrow.svg";
 
-export const Section = ({ title = "Books", products = [] }) => {
-  const containerRef = useRef(null);
+export const Section = ({ search = "", category }) => {
+  const filteredProducts = products.filter(
+    (p) =>
+      p.category === category &&
+      p.productName.toLowerCase().includes(search.toLowerCase())
+  );
 
-  const scrollLeft = () => {
-    containerRef.current.scrollBy({ left: -220, behavior: "smooth" });
-  };
-
-  const scrollRight = () => {
-    containerRef.current.scrollBy({ left: 220, behavior: "smooth" });
-  };
+  if (filteredProducts.length === 0) return null;
 
   return (
     <div className="product-section">
       <div className="section-header">
-        <h3>Shop for best deals on <span>{title}</span></h3>
-        <div className="view-all">
-          <p>View All</p>
-          <img src={arrow} alt="arrow" />
-        </div>
+        <h3>{category}</h3>
+        <button className="view-all">View All</button>
       </div>
 
-      <div className="cards-wrapper">
-        <button className="scroll-btn left" onClick={scrollLeft}>
-          &lt;
-        </button>
-        <div className="cards-container" ref={containerRef}>
-          {products.map((p) => (
-            <ProductCard key={p.id} data={p} />
-          ))}
-        </div>
-        <button className="scroll-btn right" onClick={scrollRight}>
-          &gt;
-        </button>
+      <div className="cards">
+        {filteredProducts.map((product) => (
+          <ProductCard key={product.id} data={product} />
+        ))}
       </div>
     </div>
   );
