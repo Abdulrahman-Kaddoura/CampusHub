@@ -1,13 +1,16 @@
-import { products } from "../products";
 import { ProductCard } from "./ProductCard";
 import "./ProductSection.css";
 
-export const Section = ({ search = "", category }) => {
-  const filteredProducts = products.filter(
-    (p) =>
-      p.category === category &&
-      p.productName.toLowerCase().includes(search.toLowerCase())
-  );
+export const Section = ({ search = "", category, items = [] }) => {
+  const normalizedSearch = search.trim().toLowerCase();
+  const filteredProducts = items.filter((p) => {
+    const matchesCategory = p.categoryName === category;
+    if (!normalizedSearch) return matchesCategory;
+    return (
+      matchesCategory &&
+      p.title.toLowerCase().includes(normalizedSearch)
+    );
+  });
 
   if (filteredProducts.length === 0) return null;
 
@@ -20,7 +23,7 @@ export const Section = ({ search = "", category }) => {
 
       <div className="cards">
         {filteredProducts.map((product) => (
-          <ProductCard key={product.id} data={product} />
+            <ProductCard key={product.listingId || product.id} data={product} />
         ))}
       </div>
     </div>
