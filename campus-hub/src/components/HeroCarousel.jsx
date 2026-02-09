@@ -14,17 +14,19 @@ export const HeroCarousel = () => {
     setCurrent(current === banners.length - 1 ? 0 : current + 1);
 
   return (
-    <div className="hero-carousel">
-      <img src={banners[current]} alt="banner" className="banner-image" />
-      <button className="arrow left" onClick={prevSlide}>
-        &lt;
-      </button>
-      <button className="arrow right" onClick={nextSlide}>
-        &gt;
-      </button>
-      <div className="hero-text">
-        <h1>Market Place</h1>
-        <p>Buy from and sell to other students</p>
+    <div className="hero-carousel-wrapper">
+      <div className="hero-carousel">
+        <img src={banners[current]} alt="banner" className="banner-image" />
+        <button className="arrow left" onClick={prevSlide}>
+          &lt;
+        </button>
+        <button className="arrow right" onClick={nextSlide}>
+          &gt;
+        </button>
+        <div className="hero-text">
+          <h1>Market Place</h1>
+          <p>Buy from and sell to other students</p>
+        </div>
       </div>
     </div>
   );
