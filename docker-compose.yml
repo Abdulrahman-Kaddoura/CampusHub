@@ -1,9 +1,7 @@
-version: "3.9"
-
 services:
   postgres:
     image: postgres:15
-    container_name: my-postgres
+    container_name: hub-postgres
     environment:
       POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME}
@@ -11,6 +9,8 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - campus-net
 
   backend1:
     build:
@@ -22,6 +22,9 @@ services:
       - ./.env
     depends_on:
       - postgres
+    networks:
+      - campus-net
+
 
   backend2:
     build:
@@ -32,14 +35,18 @@ services:
       - ./.env
     depends_on:
       - postgres
+    networks:
+      - campus-net
 
   frontend:
     build:
-      context: ./frontend
+      context: ./campus-hub
       dockerfile: Dockerfile
     depends_on:
       - backend1
       - backend2
+    networks:
+      - campus-net
 
   nginx:
     image: nginx:alpine
@@ -51,6 +58,11 @@ services:
       - frontend
       - backend1
       - backend2
+    networks:
+      - campus-net
 
 volumes:
   postgres_data:
+
+networks:
+  campus-net:

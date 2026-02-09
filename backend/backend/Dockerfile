@@ -6,7 +6,7 @@ WORKDIR /app
 
 COPY build/libs/*.jar app.jar
 
-COPY backend/src/main/resources/application-local.properties /app/application-local.properties
+#COPY src/main/resources/application-local.properties /app/application.properties
 
 RUN chown -R app:app /app
 
