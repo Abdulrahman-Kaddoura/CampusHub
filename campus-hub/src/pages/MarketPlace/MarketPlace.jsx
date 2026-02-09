@@ -1,17 +1,23 @@
+import { HeroCarousel } from "../../components/HeroCarousel";
 import { Section } from "../../components/ProductSection";
+import { products } from "../../products";
 import "./MarketPlace.css";
 
 function MarketPlace() {
+  // Split products by category
+  const books = products.filter((p) => p.category === "Books");
+  const clothing = products.filter((p) => p.category === "Clothing");
+  const roomDecor = products.filter((p) => p.category === "Room Decor");
+
   return (
     <div className="marketplace">
-      {/* Hero Banner */}
-      <div className="marketplace-hero">
-        <h1>Market Place</h1>
-        <p>Buy from and sell to other students</p>
-      </div>
+      <HeroCarousel />
 
-      {/* Product Section */}
-      <Section title="Books and Stationery" />
+      <Section title="Books and Stationery" products={books} />
+      <Section title="Clothing" products={clothing} />
+      <Section title="Room Decor" products={roomDecor} />
+
+      <button className="add-item">Add Item</button>
     </div>
   );
 }
