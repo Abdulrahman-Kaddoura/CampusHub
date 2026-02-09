@@ -1,5 +1,8 @@
 FROM eclipse-temurin:17-jre
 
+USER root
+RUN apt-get update && apt-get install -y netcat && rm -rf /var/lib/apt/lists/*
+
 RUN groupadd app && useradd -m -g app app
 
 WORKDIR /app
