@@ -1,12 +1,12 @@
 .product-section {
-  margin-bottom: 50px;
+  margin-bottom: 40px;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .section-header span {
@@ -25,8 +25,37 @@
   margin-left: 5px;
 }
 
-.cards {
+/* wrapper for arrows */
+.cards-wrapper {
+  position: relative;
+}
+
+.cards-container {
   display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  gap: 15px;
+  padding-bottom: 10px;
+  scroll-behavior: smooth;
+}
+
+.scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.4);
+  border: none;
+  color: white;
+  font-size: 20px;
+  padding: 6px 10px;
+  cursor: pointer;
+  border-radius: 6px;
+  z-index: 2;
+}
+
+.scroll-btn.left {
+  left: 0;
+}
+
+.scroll-btn.right {
+  right: 0;
 }
