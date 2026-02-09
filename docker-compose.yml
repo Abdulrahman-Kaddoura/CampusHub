@@ -18,8 +18,9 @@ services:
       dockerfile: Dockerfile
     environment:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-    env_file:
-      - ./.env
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
     depends_on:
       - postgres
     networks:
@@ -31,8 +32,9 @@ services:
       context: ./backend/backend
     environment:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-    env_file:
-      - ./.env
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
     depends_on:
       - postgres
     networks:
