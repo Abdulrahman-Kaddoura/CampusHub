@@ -2,79 +2,116 @@ import { useMemo, useState, useEffect } from "react";
 import HeroCarousel from "../../components/HeroCarousel";
 import { Section } from "../../components/ProductSection";
 import { createListing, fetchListings } from "../../api/listings";
+import { createTempUser } from "../../api/users";
 import "./MarketPlace.css";
 
 export default function MarketPlace() {
   const [search, setSearch] = useState("");
   const [listings, setListings] = useState([]);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState("");
-    const [formState, setFormState] = useState({
-      title: "",
-      description: "",
-      price: "",
-      categoryName: "",
-      userId: "",
-    });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState("");
+  const [formState, setFormState] = useState({
+    title: "",
+    description: "",
+    price: "",
+    categoryName: "",
+  });
 
-    useEffect(() => {
-      let isMounted = true;
-      fetchListings()
-        .then((data) => {
-          if (isMounted) {
-            setListings(data);
-          }
-        })
-        .catch((err) => {
-          if (isMounted) {
-            setError(err.message);
-          }
-        });
+  useEffect(() => {
+    let isMounted = true;
+    fetchListings()
+      .then((data) => {
+        if (isMounted) {
+          setListings(data);
+        }
+      })
+      .catch((err) => {
+        if (isMounted) {
+          setError(err.message);
+        }
+      });
 
-      return () => {
-        isMounted = false;
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    createTempUser()
+      .then((userId) => {
+        if (isMounted) {
+          setCurrentUserId(userId);
+        }
+      })
+      .catch((err) => {
+        if (isMounted) {
+          setError(err.message);
+        }
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const categoryOptions = useMemo(
+    () => [
+      "Electronics & Gadgets",
+      "Books, Study & Office Supplies",
+      "Furniture & Home Goods",
+      "Clothing & Accessories",
+      "Sports & Fitness",
+      "Food & Groceries",
+      "Beauty & Personal Care",
+      "Tools & DIY",
+      "Musical Instruments & Gear",
+      "Games & Entertainment",
+      "Pet Supplies",
+      "Other",
+    ],
+    []
+  );
+
+  const listingCategories = useMemo(() => {
+    const categorySet = new Set(listings.map((listing) => listing.categoryName));
+    return Array.from(categorySet).filter(Boolean);
+  }, [listings]);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormState((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      const payload = {
+        title: formState.title,
+        description: formState.description,
+        price: Number(formState.price),
+        categoryName: formState.categoryName,
+        userId: currentUserId,
       };
-    }, []);
-
-    const categories = useMemo(() => {
-      const categorySet = new Set(listings.map((listing) => listing.categoryName));
-      return Array.from(categorySet).filter(Boolean);
-    }, [listings]);
-
-    const handleChange = (event) => {
-      const { name, value } = event.target;
-      setFormState((prev) => ({ ...prev, [name]: value }));
-    };
-
-    const handleSubmit = async (event) => {
-      event.preventDefault();
-      setError("");
-      setIsSubmitting(true);
-
-      try {
-        const payload = {
-          title: formState.title,
-          description: formState.description,
-          price: Number(formState.price),
-          categoryName: formState.categoryName,
-          userId: formState.userId,
-        };
-        const createdListing = await createListing(payload);
-        setListings((prev) => [createdListing, ...prev]);
-        setFormState({
-          title: "",
-          description: "",
-          price: "",
-          categoryName: "",
-          userId: "",
-        });
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setIsSubmitting(false);
-      }
-    };
-
+      const createdListing = await createListing(payload);
+      setListings((prev) => [createdListing, ...prev]);
+      setFormState({
+        title: "",
+        description: "",
+        price: "",
+        categoryName: "",
+      });
+      setIsFormOpen(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="marketplace">
@@ -88,69 +125,83 @@ export default function MarketPlace() {
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        <button className="add-item" type="button">
-                  Add Item
+        <button className="add-item" type="button" onClick={() => setIsFormOpen(true)}>
+          Add Item
         </button>
       </div>
 
-      <form className="listing-form" onSubmit={handleSubmit}>
-              <div className="form-row">
-                <input
-                  name="title"
-                  type="text"
-                  placeholder="Listing title"
-                  value={formState.title}
-                  onChange={handleChange}
-                  required
-                />
-                <input
-                  name="categoryName"
-                  type="text"
-                  placeholder="Category (e.g. Books)"
-                  value={formState.categoryName}
-                  onChange={handleChange}
-                  required
-                />
-                <input
-                  name="price"
-                  type="number"
-                  step="0.01"
-                  placeholder="Price"
-                  value={formState.price}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="form-row">
-                <input
-                  name="userId"
-                  type="text"
-                  placeholder="Seller user ID"
-                  value={formState.userId}
-                  onChange={handleChange}
-                  required
-                />
-                <textarea
-                  name="description"
-                  placeholder="Description"
-                  value={formState.description}
-                  onChange={handleChange}
-                />
-              </div>
-              <button className="submit-listing" type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Saving..." : "Create Listing"}
-              </button>
-              {error ? <p className="form-error">{error}</p> : null}
-            </form>
+      {isFormOpen ? (
+        <form className="listing-form" onSubmit={handleSubmit}>
+          <div className="form-row">
+            <input
+              name="title"
+              type="text"
+              placeholder="Listing title"
+              value={formState.title}
+              onChange={handleChange}
+              required
+            />
+            <select
+              name="categoryName"
+              value={formState.categoryName}
+              onChange={handleChange}
+              required
+            >
+              <option value="" disabled>
+                Select a category
+              </option>
+              {categoryOptions.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+            <input
+              name="price"
+              type="number"
+              step="0.01"
+              placeholder="Price"
+              value={formState.price}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="form-row">
+            <textarea
+              name="description"
+              placeholder="Description"
+              value={formState.description}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="form-actions">
+            <button
+              className="submit-listing"
+              type="submit"
+              disabled={isSubmitting || !currentUserId}
+            >
+              {isSubmitting ? "Saving..." : "Create Listing"}
+            </button>
+            <button
+              className="cancel-listing"
+              type="button"
+              onClick={() => setIsFormOpen(false)}
+            >
+              Cancel
+            </button>
+          </div>
+          {error ? <p className="form-error">{error}</p> : null}
+        </form>
+      ) : null}
 
-            {categories.map((category) => (
-              <Section
-                key={category}
-                category={category}
-                search={search}
-                items={listings}
-              />
-            ))}
+      {listingCategories.map((category) => (
+        <Section
+          key={category}
+          category={category}
+          search={search}
+          items={listings}
+        />
+      ))}
     </div>
   );
 }
