@@ -4,14 +4,14 @@ import { v4 as uuidv4 } from 'uuid';
 
 const buildTempUserPayload = () => {
   const randomId = crypto?.randomUUID?.() || uuidv4();
-  const username = `temp_${randomId}`;
+  const username = `temp${randomId}`;
 
   return {
     username,
     firstName: "Temp",
     lastName: "User",
-    email: `${username}@example.com`,
-    phoneNumber: "0000000000",
+    email: `${username}@exaple.com`,
+    phoneNumber: "000000000",
     password: `TempPass-${randomId}`,
   };
 };
