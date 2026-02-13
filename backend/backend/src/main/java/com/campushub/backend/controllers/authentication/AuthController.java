@@ -8,6 +8,7 @@ import com.campushub.backend.models.user.User;
 import com.campushub.backend.services.user.AppUserDetailsService;
 import com.campushub.backend.services.user.UserService;
 import com.campushub.backend.util.JwtUtil;
+import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -54,7 +55,7 @@ public class AuthController {
     JwtUtil jwtUtil;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequestDTO authRequestDTO) {
+    public ResponseEntity<?> login(@Valid @RequestBody AuthRequestDTO authRequestDTO) {
         if (!featureManager.isActive(LOGIN)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
@@ -89,7 +90,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponseDTO> register(@RequestBody UserRequestDTO userRequestDTO) {
+    public ResponseEntity<UserResponseDTO> register(@Valid @RequestBody UserRequestDTO userRequestDTO) {
         if (!featureManager.isActive(REGISTER)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }

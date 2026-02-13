@@ -25,7 +25,7 @@ public class UserService {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new EmailAlreadyExistsException("Email already exists");
         }
-        user.setStatus(UserStatus.PENDING);
+        user.setStatus(UserStatus.ACTIVE);
         Cart cart = new Cart();
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         cart.setUser(user);
