@@ -2,6 +2,7 @@ package com.campushub.backend.controllers.authentication;
 
 import com.campushub.backend.dtos.authentication.AuthRequestDTO;
 import com.campushub.backend.dtos.authentication.AuthResponseDTO;
+import com.campushub.backend.dtos.authentication.VerifyEmailRequestDTO;
 import com.campushub.backend.dtos.user.UserRequestDTO;
 import com.campushub.backend.dtos.user.UserResponseDTO;
 import com.campushub.backend.models.user.User;
@@ -20,10 +21,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.togglz.core.manager.FeatureManager;
 
 import java.time.Duration;
@@ -79,7 +77,7 @@ public class AuthController {
         } catch (DisabledException ex) {
             Map<String, Object> error = new HashMap<>();
             error.put("error", true);
-            error.put("message", "Account is disabled");
+            error.put("message", "Verify email before logging in");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
         } catch (Exception ex) {
             Map<String, Object> error = new HashMap<>();
@@ -90,14 +88,33 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponseDTO> register(@Valid @RequestBody UserRequestDTO userRequestDTO) {
+    public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody UserRequestDTO userRequestDTO) {
         if (!featureManager.isActive(REGISTER)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         User user = modelMapper.map(userRequestDTO, User.class);
         User createdUser = userService.createUser(user);
         UserResponseDTO userResponseDTO = modelMapper.map(createdUser, UserResponseDTO.class);
-        return new ResponseEntity<>(userResponseDTO, HttpStatus.CREATED);
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Registration started. Please verify your email to activate your account.");
+        response.put("user", userResponseDTO);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<Map<String, Object>> verifyEmail(@Valid @RequestBody VerifyEmailRequestDTO verifyEmailRequestDTO) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            User verifiedUser = userService.verifyEmail(verifyEmailRequestDTO.getEmail(), verifyEmailRequestDTO.getToken());
+            response.put("message", "Email verified successfully");
+            response.put("user", modelMapper.map(verifiedUser, UserResponseDTO.class));
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException ex) {
+            response.put("error", true);
+            response.put("message", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
     }
 
     private void authenticate(String email, String password) {
