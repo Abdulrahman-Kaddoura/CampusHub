@@ -23,6 +23,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 import org.togglz.core.manager.FeatureManager;
 
@@ -57,6 +58,9 @@ public class AuthController {
     @Value("${app.security.cookie.secure:false}")
     boolean secureCookie;
 
+    @Value("${jwt.expiration.ms:3600000}")
+    long jwtExpirationMs;
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthRequestDTO authRequestDTO) {
         if (!featureManager.isActive(LOGIN)) {
@@ -69,7 +73,7 @@ public class AuthController {
             ResponseCookie cookie  = ResponseCookie.from("jwt", jwtToken)
                     .httpOnly(true)
                     .path("/")
-                    .maxAge(Duration.ofDays(1))
+                    .maxAge(Duration.ofMillis(jwtExpirationMs))
                     .sameSite("Strict")
                     .secure(secureCookie)
                     .build();
@@ -134,6 +138,29 @@ public class AuthController {
             response.put("message", "Could not resend verification email");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, Object>> logout() {
+        ResponseCookie clearCookie = ResponseCookie.from("jwt", "")
+                .httpOnly(true)
+                .path("/")
+                .maxAge(Duration.ZERO)
+                .sameSite("Strict")
+                .secure(secureCookie)
+                .build();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Logged out successfully");
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, clearCookie.toString())
+                .body(response);
+    }
+
+    @GetMapping("/csrf-token")
+    public Map<String, String> csrfToken(CsrfToken csrfToken) {
+        return Map.of("token", csrfToken.getToken());
     }
 
     private ResponseEntity<Map<String, Object>> verifyEmail(String email, String token) {

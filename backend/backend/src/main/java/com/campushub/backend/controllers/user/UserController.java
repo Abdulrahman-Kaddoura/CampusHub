@@ -50,6 +50,7 @@ public class UserController {
         if (!featureManager.isActive(DELETE_USER)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
+        userService.requireAuthenticatedUser(userId);
         User user = userService.deleteUserById(userId);
         UserResponseDTO userResponseDTO = modelMapper.map(user, UserResponseDTO.class);
         return new ResponseEntity<>(userResponseDTO, HttpStatus.OK);
@@ -61,6 +62,7 @@ public class UserController {
         if (!featureManager.isActive(GET_USER_BY_ID)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
+        userService.requireAuthenticatedUser(userId);
         User user = userService.findById(userId);
         UserResponseDTO userResponseDTO = modelMapper.map(user, UserResponseDTO.class);
         return new ResponseEntity<>(userResponseDTO, HttpStatus.OK);
@@ -72,6 +74,10 @@ public class UserController {
         if (!featureManager.isActive(GET_USER_BY_USERNAME)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
+        User actingUser = userService.getAuthenticatedUser();
+        if (!actingUser.getUsername().equals(username)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
         User user = userService.findByUsername(username);
         UserResponseDTO userResponseDTO = modelMapper.map(user, UserResponseDTO.class);
         return new ResponseEntity<>(userResponseDTO, HttpStatus.OK);
@@ -81,6 +87,10 @@ public class UserController {
     @Operation(summary = "Get User by Email", description = "Retrieves a user by their email address and returns the user details.")
     public ResponseEntity<UserResponseDTO> getUserByEmail(@PathVariable String email) {
         if (!featureManager.isActive(GET_USER_BY_EMAIL)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        User actingUser = userService.getAuthenticatedUser();
+        if (!actingUser.getEmail().equals(email)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         User user = userService.findByEmail(email);

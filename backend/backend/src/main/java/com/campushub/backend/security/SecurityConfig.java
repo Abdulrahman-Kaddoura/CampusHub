@@ -16,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -35,7 +36,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.cors(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .ignoringRequestMatchers("/auth/login",
+                                "/auth/register",
+                                "/auth/verify-email",
+                                "/auth/resend-verification"))
                 .authorizeHttpRequests(auth -> auth
                                 .requestMatchers("/auth/login",
                                         "/auth/register",
@@ -43,7 +49,8 @@ public class SecurityConfig {
                                         "/auth/resend-verification",
                                         "/send-reset-otp",
                                         "/reset-password",
-                                        "/logout",
+                                        "/auth/logout",
+                                        "/auth/csrf-token",
                                         "/v3/api-docs/**",      // OpenAPI 3 docs
                                         "/api-docs/**",         // (Swagger config)
                                         "/swagger-ui/**",       // Swagger UI resources
@@ -74,7 +81,7 @@ public class SecurityConfig {
                 "http://localhost:9090"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "X-XSRF-TOKEN"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

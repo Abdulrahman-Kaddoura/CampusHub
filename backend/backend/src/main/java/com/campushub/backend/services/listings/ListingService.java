@@ -12,6 +12,7 @@ import com.campushub.backend.repositories.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -70,13 +71,26 @@ public class ListingService {
         return listing;
     }
 
+    @Transactional
+    public Listing deleteListingByIdForUser(UUID listingId, UUID actingUserId) {
+        Listing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
+
+        if (!listing.getUser().getId().equals(actingUserId)) {
+            throw new AccessDeniedException("You can only delete your own listings");
+        }
+
+        listingRepository.delete(listing);
+        return listing;
+    }
+
     public Listing getListingById(UUID listingId) {
         return listingRepository.findById(listingId)
                 .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
     }
 
     @Transactional
-    public Listing buyListing(UUID listingId, UUID buyerId) throws Exception{
+    public Listing buyListing(UUID listingId, UUID buyerId) throws Exception {
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
 

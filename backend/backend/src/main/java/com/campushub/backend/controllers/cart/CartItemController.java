@@ -8,6 +8,7 @@ import com.campushub.backend.models.listings.Listing;
 import com.campushub.backend.services.cart.CartItemService;
 import com.campushub.backend.services.cart.CartService;
 import com.campushub.backend.services.listings.ListingService;
+import com.campushub.backend.services.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -44,6 +45,9 @@ public class CartItemController {
     @Autowired
     FeatureManager featureManager;
 
+    @Autowired
+    UserService userService;
+
     @PostMapping("/create-cart-item")
     @Operation(summary = "Create cart item",
             description = "Adds a cart item into a specific cart using the carts id. Returns the created cart item's details.")
@@ -52,7 +56,9 @@ public class CartItemController {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         CartItem cartItem = modelMapper.map(cartItemRequestDTO, CartItem.class);
-        cartItem.setCart(cartService.findCartById(cartItemRequestDTO.getCartId()));
+        Cart cart = cartService.findCartById(cartItemRequestDTO.getCartId());
+        userService.requireAuthenticatedUser(cart.getUser().getId());
+        cartItem.setCart(cart);
         Listing listing = listingService.getListingById(cartItemRequestDTO.getListingId());
         cartItem.setListing(listing);
         if (cartItem.getUnitPrice() == null) {
@@ -77,6 +83,7 @@ public class CartItemController {
         }
         CartItem cartItem = cartItemService.findById(cartItemId);
         Cart cart = cartService.findCartById(cartItem.getCart().getCartId());
+        userService.requireAuthenticatedUser(cart.getUser().getId());
         BigDecimal totalPrice = cart.getTotalPrice();
         CartItem deletedCartItem = cartItemService.deleteCartItem(cartItemId);
         CartItemResponseDTO cartItemResponseDTO = modelMapper.map(deletedCartItem, CartItemResponseDTO.class);
@@ -95,6 +102,7 @@ public class CartItemController {
         }
 
         Cart cart = cartService.findCartById(cartId);
+        userService.requireAuthenticatedUser(cart.getUser().getId());
         Set<CartItem> cartItems = cart.getCartItems();
 
         Set<CartItemResponseDTO> response = cartItems.stream()

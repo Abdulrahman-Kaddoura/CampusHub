@@ -8,6 +8,9 @@ import com.campushub.backend.models.user.User;
 import com.campushub.backend.repositories.user.UserRepository;
 import com.campushub.backend.services.authentication.EmailVerificationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -143,4 +146,23 @@ public class UserService {
 
         return user;
     }
+
+    public User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AccessDeniedException("User is not authenticated");
+        }
+
+        String email = authentication.getName();
+        return findByEmail(email);
+    }
+
+    public User requireAuthenticatedUser(UUID requestedUserId) {
+        User actingUser = getAuthenticatedUser();
+        if (!actingUser.getId().equals(requestedUserId)) {
+            throw new AccessDeniedException("Access denied for requested user resource");
+        }
+        return actingUser;
+    }
+
 }

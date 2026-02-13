@@ -58,7 +58,10 @@ public class ListingController {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
-        User user = userService.findById(listingRequestDTO.getUserId());
+        User user = userService.getAuthenticatedUser();
+        if (listingRequestDTO.getUserId() != null && !listingRequestDTO.getUserId().equals(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only create listings for your own account");
+        }
 
         Listing listing = new Listing();
         listing.setTitle(listingRequestDTO.getTitle());
@@ -94,13 +97,13 @@ public class ListingController {
             description = "Marks a listing as sold to a buyer using the listing ID and buyer ID. Returns the updated listing."
     )
     public ResponseEntity<ListingResponseDTO> buyListing(
-            @PathVariable UUID listingId,
-            @RequestParam UUID buyerId) throws Exception {
+            @PathVariable UUID listingId) throws Exception {
         if (!featureManager.isActive(BUY_LISTING)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
-        Listing listing = listingService.buyListing(listingId, buyerId);
+        User buyer = userService.getAuthenticatedUser();
+        Listing listing = listingService.buyListing(listingId, buyer.getId());
 
         ListingResponseDTO response =
                 modelMapper.map(listing, ListingResponseDTO.class);
@@ -140,6 +143,7 @@ public class ListingController {
         if (!featureManager.isActive(GET_ALL_LISTINGS_BY_USER)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
+        userService.requireAuthenticatedUser(userId);
         List<Listing> listings = listingService.getAllListingsByUser(userId);
         List<ListingResponseDTO> listingResponseDTOS = listings.stream()
                 .map(listing -> modelMapper.map(listing, ListingResponseDTO.class))
@@ -172,7 +176,8 @@ public class ListingController {
         if (!featureManager.isActive(DELETE_LISTING)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
-        Listing listing = listingService.deleteListingById(listingId);
+        User actingUser = userService.getAuthenticatedUser();
+        Listing listing = listingService.deleteListingByIdForUser(listingId, actingUser.getId());
         ListingResponseDTO listingResponseDTO = modelMapper.map(listing, ListingResponseDTO.class);
         return new ResponseEntity<>(listingResponseDTO, HttpStatus.OK);
     }
