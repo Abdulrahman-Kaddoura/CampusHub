@@ -2,9 +2,13 @@ package com.campushub.backend.controllers.authentication;
 
 import com.campushub.backend.dtos.authentication.AuthRequestDTO;
 import com.campushub.backend.dtos.authentication.AuthResponseDTO;
-import com.campushub.backend.models.user.SecurityUser;
+import com.campushub.backend.dtos.user.UserRequestDTO;
+import com.campushub.backend.dtos.user.UserResponseDTO;
+import com.campushub.backend.models.user.User;
 import com.campushub.backend.services.user.AppUserDetailsService;
+import com.campushub.backend.services.user.UserService;
 import com.campushub.backend.util.JwtUtil;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -17,14 +21,28 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.togglz.core.manager.FeatureManager;
 
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.campushub.backend.configurations.togglz.Features.*;
+
 @RestController
+@RequestMapping("/auth")
 public class AuthController {
+
+    @Autowired
+    FeatureManager featureManager;
+
+    @Autowired
+    ModelMapper modelMapper;
+
+    @Autowired
+    UserService userService;
 
     @Autowired
     AuthenticationManager authenticationManager;
@@ -37,6 +55,9 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequestDTO authRequestDTO) {
+        if (!featureManager.isActive(LOGIN)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
         try {
             authenticate(authRequestDTO.getEmail(), authRequestDTO.getPassword());
             final UserDetails userDetails = appUserDetailsService.loadUserByUsername(authRequestDTO.getEmail());
@@ -65,6 +86,17 @@ public class AuthController {
             error.put("message", "Authentication failed");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
         }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<UserResponseDTO> register(@RequestBody UserRequestDTO userRequestDTO) {
+        if (!featureManager.isActive(REGISTER)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        User user = modelMapper.map(userRequestDTO, User.class);
+        User createdUser = userService.createUser(user);
+        UserResponseDTO userResponseDTO = modelMapper.map(createdUser, UserResponseDTO.class);
+        return new ResponseEntity<>(userResponseDTO, HttpStatus.CREATED);
     }
 
     private void authenticate(String email, String password) {

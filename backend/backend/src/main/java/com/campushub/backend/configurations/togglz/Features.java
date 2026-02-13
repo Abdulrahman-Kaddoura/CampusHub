@@ -8,6 +8,17 @@ import org.togglz.core.context.FeatureContext;
 public enum Features implements Feature {
 
     //-----------------------
+    // AUTH APIs
+    //-----------------------
+    @Label("AUTH - Register")
+    @EnabledByDefault
+    REGISTER,
+
+    @Label("AUTH - Login")
+    @EnabledByDefault
+    LOGIN,
+
+    //-----------------------
     // USER APIs
     //-----------------------
     @Label("USER - CreateUser")

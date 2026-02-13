@@ -39,7 +39,7 @@ public class SecurityConfig {
                                         "/reset-password",
                                         "/logout",
                                         "/v3/api-docs/**",      // OpenAPI 3 docs
-                                        "/api-docs/**",         // ← ADD THIS (Swagger config)
+                                        "/api-docs/**",         // (Swagger config)
                                         "/swagger-ui/**",       // Swagger UI resources
                                         "/swagger-ui.html",     // Swagger UI page
                                         "/swagger-resources/**", // Swagger resources

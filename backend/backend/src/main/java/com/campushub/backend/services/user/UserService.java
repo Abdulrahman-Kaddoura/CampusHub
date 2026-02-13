@@ -1,7 +1,7 @@
 package com.campushub.backend.services.user;
 
 import com.campushub.backend.enums.user.UserStatus;
-//import com.campushub.backend.exceptions.user.UserNotFoundException;
+import com.campushub.backend.exceptions.user.EmailAlreadyExistsException;
 import com.campushub.backend.exceptions.user.UserNotFoundException;
 import com.campushub.backend.models.cart.Cart;
 import com.campushub.backend.models.user.User;
@@ -22,6 +22,9 @@ public class UserService {
     PasswordEncoder passwordEncoder;
 
     public User createUser(User user) {
+        if (userRepository.existsByEmail(user.getEmail())) {
+            throw new EmailAlreadyExistsException("Email already exists");
+        }
         user.setStatus(UserStatus.PENDING);
         Cart cart = new Cart();
         user.setPassword(passwordEncoder.encode(user.getPassword()));
