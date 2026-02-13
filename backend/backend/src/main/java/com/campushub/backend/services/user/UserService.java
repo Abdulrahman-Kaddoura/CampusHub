@@ -56,7 +56,7 @@ public class UserService {
             throw new IllegalArgumentException("Email is already verified");
         }
 
-        boolean tokenMatches = token.equals(user.getEmailVerificationToken());
+        boolean tokenMatches = isTokenMatch(token, user.getEmailVerificationToken());
         boolean tokenNotExpired = user.getEmailVerificationExpiresAt() != null
                 && user.getEmailVerificationExpiresAt().isAfter(LocalDateTime.now());
 

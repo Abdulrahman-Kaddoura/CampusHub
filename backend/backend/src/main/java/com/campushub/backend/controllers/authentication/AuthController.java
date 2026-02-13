@@ -13,6 +13,7 @@ import com.campushub.backend.util.JwtUtil;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -53,6 +54,9 @@ public class AuthController {
     @Autowired
     JwtUtil jwtUtil;
 
+    @Value("${app.security.cookie.secure:false}")
+    boolean secureCookie;
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthRequestDTO authRequestDTO) {
         if (!featureManager.isActive(LOGIN)) {
@@ -67,9 +71,10 @@ public class AuthController {
                     .path("/")
                     .maxAge(Duration.ofDays(1))
                     .sameSite("Strict")
+                    .secure(secureCookie)
                     .build();
             return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
-                    .body(new AuthResponseDTO(authRequestDTO.getEmail(), jwtToken));
+                    .body(new AuthResponseDTO(authRequestDTO.getEmail()));
         } catch (BadCredentialsException ex) {
             Map<String, Object> error = new HashMap<>();
             error.put("error", true);
