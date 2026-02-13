@@ -22,6 +22,9 @@ public class EmailVerificationService {
     @Value("${app.verification.base-url:http://localhost:9090/auth/verify-email}")
     String verificationBaseUrl;
 
+    @Value("${app.mail.from:no-reply@campushub.local}")
+    String fromEmail;
+
     public void sendVerificationEmail(User user, String rawVerificationToken) {
         String encodedEmail = URLEncoder.encode(user.getEmail(), StandardCharsets.UTF_8);
         String encodedToken = URLEncoder.encode(rawVerificationToken, StandardCharsets.UTF_8);
@@ -34,9 +37,13 @@ public class EmailVerificationService {
 
         try {
             SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
             message.setTo(user.getEmail());
-            message.setSubject("Verify your CampusHub account");
-            message.setText("Thanks for registering at CampusHub. Click this link to verify your email: " + verificationLink);
+            message.setSubject("Your CampusHub verification code");
+            message.setText("Your CampusHub verification code is: " + rawVerificationToken + "\n\n"
+                    + "Enter this code in the app to verify your account. "
+                    + "This code expires in 1 hour.\n\n"
+                    + "You can also verify using this link: " + verificationLink);
             mailSender.send(message);
         } catch (Exception ex) {
             logger.warn("Failed to send verification email to {}. Verification link: {}", user.getEmail(), verificationLink, ex);

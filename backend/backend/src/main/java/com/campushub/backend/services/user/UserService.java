@@ -18,12 +18,17 @@ import org.springframework.transaction.annotation.Transactional;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.UUID;
 
 @Service
 public class UserService {
+
+    private static final int VERIFICATION_CODE_LENGTH = 6;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     @Autowired
     UserRepository userRepository;
 
@@ -39,7 +44,6 @@ public class UserService {
         }
         user.setStatus(UserStatus.PENDING);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setEmailVerificationToken(UUID.randomUUID().toString());
         String rawVerificationToken = rotateEmailVerificationToken(user);
 
         Cart cart = new Cart();
@@ -92,10 +96,16 @@ public class UserService {
     }
 
     private String rotateEmailVerificationToken(User user) {
-        String rawVerificationToken = UUID.randomUUID().toString();
+        String rawVerificationToken = generateVerificationCode();
         user.setEmailVerificationToken(hashVerificationToken(rawVerificationToken));
         user.setEmailVerificationExpiresAt(LocalDateTime.now().plusHours(1));
         return rawVerificationToken;
+    }
+
+    private String generateVerificationCode() {
+        int max = (int) Math.pow(10, VERIFICATION_CODE_LENGTH);
+        int verificationCode = SECURE_RANDOM.nextInt(max);
+        return String.format("%0" + VERIFICATION_CODE_LENGTH + "d", verificationCode);
     }
 
     private boolean isTokenMatch(String rawToken, String storedHashedToken) {
