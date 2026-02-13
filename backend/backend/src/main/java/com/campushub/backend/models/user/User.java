@@ -63,6 +63,15 @@
         @Column(name = "password", nullable = false)
         private String password;
 
+        @Column(name = "email_verification_token", length = 255)
+        private String emailVerificationToken;
+
+        @Column(name = "email_verification_expires_at")
+        private LocalDateTime emailVerificationExpiresAt;
+
+        @Column(name = "email_verified_at")
+        private LocalDateTime emailVerifiedAt;
+
         @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
         private List<Listing> postedListings = new ArrayList<>();
 
