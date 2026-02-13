@@ -2,6 +2,7 @@ package com.campushub.backend.controllers.authentication;
 
 import com.campushub.backend.dtos.authentication.AuthRequestDTO;
 import com.campushub.backend.dtos.authentication.AuthResponseDTO;
+import com.campushub.backend.dtos.authentication.ResendVerificationRequestDTO;
 import com.campushub.backend.dtos.authentication.VerifyEmailRequestDTO;
 import com.campushub.backend.dtos.user.UserRequestDTO;
 import com.campushub.backend.dtos.user.UserResponseDTO;
@@ -103,16 +104,48 @@ public class AuthController {
 
     @PostMapping("/verify-email")
     public ResponseEntity<Map<String, Object>> verifyEmail(@Valid @RequestBody VerifyEmailRequestDTO verifyEmailRequestDTO) {
+        return verifyEmail(verifyEmailRequestDTO.getEmail(), verifyEmailRequestDTO.getToken());
+    }
+
+    @GetMapping("/verify-email")
+    public ResponseEntity<Map<String, Object>> verifyEmailFromLink(@RequestParam String email, @RequestParam String token) {
+        return verifyEmail(email, token);
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Map<String, Object>> resendVerification(@Valid @RequestBody ResendVerificationRequestDTO requestDTO) {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            User verifiedUser = userService.verifyEmail(verifyEmailRequestDTO.getEmail(), verifyEmailRequestDTO.getToken());
+            userService.resendEmailVerification(requestDTO.getEmail());
+            response.put("message", "Verification email resent");
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException ex) {
+            response.put("error", true);
+            response.put("message", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (Exception ex) {
+            response.put("error", true);
+            response.put("message", "Could not resend verification email");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    private ResponseEntity<Map<String, Object>> verifyEmail(String email, String token) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            User verifiedUser = userService.verifyEmail(email, token);
             response.put("message", "Email verified successfully");
             response.put("user", modelMapper.map(verifiedUser, UserResponseDTO.class));
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException ex) {
             response.put("error", true);
             response.put("message", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (Exception ex) {
+            response.put("error", true);
+            response.put("message", "Email verification failed");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }

@@ -9,6 +9,9 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 @Service
 public class EmailVerificationService {
     private static final Logger logger = LoggerFactory.getLogger(EmailVerificationService.class);
@@ -19,8 +22,10 @@ public class EmailVerificationService {
     @Value("${app.verification.base-url:http://localhost:9090/auth/verify-email}")
     String verificationBaseUrl;
 
-    public void sendVerificationEmail(User user) {
-        String verificationLink = verificationBaseUrl + "?email=" + user.getEmail() + "&token=" + user.getEmailVerificationToken();
+    public void sendVerificationEmail(User user, String rawVerificationToken) {
+        String encodedEmail = URLEncoder.encode(user.getEmail(), StandardCharsets.UTF_8);
+        String encodedToken = URLEncoder.encode(rawVerificationToken, StandardCharsets.UTF_8);
+        String verificationLink = verificationBaseUrl + "?email=" + encodedEmail + "&token=" + encodedToken;
 
         if (mailSender == null) {
             logger.info("Mail sender not configured. Verification link for {}: {}", user.getEmail(), verificationLink);

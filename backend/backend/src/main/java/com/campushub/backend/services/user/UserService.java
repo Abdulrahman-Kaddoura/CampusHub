@@ -12,7 +12,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.UUID;
 
 @Service
@@ -33,13 +37,13 @@ public class UserService {
         user.setStatus(UserStatus.PENDING);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setEmailVerificationToken(UUID.randomUUID().toString());
-        user.setEmailVerificationExpiresAt(LocalDateTime.now().plusHours(1));
+        String rawVerificationToken = rotateEmailVerificationToken(user);
 
         Cart cart = new Cart();
         cart.setUser(user);
         user.setCart(cart);
         User createdUser = userRepository.save(user);
-        emailVerificationService.sendVerificationEmail(createdUser);
+        emailVerificationService.sendVerificationEmail(createdUser, rawVerificationToken);
         return createdUser;
     }
 
@@ -49,22 +53,66 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
 
         if (user.getStatus() == UserStatus.ACTIVE) {
-            return user;
+            throw new IllegalArgumentException("Email is already verified");
         }
 
         boolean tokenMatches = token.equals(user.getEmailVerificationToken());
         boolean tokenNotExpired = user.getEmailVerificationExpiresAt() != null
                 && user.getEmailVerificationExpiresAt().isAfter(LocalDateTime.now());
 
-        if (!tokenMatches || !tokenNotExpired) {
-            throw new IllegalArgumentException("Verification token is invalid or expired");
+        if (!tokenMatches) {
+            throw new IllegalArgumentException("Verification token is invalid");
         }
 
+        if (!tokenNotExpired) {
+            throw new IllegalArgumentException("Verification token has expired");
+        }
         user.setStatus(UserStatus.ACTIVE);
         user.setEmailVerifiedAt(LocalDateTime.now());
         user.setEmailVerificationToken(null);
         user.setEmailVerificationExpiresAt(null);
         return userRepository.save(user);
+    }
+
+    @Transactional
+    public void resendEmailVerification(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+
+        if (user.getStatus() == UserStatus.ACTIVE) {
+            throw new IllegalArgumentException("Email is already verified");
+        }
+
+        String rawVerificationToken = rotateEmailVerificationToken(user);
+        User updatedUser = userRepository.save(user);
+        emailVerificationService.sendVerificationEmail(updatedUser, rawVerificationToken);
+    }
+
+    private String rotateEmailVerificationToken(User user) {
+        String rawVerificationToken = UUID.randomUUID().toString();
+        user.setEmailVerificationToken(hashVerificationToken(rawVerificationToken));
+        user.setEmailVerificationExpiresAt(LocalDateTime.now().plusHours(1));
+        return rawVerificationToken;
+    }
+
+    private boolean isTokenMatch(String rawToken, String storedHashedToken) {
+        if (rawToken == null || storedHashedToken == null) {
+            return false;
+        }
+
+        byte[] providedTokenHash = hashVerificationToken(rawToken).getBytes(StandardCharsets.UTF_8);
+        byte[] storedTokenHash = storedHashedToken.getBytes(StandardCharsets.UTF_8);
+        return MessageDigest.isEqual(providedTokenHash, storedTokenHash);
+    }
+
+    private String hashVerificationToken(String rawToken) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(rawToken.getBytes(StandardCharsets.UTF_8));
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IllegalStateException("SHA-256 algorithm unavailable", ex);
+        }
     }
 
     public User findById(UUID userId) {
