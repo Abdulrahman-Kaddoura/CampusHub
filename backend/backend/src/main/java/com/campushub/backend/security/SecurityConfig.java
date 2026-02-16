@@ -4,6 +4,7 @@ import com.campushub.backend.services.user.AppUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -58,6 +59,11 @@ public class SecurityConfig {
                                         "/swagger-resources/**", // Swagger resources
                                         "/configuration/**",     // Swagger configuration
                                         "/webjars/**")
+                                .permitAll()
+                                .requestMatchers(HttpMethod.GET,
+                                        "/listings/get-listings",
+                                        "/listings/get-listings-by-category/**",
+                                        "/category/get-all-categories")
                                 .permitAll()
                                 .requestMatchers("/togglz-console/**").authenticated()
                                 .anyRequest().authenticated())
