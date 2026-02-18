@@ -57,10 +57,6 @@ export default function MarketPlace() {
     []
   );
 
-  const listingCategories = useMemo(() => {
-    const categorySet = new Set(listings.map((listing) => listing.categoryName));
-    return Array.from(categorySet).filter(Boolean);
-  }, [listings]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -181,14 +177,9 @@ export default function MarketPlace() {
         </form>
       ) : null}
 
-      {listingCategories.map((category) => (
-        <Section
-          key={category}
-          category={category}
-          search={search}
-          items={listings}
-        />
-      ))}
+      <Section search={search} items={listings} />
+
+      {!listings.length && !error ? <p className="form-error">No listings yet.</p> : null}
     </div>
   );
 }

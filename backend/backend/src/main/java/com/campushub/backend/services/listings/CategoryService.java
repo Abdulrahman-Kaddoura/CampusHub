@@ -28,6 +28,15 @@ public class CategoryService {
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found: " + name));
     }
 
+    public Category getOrCreateByName(String name) {
+        return categoryRepository.findByName(name)
+                .orElseGet(() -> {
+                    Category category = new Category();
+                    category.setName(name);
+                    return categoryRepository.save(category);
+                });
+    }
+
     public Category deleteCategoryById(UUID id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + id));

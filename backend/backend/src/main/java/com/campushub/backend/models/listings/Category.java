@@ -21,7 +21,7 @@ public class Category {
     @Column(name = "category_id")
     private UUID categoryId;
 
-    @Column(name = "name", nullable = false, length = 50, unique = true)
+    @Column(name = "name", nullable = false, length = 120, unique = true)
     private String name;
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
