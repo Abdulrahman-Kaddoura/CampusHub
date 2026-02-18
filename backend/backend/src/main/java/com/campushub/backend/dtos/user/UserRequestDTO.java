@@ -28,7 +28,7 @@ public class UserRequestDTO {
     @Size(max = 255, message = "Email must not exceed 255 characters")
     private String email;
 
-    @Pattern(regexp = "^[+]?[0-9]{10,20}$", message = "Phone number must be valid")
+    @Pattern(regexp = "^$|^[+]?[0-9]{10,20}$", message = "Phone number must be valid")
     private String phoneNumber;
 
 

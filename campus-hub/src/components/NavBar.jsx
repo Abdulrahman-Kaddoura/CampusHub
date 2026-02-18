@@ -1,9 +1,17 @@
 import './NavBar.css';
 import logo from "../assets/logo.svg";
-import { NavLink } from "react-router-dom";
-
+import { NavLink, Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function NavBar() {
+  const { currentUser, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
   return (
     <nav className = "nav">
         <div className = "navbar-container">
@@ -25,8 +33,14 @@ function NavBar() {
             </ul>
 
             <div className="student">
-                <h3 className='welcome'>Welcome Student Name!</h3>
-                <p className='uni-name'>American University of Beirut</p>
+                <h3 className='welcome'>
+                  {isAuthenticated ? `Welcome ${currentUser.firstName}!` : 'Welcome Guest!'}
+                </h3>
+                {isAuthenticated ? (
+                  <button type="button" className="auth-button" onClick={handleLogout}>Logout</button>
+                ) : (
+                  <Link to="/auth" className="auth-button link-button">Login / Register</Link>
+                )}
             </div>
         </div>
     </nav>

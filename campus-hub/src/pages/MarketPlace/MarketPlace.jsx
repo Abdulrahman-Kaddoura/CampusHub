@@ -1,8 +1,9 @@
 import { useMemo, useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import HeroCarousel from "../../components/HeroCarousel";
 import { Section } from "../../components/ProductSection";
 import { createListing, fetchListings } from "../../api/listings";
-import { createTempUser } from "../../api/users";
+import { useAuth } from "../../context/AuthContext";
 import "./MarketPlace.css";
 
 export default function MarketPlace() {
@@ -11,7 +12,7 @@ export default function MarketPlace() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState("");
+  const { currentUser, token, isAuthenticated } = useAuth();
   const [formState, setFormState] = useState({
     title: "",
     description: "",
@@ -33,24 +34,6 @@ export default function MarketPlace() {
         }
       });
 
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    let isMounted = true;
-    createTempUser()
-      .then((userId) => {
-        if (isMounted) {
-          setCurrentUserId(userId);
-        }
-      })
-      .catch((err) => {
-        if (isMounted) {
-          setError(err.message);
-        }
-      });
     return () => {
       isMounted = false;
     };
@@ -95,9 +78,9 @@ export default function MarketPlace() {
         description: formState.description,
         price: Number(formState.price),
         categoryName: formState.categoryName,
-        userId: currentUserId,
+        userId: currentUser.id,
       };
-      const createdListing = await createListing(payload);
+      const createdListing = await createListing(payload, token);
       setListings((prev) => [createdListing, ...prev]);
       setFormState({
         title: "",
@@ -125,9 +108,13 @@ export default function MarketPlace() {
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        <button className="add-item" type="button" onClick={() => setIsFormOpen(true)}>
-          Add Item
-        </button>
+        {isAuthenticated ? (
+          <button className="add-item" type="button" onClick={() => setIsFormOpen(true)}>
+            Add Item
+          </button>
+        ) : (
+          <Link className="add-item" to="/auth">Login to Add Item</Link>
+        )}
       </div>
 
       {isFormOpen ? (
@@ -178,7 +165,7 @@ export default function MarketPlace() {
             <button
               className="submit-listing"
               type="submit"
-              disabled={isSubmitting || !currentUserId}
+              disabled={isSubmitting || !currentUser?.id}
             >
               {isSubmitting ? "Saving..." : "Create Listing"}
             </button>
