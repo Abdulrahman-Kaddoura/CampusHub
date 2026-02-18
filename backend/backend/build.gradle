@@ -36,6 +36,10 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 //	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 	implementation 'org.hibernate:hibernate-envers:6.2.4.Final'
 	implementation 'org.togglz:togglz-spring-boot-starter:4.4.0'
 	implementation 'org.togglz:togglz-console:4.4.0'
@@ -51,4 +55,3 @@ bootJar {
 tasks.named('test') {
 	useJUnitPlatform()
 }
-
