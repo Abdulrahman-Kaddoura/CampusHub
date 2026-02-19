@@ -81,3 +81,7 @@ a.active{
   text-decoration: none;
   display: inline-block;
 }
+
+.profile-link {
+  margin-right: 0.5rem;
+}

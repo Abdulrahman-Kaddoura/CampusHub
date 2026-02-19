@@ -1,0 +1,67 @@
+.profile-page {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.profile-card {
+  width: min(800px, 100%);
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.profile-subtitle {
+  color: #5f6b7a;
+  margin-bottom: 1.25rem;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.profile-grid .label {
+  font-size: 0.8rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.profile-grid p {
+  margin: 0.25rem 0 0;
+  font-weight: 600;
+}
+
+.back-link {
+  display: inline-block;
+  margin-top: 1.5rem;
+  text-decoration: none;
+  color: #008ecc;
+  font-weight: 600;
+}
+
+.profile-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.edit-profile-btn {
+  border: none;
+  background: #008ecc;
+  color: white;
+  padding: 0.5rem 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.edit-note {
+  margin-top: 0.75rem;
+  color: #5f6b7a;
+  font-size: 0.95rem;
+}
