@@ -4,7 +4,7 @@ import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 function NavBar() {
-  const { currentUser, isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -34,7 +34,7 @@ function NavBar() {
 
             <div className="student">
                 <h3 className='welcome'>
-                  {isAuthenticated ? `Welcome ${currentUser.firstName}!` : 'Welcome Guest!'}
+                  {isAuthenticated ? 'Welcome Student!' : 'Welcome Guest!'}
                 </h3>
                 {isAuthenticated ? (
                   <>
