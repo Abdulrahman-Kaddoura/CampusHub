@@ -37,7 +37,10 @@ function NavBar() {
                   {isAuthenticated ? `Welcome ${currentUser.firstName}!` : 'Welcome Guest!'}
                 </h3>
                 {isAuthenticated ? (
-                  <button type="button" className="auth-button" onClick={handleLogout}>Logout</button>
+                  <>
+                    <Link to="/profile" className="auth-button link-button profile-link">Profile</Link>
+                    <button type="button" className="auth-button" onClick={handleLogout}>Logout</button>
+                  </>
                 ) : (
                   <Link to="/auth" className="auth-button link-button">Login / Register</Link>
                 )}
