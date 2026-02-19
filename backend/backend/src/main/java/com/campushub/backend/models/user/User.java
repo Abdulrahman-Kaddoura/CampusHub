@@ -60,8 +60,15 @@
         @Column(nullable = false, length = 20)
         private UserStatus status = UserStatus.PENDING;
 
+
         @Column(name = "password", nullable = false)
-        private String password; //TODO encript passwords, should not be stored as strings.
+        private String password;
+
+        @Column(name = "reset_token", unique = true)
+        private String resetToken;
+
+        @Column(name = "reset_token_expires_at")
+        private LocalDateTime resetTokenExpiresAt;
 
         @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
         private List<Listing> postedListings = new ArrayList<>();
