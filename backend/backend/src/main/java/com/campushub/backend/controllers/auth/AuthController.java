@@ -2,6 +2,9 @@ package com.campushub.backend.controllers.auth;
 
 import com.campushub.backend.dtos.auth.AuthResponseDTO;
 import com.campushub.backend.dtos.auth.LoginRequestDTO;
+import com.campushub.backend.dtos.auth.MessageResponseDTO;
+import com.campushub.backend.dtos.auth.PasswordResetConfirmDTO;
+import com.campushub.backend.dtos.auth.PasswordResetRequestDTO;
 import com.campushub.backend.dtos.user.UserRequestDTO;
 import com.campushub.backend.dtos.user.UserResponseDTO;
 import com.campushub.backend.models.user.User;
@@ -41,6 +44,19 @@ public class AuthController {
     @Operation(summary = "Login", description = "Authenticate and receive a JWT token")
     public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody LoginRequestDTO requestDTO) {
         return ResponseEntity.ok(authService.login(requestDTO));
+    }
+
+
+    @PostMapping("/request-password-reset")
+    @Operation(summary = "Request password reset", description = "Generates a password reset token for an account email if it exists")
+    public ResponseEntity<MessageResponseDTO> requestPasswordReset(@Valid @RequestBody PasswordResetRequestDTO requestDTO) {
+        return ResponseEntity.ok(authService.requestPasswordReset(requestDTO));
+    }
+
+    @PostMapping("/reset-password")
+    @Operation(summary = "Reset password", description = "Resets a user password using a valid password reset token")
+    public ResponseEntity<MessageResponseDTO> resetPassword(@Valid @RequestBody PasswordResetConfirmDTO requestDTO) {
+        return ResponseEntity.ok(authService.resetPassword(requestDTO));
     }
 
     @GetMapping("/me")
