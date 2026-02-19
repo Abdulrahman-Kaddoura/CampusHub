@@ -2,6 +2,8 @@ package com.campushub.backend.services.user;
 
 import com.campushub.backend.dtos.user.UserRequestDTO;
 import com.campushub.backend.enums.user.UserStatus;
+import com.campushub.backend.exceptions.user.UserAlreadyExistsException;
+import com.campushub.backend.exceptions.user.UserNotFoundException;
 import com.campushub.backend.models.cart.Cart;
 import com.campushub.backend.models.user.User;
 import com.campushub.backend.repositories.user.UserRepository;
@@ -26,10 +28,10 @@ public class UserService {
         String normalizedEmail = userRequestDTO.getEmail().trim().toLowerCase();
 
         if (userRepository.findByUsername(normalizedUsername).isPresent()) {
-            throw new RuntimeException("Username is already in use");
+            throw new UserAlreadyExistsException("Username is already in use");
         }
         if (userRepository.findByEmail(normalizedEmail).isPresent()) {
-            throw new RuntimeException("Email is already in use");
+            throw new UserAlreadyExistsException("Email is already in use");
         }
 
         User user = modelMapper.map(userRequestDTO, User.class);
@@ -62,23 +64,23 @@ public class UserService {
 
     public User findById(UUID userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
     }
 
     public User findByUsername(String username) {
         return userRepository.findByUsername(username.trim())
-                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
     }
 
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
     }
 
     @Transactional
     public User deleteUserById(UUID userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
         userRepository.deleteById(userId);
 
