@@ -17,6 +17,32 @@
   margin-bottom: 1.25rem;
 }
 
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.profile-button {
+  border: none;
+  border-radius: 8px;
+  background: #008ecc;
+  color: #fff;
+  font-weight: 600;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+}
+
+.profile-button.secondary {
+  background: #e5e7eb;
+  color: #1f2937;
+}
+
+.profile-button.save {
+  background: #059669;
+}
+
 .profile-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -32,6 +58,38 @@
 
 .profile-grid p {
   margin: 0.25rem 0 0;
+  font-weight: 600;
+}
+
+.profile-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.profile-edit-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  color: #374151;
+  font-weight: 500;
+}
+
+.profile-edit-grid input {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+}
+
+.profile-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.save-message {
+  margin-top: 1rem;
+  color: #047857;
   font-weight: 600;
 }
 
