@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   AUTH_TOKEN_STORAGE_KEY,
   fetchCurrentUser,
@@ -69,6 +69,19 @@ export function AuthProvider({ children }) {
     setCurrentUser(null);
   };
 
+  const updateProfile = useCallback((updates) => {
+    setCurrentUser((previousUser) => {
+      if (!previousUser) {
+        return previousUser;
+      }
+
+      return {
+        ...previousUser,
+        ...updates,
+      };
+    });
+  }, []);
+
   const value = useMemo(
     () => ({
       currentUser,
@@ -78,8 +91,9 @@ export function AuthProvider({ children }) {
       register,
       login,
       logout,
+      updateProfile,
     }),
-    [currentUser, token, authLoading]
+    [currentUser, token, authLoading, updateProfile]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

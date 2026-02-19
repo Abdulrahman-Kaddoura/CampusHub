@@ -34,7 +34,7 @@ function NavBar() {
 
             <div className="student">
                 <h3 className='welcome'>
-                  {isAuthenticated ? `Welcome ${currentUser.firstName}!` : 'Welcome Guest!'}
+                  {isAuthenticated ? 'Welcome Student!' : 'Welcome Guest!'}
                 </h3>
                 {isAuthenticated ? (
                   <>
