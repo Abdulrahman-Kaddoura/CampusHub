@@ -1,0 +1,100 @@
+.tutoring-page {
+  padding: 28px 40px;
+  background: #f8fafc;
+  min-height: calc(100vh - 85px);
+}
+
+.tutoring-header h1 {
+  margin: 0;
+  color: #111827;
+  font-size: 2rem;
+}
+
+.tutoring-header p {
+  margin: 8px 0 0;
+  color: #4b5563;
+}
+
+.tutoring-filters {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.tutoring-filters input,
+.tutoring-filters select {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+}
+
+.tutor-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.tutor-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
+}
+
+.tutor-card h2 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.1rem;
+}
+
+.course-tag {
+  display: inline-block;
+  margin: 8px 0 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+.tutor-card p {
+  margin: 6px 0;
+  color: #374151;
+  font-size: 0.92rem;
+}
+
+.blurb {
+  margin-top: 8px;
+}
+
+.tutor-card button {
+  margin-top: 14px;
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  background: #008ecc;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.no-results {
+  color: #6b7280;
+  padding: 12px;
+}
+
+@media (max-width: 900px) {
+  .tutoring-filters {
+    grid-template-columns: 1fr;
+  }
+}
