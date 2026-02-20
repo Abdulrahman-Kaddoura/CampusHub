@@ -17,14 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-import org.togglz.core.manager.FeatureManager;
-
 
 import java.util.List;
 import java.util.UUID;
 
-import static com.campushub.backend.configurations.togglz.Features.*;
 
 @RestController
 @RequestMapping("/listings")
@@ -41,9 +37,6 @@ public class ListingController {
     UserService userService;
 
     @Autowired
-    FeatureManager featureManager;
-
-    @Autowired
     CategoryService categoryService;
 
     @PostMapping("/create-listing")
@@ -54,10 +47,6 @@ public class ListingController {
     public ResponseEntity<ListingResponseDTO> createListing(
             @Valid @RequestBody ListingRequestDTO listingRequestDTO) throws Exception {
 
-        if (!featureManager.isActive(CREATE_LISTING)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-
         User user = userService.findById(listingRequestDTO.getUserId());
 
         Listing listing = new Listing();
@@ -66,10 +55,7 @@ public class ListingController {
         listing.setPrice(listingRequestDTO.getPrice());
         listing.setUser(user);
         String categoryName = listingRequestDTO.getCategoryName();
-        Category category = categoryService.findCategoryByName(categoryName);
-        if (category == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category not found: " + categoryName);
-        }
+        Category category = categoryService.getOrCreateByName(categoryName);
         listing.setCategory(category);
         listing.setListingStatus(ListingStatus.PUBLISHED);
 
@@ -96,10 +82,6 @@ public class ListingController {
     public ResponseEntity<ListingResponseDTO> buyListing(
             @PathVariable UUID listingId,
             @RequestParam UUID buyerId) throws Exception {
-        if (!featureManager.isActive(BUY_LISTING)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-
         Listing listing = listingService.buyListing(listingId, buyerId);
 
         ListingResponseDTO response =
@@ -121,9 +103,6 @@ public class ListingController {
             description = "Retrieves a list of all listings in the system."
     )
     public ResponseEntity<List<ListingResponseDTO>> getAllListings() {
-        if (!featureManager.isActive(GET_ALL_LISTINGS)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
         List<Listing> listings = listingService.getAllListings();
         List<ListingResponseDTO> listingResponseDTOS = listings.stream()
                 .map(listing -> modelMapper.map(listing, ListingResponseDTO.class))
@@ -137,9 +116,6 @@ public class ListingController {
             description = "Retrieves all listings posted by a specific user using the user ID and returns them in a list."
     )
     public ResponseEntity<List<ListingResponseDTO>> getAllListingsByUser(@PathVariable UUID userId) {
-        if (!featureManager.isActive(GET_ALL_LISTINGS_BY_USER)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
         List<Listing> listings = listingService.getAllListingsByUser(userId);
         List<ListingResponseDTO> listingResponseDTOS = listings.stream()
                 .map(listing -> modelMapper.map(listing, ListingResponseDTO.class))
@@ -153,9 +129,6 @@ public class ListingController {
             description = "Retrieves all listings under a specific category using the category name and returns them in a list."
     )
     public ResponseEntity<List<ListingResponseDTO>> getAllListingsByCategory(@PathVariable String categoryName) {
-        if (!featureManager.isActive(GET_ALL_LISTINGS_BY_CATEGORY)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
         List<Listing> listings = listingService.getAllListingsByCategory(categoryName);
         List<ListingResponseDTO> listingResponseDTOS = listings.stream()
                 .map(listing -> modelMapper.map(listing, ListingResponseDTO.class))
@@ -169,9 +142,6 @@ public class ListingController {
             description = "Deletes a listing by its ID and returns the deleted listing details."
     )
     public ResponseEntity<ListingResponseDTO> deleteListing(@PathVariable UUID listingId) {
-        if (!featureManager.isActive(DELETE_LISTING)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
         Listing listing = listingService.deleteListingById(listingId);
         ListingResponseDTO listingResponseDTO = modelMapper.map(listing, ListingResponseDTO.class);
         return new ResponseEntity<>(listingResponseDTO, HttpStatus.OK);

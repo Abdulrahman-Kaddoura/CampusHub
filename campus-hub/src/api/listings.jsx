@@ -16,11 +16,12 @@ export const fetchListings = async () => {
   return await response.json();
 };
 
-export const createListing = async (payload) => {
+export const createListing = async (payload, token) => {
   const response = await fetch(`${BASE_URL}/create-listing`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify(payload),
   });
