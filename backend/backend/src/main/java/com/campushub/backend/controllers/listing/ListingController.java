@@ -105,7 +105,17 @@ public class ListingController {
     public ResponseEntity<List<ListingResponseDTO>> getAllListings() {
         List<Listing> listings = listingService.getAllListings();
         List<ListingResponseDTO> listingResponseDTOS = listings.stream()
-                .map(listing -> modelMapper.map(listing, ListingResponseDTO.class))
+                .map(listing -> {
+                    ListingResponseDTO dto = modelMapper.map(listing, ListingResponseDTO.class);
+                    dto.setListingId(listing.getListingId());
+                    dto.setUserId(listing.getUser().getId());
+                    dto.setBuyerId(listing.getBuyer() != null ? listing.getBuyer().getId() : null);
+                    dto.setStatus(listing.getListingStatus());
+                    if (listing.getListingImages() != null && !listing.getListingImages().isEmpty()) {
+                        dto.setFirstImageId(listing.getListingImages().get(0).getImageId());
+                    }
+                    return dto;
+                })
                 .toList();
         return new ResponseEntity<>(listingResponseDTOS, HttpStatus.OK);
     }

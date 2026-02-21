@@ -6,19 +6,16 @@
     import jakarta.persistence.*;
     import lombok.Getter;
     import lombok.Setter;
-    import org.hibernate.envers.Audited;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
-    import java.time.LocalDateTime;
-    import java.util.ArrayList;
-    import java.util.List;
-    import java.util.UUID;
-
-    @Entity
-    @Table(name = "users")
-    @Getter
-    @Setter
-    @Audited
-    public class User {
+@Entity
+@Table(name = "users")
+@Getter
+@Setter
+public class User {
         @Id
         @GeneratedValue(strategy = GenerationType.AUTO)
         @Column(name = "user_id", nullable = false, unique = true)
