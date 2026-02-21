@@ -43,6 +43,8 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/listings/get-listings").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/listingImage/download-listing-image/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/user/create-user").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
