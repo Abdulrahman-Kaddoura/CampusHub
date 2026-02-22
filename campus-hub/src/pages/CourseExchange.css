@@ -1,0 +1,127 @@
+.course-exchange-page {
+  padding: 28px 40px;
+  background: #f8fafc;
+  min-height: calc(100vh - 85px);
+}
+
+.course-exchange-header h1 {
+  margin: 0;
+  color: #111827;
+  font-size: 2rem;
+}
+
+.course-exchange-header p {
+  margin-top: 8px;
+  max-width: 760px;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.course-exchange-filters {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.course-exchange-filters input,
+.course-exchange-filters select {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+}
+
+.course-exchange-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.course-exchange-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
+}
+
+.card-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.course-exchange-card h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 1.04rem;
+}
+
+.student-name {
+  margin: 10px 0;
+  color: #1e40af;
+  font-weight: 600;
+}
+
+.course-exchange-card p {
+  margin: 6px 0;
+  color: #374151;
+  font-size: 0.92rem;
+}
+
+.status-pill {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+.status-pill.open {
+  color: #166534;
+  background: #dcfce7;
+  border-color: #bbf7d0;
+}
+
+.status-pill.matched {
+  color: #92400e;
+  background: #fef3c7;
+  border-color: #fde68a;
+}
+
+.status-pill.closed {
+  color: #7f1d1d;
+  background: #fee2e2;
+  border-color: #fecaca;
+}
+
+.course-exchange-card button {
+  margin-top: 14px;
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  background: #008ecc;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.empty-state {
+  color: #6b7280;
+  padding: 12px;
+}
+
+@media (max-width: 900px) {
+  .course-exchange-filters {
+    grid-template-columns: 1fr;
+  }
+}
