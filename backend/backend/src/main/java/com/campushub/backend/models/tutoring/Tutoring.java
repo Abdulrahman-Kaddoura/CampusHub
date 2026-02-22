@@ -1,4 +1,4 @@
-package com.campushub.backend.models.dorm;
+package com.campushub.backend.models.tutoring;
 
 import com.campushub.backend.models.user.User;
 import jakarta.persistence.*;
@@ -7,39 +7,38 @@ import lombok.Setter;
 import org.hibernate.envers.Audited;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "dorms")
+@Table(name = "tutoring_posts")
 @Getter
 @Setter
 @Audited
-public class Dorm {
+public class Tutoring {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "dorm_id", nullable = false, unique = true)
-    private UUID dormId;
+    @Column(name = "tutoring_id", nullable = false, unique = true)
+    private UUID tutoringId;
 
-    @Column(name = "title", nullable = false, length = 100)
-    private String title;
+    @Column(name = "course", nullable = false, length = 120)
+    private String course;
+
+    @Column(name = "tutor_name", nullable = false, length = 120)
+    private String tutorName;
+
+    @Column(name = "department", nullable = false, length = 80)
+    private String department;
+
+    @Column(name = "format", nullable = false, length = 50)
+    private String format;
+
+    @Column(name = "hourly_rate", nullable = false, precision = 10, scale = 2)
+    private BigDecimal hourlyRate;
 
     @Column(name = "description", length = 500)
     private String description;
-
-    @Column(name = "location", nullable = false, length = 150)
-    private String location;
-
-    @Column(name = "room_type", nullable = false, length = 50)
-    private String roomType;
-
-    @Column(name = "monthly_rent", nullable = false, precision = 10, scale = 2)
-    private BigDecimal monthlyRent;
-
-    @Column(name = "available_from", nullable = false)
-    private LocalDate availableFrom;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

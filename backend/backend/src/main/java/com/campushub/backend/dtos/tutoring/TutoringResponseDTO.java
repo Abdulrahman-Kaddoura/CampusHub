@@ -1,4 +1,4 @@
-package com.campushub.backend.dtos.dorm;
+package com.campushub.backend.dtos.tutoring;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -14,15 +13,15 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DormResponseDTO {
+public class TutoringResponseDTO {
 
-    private UUID dormId;
-    private String title;
+    private UUID tutoringId;
+    private String course;
+    private String tutorName;
+    private String department;
+    private String format;
+    private BigDecimal hourlyRate;
     private String description;
-    private String location;
-    private String roomType;
-    private BigDecimal monthlyRent;
-    private LocalDate availableFrom;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private UUID userId;

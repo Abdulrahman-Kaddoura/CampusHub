@@ -63,7 +63,10 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET,
                                         "/listings/get-listings",
                                         "/listings/get-listings-by-category/**",
-                                        "/category/get-all-categories")
+                                        "/category/get-all-categories",
+                                        "/dorm/get-dorms",
+                                        "/tutoring/get-tutoring",
+                                        "/course-exchange/get-course-exchanges")
                                 .permitAll()
                                 .requestMatchers("/togglz-console/**").authenticated()
                                 .anyRequest().authenticated())

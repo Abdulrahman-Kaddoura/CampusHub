@@ -2,7 +2,10 @@
 
     import com.campushub.backend.enums.user.UserStatus;
     import com.campushub.backend.models.cart.Cart;
+    import com.campushub.backend.models.courseExchange.CourseExchange;
+    import com.campushub.backend.models.dorm.Dorm;
     import com.campushub.backend.models.listings.Listing;
+    import com.campushub.backend.models.tutoring.Tutoring;
     import jakarta.persistence.*;
     import lombok.Getter;
     import lombok.Setter;
@@ -78,6 +81,15 @@
         @OneToMany(mappedBy = "buyer")
         private List<Listing> purchasedListings = new ArrayList<>();
 
+        @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+        private List<Dorm> dormPosts = new ArrayList<>();
+
+        @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+        private List<Tutoring> tutoringPosts = new ArrayList<>();
+
+        @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+        private List<CourseExchange> courseExchangePosts = new ArrayList<>();
+
         @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
         private Cart cart;
 
@@ -89,5 +101,20 @@
         public void addPurchase(Listing listing) {
             purchasedListings.add(listing);
             listing.setBuyer(this);
+        }
+
+        public void addDormPost(Dorm dorm) {
+            dormPosts.add(dorm);
+            dorm.setUser(this);
+        }
+
+        public void addTutoringPost(Tutoring tutoring) {
+            tutoringPosts.add(tutoring);
+            tutoring.setUser(this);
+        }
+
+        public void addCourseExchangePost(CourseExchange courseExchange) {
+            courseExchangePosts.add(courseExchange);
+            courseExchange.setUser(this);
         }
     }

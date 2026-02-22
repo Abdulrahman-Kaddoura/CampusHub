@@ -126,6 +126,64 @@ public enum Features implements Feature {
     DELETE_LISTING_IMAGE,
 
     //-----------------------
+    // Dorm APIs
+    //-----------------------
+    @Label("DORM - CreateDorm")
+    @EnabledByDefault
+    CREATE_DORM,
+
+    @Label("DORM - GetAllDorms")
+    @EnabledByDefault
+    GET_ALL_DORMS,
+
+    @Label("DORM - GetAllDormsByUser")
+    @EnabledByDefault
+    GET_ALL_DORMS_BY_USER,
+
+    @Label("DORM - DeleteDorm")
+    @EnabledByDefault
+    DELETE_DORM,
+
+    //-----------------------
+    // Tutoring APIs
+    //-----------------------
+    @Label("TUTORING - CreateTutoring")
+    @EnabledByDefault
+    CREATE_TUTORING,
+
+    @Label("TUTORING - GetAllTutoring")
+    @EnabledByDefault
+    GET_ALL_TUTORING,
+
+    @Label("TUTORING - GetAllTutoringByUser")
+    @EnabledByDefault
+    GET_ALL_TUTORING_BY_USER,
+
+    @Label("TUTORING - DeleteTutoring")
+    @EnabledByDefault
+    DELETE_TUTORING,
+
+    //-----------------------
+    // CourseExchange APIs
+    //-----------------------
+    @Label("COURSEEXCHANGE - CreateCourseExchange")
+    @EnabledByDefault
+    CREATE_COURSE_EXCHANGE,
+
+    @Label("COURSEEXCHANGE - GetAllCourseExchanges")
+    @EnabledByDefault
+    GET_ALL_COURSE_EXCHANGES,
+
+    @Label("COURSEEXCHANGE - GetAllCourseExchangesByUser")
+    @EnabledByDefault
+    GET_ALL_COURSE_EXCHANGES_BY_USER,
+
+    @Label("COURSEEXCHANGE - DeleteCourseExchange")
+    @EnabledByDefault
+    DELETE_COURSE_EXCHANGE,
+
+
+    //-----------------------
     // Cart APIs
     //-----------------------
     @Label("CART - GetCartByCartId")
