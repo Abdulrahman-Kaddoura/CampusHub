@@ -1,3 +1,8 @@
+import bookImg from "./assets/book.jpg";
+import book2Img from "./assets/book2.jpg";
+import book4Img from "./assets/book4.webp";
+import organicChemImg from "./assets/organic-chem.svg";
+
 const placeholder = (id, w = 400, h = 300) =>
   `https://images.unsplash.com/photo-${id}?w=${w}&h=${h}&fit=crop`;
 
@@ -9,7 +14,7 @@ export const products = [
     price: 55,
     description: "Brand new. No writings.",
     category: "Books",
-    productImage: placeholder("1589998059171-988d451dfd0d"),
+    productImage: bookImg,
   },
   {
     id: 2,
@@ -18,7 +23,7 @@ export const products = [
     price: 49,
     description: "Fairly used, good condition.",
     category: "Books",
-    productImage: placeholder("1544947950-fa07a98d237f"),
+    productImage: book2Img,
   },
   {
     id: 3,
@@ -45,7 +50,7 @@ export const products = [
     price: 42,
     description: "Sample description of the item's current state.",
     category: "Books",
-    productImage: placeholder("1589998059171-988d451dfd0d"),
+    productImage: organicChemImg,
     discountPercent: 50,
   },
   {
@@ -55,7 +60,7 @@ export const products = [
     price: 35,
     description: "Sample description of the item's current state.",
     category: "Books",
-    productImage: placeholder("1589998059171-988d451dfd0d"),
+    productImage: book4Img,
     discountPercent: 56,
   },
 ];
