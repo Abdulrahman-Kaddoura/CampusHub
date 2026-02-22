@@ -1,0 +1,123 @@
+.housing-page {
+  padding: 28px 40px;
+  background: #f8fafc;
+  min-height: calc(100vh - 85px);
+}
+
+.housing-header h1 {
+  margin: 0;
+  color: #111827;
+  font-size: 2rem;
+}
+
+.housing-header p {
+  margin-top: 8px;
+  max-width: 760px;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.housing-filters {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 2fr 1fr auto;
+  gap: 12px;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.housing-filters input[type="text"],
+.housing-filters select {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+}
+
+.housing-filters label {
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+#max-budget-slider {
+  grid-column: 1 / -1;
+}
+
+.housing-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 16px;
+}
+
+.housing-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
+}
+
+.housing-card h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 1.1rem;
+}
+
+.housing-location {
+  display: inline-block;
+  margin: 8px 0 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+.housing-card p {
+  margin: 6px 0;
+  color: #374151;
+  font-size: 0.92rem;
+}
+
+.housing-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.housing-badges span {
+  font-size: 0.78rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  padding: 4px 8px;
+  color: #475569;
+}
+
+.housing-card button {
+  margin-top: 14px;
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  background: #008ecc;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.empty-state {
+  color: #6b7280;
+  padding: 12px;
+}
+
+@media (max-width: 900px) {
+  .housing-filters {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,42 +1,119 @@
 .marketplace {
-  padding: 20px 40px;
+  padding: 1.25rem 2rem 2.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-/* Search bar (left) + Add Item button (right) */
-.top-row {
+.marketplace-page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 1.25rem 0;
+  color: #2e2a33;
+}
+
+/* Search + filter + Add Item row */
+.marketplace-search-row {
   display: flex;
   align-items: center;
-  margin-bottom: 30px;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
 }
 
-.top-row input {
-  width: 70%;
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+.search-wrap {
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-/* Add Item button forced to the far right */
+.search-icon {
+  position: absolute;
+  left: 14px;
+  font-size: 1rem;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 14px 12px 42px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: #fafafa;
+}
+
+.search-input::placeholder {
+  color: #888;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #008ecc;
+  background: white;
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.filter-btn:hover {
+  background: #f5f5f5;
+  border-color: #ccc;
+}
+
+.filter-icon {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
 .add-item {
-  margin-left: auto;
-  padding: 10px 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: #2e2a33;
   color: white;
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: background 0.2s;
 }
 
-/* ---------- Listing form styles (leave as-is) ---------- */
+.add-item:hover {
+  background: #3d3845;
+}
 
+.add-item-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+/* ---------- Listing form ---------- */
 .listing-form {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-bottom: 32px;
-  padding: 16px;
+  margin-bottom: 2rem;
+  padding: 1.25rem;
   border-radius: 12px;
   background: #f6f6f8;
+  border: 1px solid #eee;
 }
 
 .listing-form .form-row {
@@ -48,7 +125,7 @@
 .listing-form input,
 .listing-form select,
 .listing-form textarea {
-  padding: 10px;
+  padding: 10px 12px;
   border-radius: 6px;
   border: 1px solid #ccc;
   font-size: 14px;
@@ -58,23 +135,59 @@
 .listing-form textarea {
   min-height: 80px;
   resize: vertical;
-  grid-column: span 2;
+  grid-column: 1 / -1;
 }
 
-.submit-listing {
-  align-self: flex-start;
-  padding: 10px 18px;
-  border: none;
-  border-radius: 6px;
-  background: #2e2a33;
-  color: white;
-  cursor: pointer;
+.listing-form-image-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.listing-form-image-label span:first-child {
+  font-weight: 500;
+  color: #2e2a33;
+}
+
+.listing-form-image-input {
+  font-size: 0.85rem;
+}
+
+.listing-form-image-name {
+  color: #008ecc;
+}
+
+.listing-form-image-hint {
+  color: #888;
+  font-style: italic;
 }
 
 .form-actions {
   display: flex;
   gap: 12px;
   align-items: center;
+}
+
+.submit-listing {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  background: #2e2a33;
+  color: white;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.submit-listing:hover:not(:disabled) {
+  background: #3d3845;
+}
+
+.submit-listing:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .cancel-listing {
@@ -84,15 +197,68 @@
   background: transparent;
   color: #2e2a33;
   cursor: pointer;
+  font-size: 0.95rem;
 }
 
-.submit-listing:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.cancel-listing:hover {
+  background: rgba(46, 42, 51, 0.06);
 }
 
 .form-error {
   color: #b42318;
   font-size: 14px;
   margin: 0;
+}
+
+.marketplace-empty {
+  color: #666;
+  font-size: 0.95rem;
+  margin: 1rem 0 0 0;
+}
+
+/* Category page: less padding for title */
+.marketplace-category .marketplace-page-title {
+  margin-bottom: 1rem;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  .marketplace {
+    padding: 1rem 1rem 2rem;
+  }
+
+  .marketplace-page-title {
+    font-size: 1.5rem;
+  }
+
+  .marketplace-search-row {
+    gap: 0.5rem;
+  }
+
+  .search-wrap {
+    min-width: 0;
+    order: 1;
+    width: 100%;
+  }
+
+  .filter-btn {
+    order: 2;
+  }
+
+  .add-item {
+    order: 3;
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .marketplace {
+    padding: 0.75rem 0.75rem 1.5rem;
+  }
+
+  .add-item {
+    width: 100%;
+    justify-content: center;
+  }
 }

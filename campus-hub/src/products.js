@@ -1,7 +1,10 @@
-import product1 from "./assets/book.jpg";
-import product2 from "./assets/book2.jpg";
-import product3 from "./assets/book3.webp";
-import product4 from "./assets/book4.webp";
+import bookImg from "./assets/book.jpg";
+import book2Img from "./assets/book2.jpg";
+import book4Img from "./assets/book4.webp";
+import organicChemImg from "./assets/organic-chem.svg";
+
+const placeholder = (id, w = 400, h = 300) =>
+  `https://images.unsplash.com/photo-${id}?w=${w}&h=${h}&fit=crop`;
 
 export const products = [
   {
@@ -11,7 +14,7 @@ export const products = [
     price: 55,
     description: "Brand new. No writings.",
     category: "Books",
-    productImage: product1,
+    productImage: bookImg,
   },
   {
     id: 2,
@@ -20,7 +23,7 @@ export const products = [
     price: 49,
     description: "Fairly used, good condition.",
     category: "Books",
-    productImage: product2,
+    productImage: book2Img,
   },
   {
     id: 3,
@@ -29,7 +32,7 @@ export const products = [
     price: 30,
     description: "Comfortable and warm.",
     category: "Clothing",
-    productImage: product3,
+    productImage: placeholder("1556821840-0aaf85586236"),
   },
   {
     id: 4,
@@ -38,6 +41,26 @@ export const products = [
     price: 25,
     description: "Perfect for study desks.",
     category: "Room Decor",
-    productImage: product4,
+    productImage: placeholder("1524484485835-2a3e2c8e8c3a"),
+  },
+  {
+    id: 5,
+    productName: "Organic Chemistry 2nd Ed",
+    author: "John Doe",
+    price: 42,
+    description: "Sample description of the item's current state.",
+    category: "Books",
+    productImage: organicChemImg,
+    discountPercent: 50,
+  },
+  {
+    id: 6,
+    productName: "Graphing Calculator",
+    author: "John Doe",
+    price: 35,
+    description: "Sample description of the item's current state.",
+    category: "Books",
+    productImage: book4Img,
+    discountPercent: 56,
   },
 ];

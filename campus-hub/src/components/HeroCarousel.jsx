@@ -1,31 +1,63 @@
 import { useState } from "react";
 import "./HeroCarousel.css";
-import banner1 from "../assets/book.jpg";
-import banner2 from "../assets/book2.jpg";
-import banner3 from "../assets/book3.webp";
 
-const banners = [banner1, banner2, banner3];
+const slides = [
+  { tagline: "Your one stop shop", title: "Market Place", subtitle: "Buy from and Sell to other students" },
+  { tagline: "Latest updates", title: "New Listings", subtitle: "Fresh items from students this week" },
+  { tagline: "Deals & sales", title: "Save More", subtitle: "Discounted books, gear, and more" },
+];
 
 export default function HeroCarousel() {
   const [index, setIndex] = useState(0);
+  const slide = slides[index];
 
   return (
-    <div className="hero-carousel">
-      <img src={banners[index]} alt="banner" />
+    <div className="hero-carousel-wrapper">
+      <div className="hero-carousel">
+        <div className="hero-carousel-inner">
+          <div className="hero-text">
+            <p className="hero-tagline">{slide.tagline}</p>
+            <h1 className="hero-title">{slide.title}</h1>
+            <p className="hero-subtitle">{slide.subtitle}</p>
+          </div>
+          <div className="hero-visual">
+            <div className="hero-visual-placeholder">
+              <span className="hero-visual-icon">📚</span>
+              <span className="hero-visual-icon">🧮</span>
+              <span className="hero-visual-icon">💻</span>
+            </div>
+          </div>
+        </div>
 
-      <button
-        className="arrow left"
-        onClick={() => setIndex((index - 1 + banners.length) % banners.length)}
-      >
-        ‹
-      </button>
+        <button
+          className="arrow left"
+          type="button"
+          aria-label="Previous"
+          onClick={() => setIndex((index - 1 + slides.length) % slides.length)}
+        >
+          ‹
+        </button>
+        <button
+          className="arrow right"
+          type="button"
+          aria-label="Next"
+          onClick={() => setIndex((index + 1) % slides.length)}
+        >
+          ›
+        </button>
 
-      <button
-        className="arrow right"
-        onClick={() => setIndex((index + 1) % banners.length)}
-      >
-        ›
-      </button>
+        <div className="hero-dots">
+          {slides.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              className={`hero-dot ${i === index ? "active" : ""}`}
+              aria-label={`Go to slide ${i + 1}`}
+              onClick={() => setIndex(i)}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,83 +1,56 @@
-import { useMemo, useState, useEffect } from "react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import HeroCarousel from "../../components/HeroCarousel";
 import { Section } from "../../components/ProductSection";
 import { createListing, fetchListings } from "../../api/listings";
-import { createTempUser } from "../../api/users";
+import { uploadListingImage } from "../../api/listingImage";
+import { useAuth } from "../../context/AuthContext";
+import { useMarketPlaceData } from "./useMarketPlaceData";
 import "./MarketPlace.css";
 
+const CATEGORY_OPTIONS = [
+  "Electronics & Gadgets",
+  "Books, Study & Office Supplies",
+  "Furniture & Home Goods",
+  "Clothing & Accessories",
+  "Sports & Fitness",
+  "Food & Groceries",
+  "Beauty & Personal Care",
+  "Tools & DIY",
+  "Musical Instruments & Gear",
+  "Games & Entertainment",
+  "Pet Supplies",
+  "Other",
+];
+
+const ITEMS_PER_SECTION = 4;
+
+const CATEGORY_DISPLAY_NAMES = {
+  "Books": "Books and Stationery",
+  "Books, Study & Office Supplies": "Books and Stationery",
+  "Clothing": "Clothing",
+  "Clothing & Accessories": "Clothing",
+  "Room Decor": "Room Decor",
+  "Furniture & Home Goods": "Room Decor",
+};
+function getCategoryDisplayName(cat) {
+  return CATEGORY_DISPLAY_NAMES[cat] ?? cat;
+}
+
 export default function MarketPlace() {
-  const [search, setSearch] = useState("");
-  const [listings, setListings] = useState([]);
+  const { items, categoriesWithItems, search, setSearch, apiError, refetch } = useMarketPlaceData();
+  const { currentUser, token, isAuthenticated } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState("");
+  const [showFilter, setShowFilter] = useState(false);
   const [formState, setFormState] = useState({
     title: "",
     description: "",
     price: "",
     categoryName: "",
   });
-
-  useEffect(() => {
-    let isMounted = true;
-    fetchListings()
-      .then((data) => {
-        if (isMounted) {
-          setListings(data);
-        }
-      })
-      .catch((err) => {
-        if (isMounted) {
-          setError(err.message);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    let isMounted = true;
-    createTempUser()
-      .then((userId) => {
-        if (isMounted) {
-          setCurrentUserId(userId);
-        }
-      })
-      .catch((err) => {
-        if (isMounted) {
-          setError(err.message);
-        }
-      });
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const categoryOptions = useMemo(
-    () => [
-      "Electronics & Gadgets",
-      "Books, Study & Office Supplies",
-      "Furniture & Home Goods",
-      "Clothing & Accessories",
-      "Sports & Fitness",
-      "Food & Groceries",
-      "Beauty & Personal Care",
-      "Tools & DIY",
-      "Musical Instruments & Gear",
-      "Games & Entertainment",
-      "Pet Supplies",
-      "Other",
-    ],
-    []
-  );
-
-  const listingCategories = useMemo(() => {
-    const categorySet = new Set(listings.map((listing) => listing.categoryName));
-    return Array.from(categorySet).filter(Boolean);
-  }, [listings]);
+  const [imageFile, setImageFile] = useState(null);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -88,24 +61,22 @@ export default function MarketPlace() {
     event.preventDefault();
     setError("");
     setIsSubmitting(true);
-
     try {
       const payload = {
         title: formState.title,
         description: formState.description,
         price: Number(formState.price),
         categoryName: formState.categoryName,
-        userId: currentUserId,
+        userId: currentUser.id,
       };
-      const createdListing = await createListing(payload);
-      setListings((prev) => [createdListing, ...prev]);
-      setFormState({
-        title: "",
-        description: "",
-        price: "",
-        categoryName: "",
-      });
+      const created = await createListing(payload, token);
+      if (imageFile && created?.listingId) {
+        await uploadListingImage(created.listingId, imageFile, token);
+      }
+      setFormState({ title: "", description: "", price: "", categoryName: "" });
+      setImageFile(null);
       setIsFormOpen(false);
+      refetch();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -117,20 +88,43 @@ export default function MarketPlace() {
     <div className="marketplace">
       <HeroCarousel />
 
-      <div className="top-row">
-        <input
-          type="text"
-          placeholder="Search items..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <h1 className="marketplace-page-title">Market Place</h1>
 
-        <button className="add-item" type="button" onClick={() => setIsFormOpen(true)}>
-          Add Item
+      <div className="marketplace-search-row">
+        <div className="search-wrap">
+          <span className="search-icon" aria-hidden>🔍</span>
+          <input
+            type="text"
+            placeholder="Search books, room utilities and more..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="search-input"
+          />
+        </div>
+        <button
+          type="button"
+          className="filter-btn"
+          aria-label="Filter options"
+          onClick={() => setShowFilter((v) => !v)}
+        >
+          <span className="filter-icon">☰</span>
         </button>
+        {isAuthenticated ? (
+          <button
+            className="add-item"
+            type="button"
+            onClick={() => setIsFormOpen(true)}
+          >
+            <span className="add-item-icon">+</span> Add Item
+          </button>
+        ) : (
+          <Link className="add-item" to="/auth">
+            Login to Add Item
+          </Link>
+        )}
       </div>
 
-      {isFormOpen ? (
+      {isFormOpen && (
         <form className="listing-form" onSubmit={handleSubmit}>
           <div className="form-row">
             <input
@@ -147,13 +141,9 @@ export default function MarketPlace() {
               onChange={handleChange}
               required
             >
-              <option value="" disabled>
-                Select a category
-              </option>
-              {categoryOptions.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
+              <option value="" disabled>Select a category</option>
+              {CATEGORY_OPTIONS.map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>
             <input
@@ -174,11 +164,27 @@ export default function MarketPlace() {
               onChange={handleChange}
             />
           </div>
+          <div className="form-row">
+            <label className="listing-form-image-label">
+              <span>Image (optional)</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+                className="listing-form-image-input"
+              />
+              {imageFile ? (
+                <span className="listing-form-image-name">{imageFile.name}</span>
+              ) : (
+                <span className="listing-form-image-hint">Choose a photo</span>
+              )}
+            </label>
+          </div>
           <div className="form-actions">
             <button
               className="submit-listing"
               type="submit"
-              disabled={isSubmitting || !currentUserId}
+              disabled={isSubmitting || !currentUser?.id}
             >
               {isSubmitting ? "Saving..." : "Create Listing"}
             </button>
@@ -192,16 +198,26 @@ export default function MarketPlace() {
           </div>
           {error ? <p className="form-error">{error}</p> : null}
         </form>
-      ) : null}
+      )}
 
-      {listingCategories.map((category) => (
+      {categoriesWithItems.map(([category, categoryItems]) => (
         <Section
           key={category}
           category={category}
+          categoryDisplayName={getCategoryDisplayName(category)}
+          items={categoryItems}
           search={search}
-          items={listings}
+          limit={ITEMS_PER_SECTION}
+          showViewAll={true}
         />
       ))}
+
+      {items.length === 0 && !apiError && (
+        <p className="marketplace-empty">No listings yet. Add an item to get started.</p>
+      )}
+      {apiError && (
+        <p className="form-error">Could not load listings: {apiError}</p>
+      )}
     </div>
   );
 }
