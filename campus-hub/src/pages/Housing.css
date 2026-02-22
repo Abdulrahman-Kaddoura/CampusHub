@@ -20,7 +20,7 @@
 .housing-filters {
   margin-top: 20px;
   display: grid;
-  grid-template-columns: 2fr 1fr auto;
+  grid-template-columns: 2fr 1fr;
   gap: 12px;
   align-items: center;
   background: #ffffff;
@@ -30,20 +30,44 @@
 }
 
 .housing-filters input[type="text"],
-.housing-filters select {
+.housing-filters select,
+.budget-range input {
   border: 1px solid #d1d5db;
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 0.95rem;
 }
 
-.housing-filters label {
+.budget-range {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.budget-range label {
+  display: grid;
+  gap: 6px;
   font-size: 0.9rem;
   color: #374151;
 }
 
-#max-budget-slider {
+.clear-budget {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
+  background: #e2e8f0;
+  color: #1e293b;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.budget-summary {
   grid-column: 1 / -1;
+  margin: 0;
+  color: #475569;
+  font-size: 0.9rem;
 }
 
 .housing-grid {
@@ -117,7 +141,8 @@
 }
 
 @media (max-width: 900px) {
-  .housing-filters {
+  .housing-filters,
+  .budget-range {
     grid-template-columns: 1fr;
   }
 }
