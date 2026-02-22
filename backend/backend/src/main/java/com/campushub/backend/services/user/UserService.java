@@ -27,6 +27,7 @@ import java.util.UUID;
 public class UserService {
 
     private static final int VERIFICATION_CODE_LENGTH = 6;
+    private static final int PASSWORD_RESET_CODE_LENGTH = 6;
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     @Autowired
@@ -103,9 +104,13 @@ public class UserService {
     }
 
     private String generateVerificationCode() {
-        int max = (int) Math.pow(10, VERIFICATION_CODE_LENGTH);
-        int verificationCode = SECURE_RANDOM.nextInt(max);
-        return String.format("%0" + VERIFICATION_CODE_LENGTH + "d", verificationCode);
+        return generateCode(VERIFICATION_CODE_LENGTH);
+    }
+
+    private String generateCode(int length) {
+        int max = (int) Math.pow(10, length);
+        int code = SECURE_RANDOM.nextInt(max);
+        return String.format("%0" + length + "d", code);
     }
 
     private boolean isTokenMatch(String rawToken, String storedHashedToken) {
@@ -126,6 +131,46 @@ public class UserService {
         } catch (NoSuchAlgorithmException ex) {
             throw new IllegalStateException("SHA-256 algorithm unavailable", ex);
         }
+    }
+
+    @Transactional
+    public void sendPasswordResetToken(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+
+        String rawResetToken = rotatePasswordResetToken(user);
+        User updatedUser = userRepository.save(user);
+        emailVerificationService.sendPasswordResetEmail(updatedUser, rawResetToken);
+    }
+
+    @Transactional
+    public void resetPassword(String email, String token, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+
+        boolean tokenMatches = isTokenMatch(token, user.getPasswordResetToken());
+        boolean tokenNotExpired = user.getPasswordResetExpiresAt() != null
+                && user.getPasswordResetExpiresAt().isAfter(LocalDateTime.now());
+
+        if (!tokenMatches) {
+            throw new IllegalArgumentException("Password reset token is invalid");
+        }
+
+        if (!tokenNotExpired) {
+            throw new IllegalArgumentException("Password reset token has expired");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setPasswordResetToken(null);
+        user.setPasswordResetExpiresAt(null);
+        userRepository.save(user);
+    }
+
+    private String rotatePasswordResetToken(User user) {
+        String rawResetToken = generateCode(PASSWORD_RESET_CODE_LENGTH);
+        user.setPasswordResetToken(hashVerificationToken(rawResetToken));
+        user.setPasswordResetExpiresAt(LocalDateTime.now().plusMinutes(15));
+        return rawResetToken;
     }
 
     public User findById(UUID userId) {

@@ -42,14 +42,16 @@ public class SecurityConfig {
                         .ignoringRequestMatchers("/auth/login",
                                 "/auth/register",
                                 "/auth/verify-email",
-                                "/auth/resend-verification"))
+                                "/auth/resend-verification",
+                                "/auth/send-reset-otp",
+                                "/auth/reset-password"))
                 .authorizeHttpRequests(auth -> auth
                                 .requestMatchers("/auth/login",
                                         "/auth/register",
                                         "/auth/verify-email",
                                         "/auth/resend-verification",
-                                        "/send-reset-otp",
-                                        "/reset-password",
+                                        "/auth/send-reset-otp",
+                                        "/auth/reset-password",
                                         "/auth/logout",
                                         "/auth/csrf-token",
                                         "/v3/api-docs/**",      // OpenAPI 3 docs

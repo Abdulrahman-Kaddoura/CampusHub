@@ -22,6 +22,9 @@ public class EmailVerificationService {
     @Value("${app.verification.base-url:http://localhost:9090/auth/verify-email}")
     String verificationBaseUrl;
 
+    @Value("${app.password-reset.base-url:http://localhost:5174/reset-password}")
+    String passwordResetBaseUrl;
+
     @Value("${app.mail.from:no-reply@campushub.local}")
     String fromEmail;
 
@@ -47,6 +50,30 @@ public class EmailVerificationService {
             mailSender.send(message);
         } catch (Exception ex) {
             logger.warn("Failed to send verification email to {}. Verification link: {}", user.getEmail(), verificationLink, ex);
+        }
+    }
+    public void sendPasswordResetEmail(User user, String rawResetToken) {
+        String encodedEmail = URLEncoder.encode(user.getEmail(), StandardCharsets.UTF_8);
+        String encodedToken = URLEncoder.encode(rawResetToken, StandardCharsets.UTF_8);
+        String resetLink = passwordResetBaseUrl + "?email=" + encodedEmail + "&token=" + encodedToken;
+
+        if (mailSender == null) {
+            logger.info("Mail sender not configured. Password reset link for {}: {}", user.getEmail(), resetLink);
+            return;
+        }
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(user.getEmail());
+            message.setSubject("Your CampusHub password reset code");
+            message.setText("Your CampusHub password reset code is: " + rawResetToken + "\n\n"
+                    + "Enter this code in the app to reset your password. "
+                    + "This code expires in 15 minutes.\n\n"
+                    + "You can also reset using this link: " + resetLink);
+            mailSender.send(message);
+        } catch (Exception ex) {
+            logger.warn("Failed to send password reset email to {}. Reset link: {}", user.getEmail(), resetLink, ex);
         }
     }
 }

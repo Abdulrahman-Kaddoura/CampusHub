@@ -75,6 +75,12 @@
         @Column(name = "email_verified_at")
         private LocalDateTime emailVerifiedAt;
 
+        @Column(name = "password_reset_token", length = 255)
+        private String passwordResetToken;
+
+        @Column(name = "password_reset_expires_at")
+        private LocalDateTime passwordResetExpiresAt;
+
         @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
         private List<Listing> postedListings = new ArrayList<>();
 

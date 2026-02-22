@@ -140,6 +140,44 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/send-reset-otp")
+    public ResponseEntity<Map<String, Object>> sendResetOtp(@Valid @RequestBody SendResetPasswordRequestDTO requestDTO) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            userService.sendPasswordResetToken(requestDTO.getEmail());
+            response.put("message", "Password reset code sent");
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException ex) {
+            response.put("error", true);
+            response.put("message", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (Exception ex) {
+            response.put("error", true);
+            response.put("message", "Could not send password reset code");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, Object>> resetPassword(@Valid @RequestBody ResetPasswordRequestDTO requestDTO) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            userService.resetPassword(requestDTO.getEmail(), requestDTO.getToken(), requestDTO.getNewPassword());
+            response.put("message", "Password reset successful");
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException ex) {
+            response.put("error", true);
+            response.put("message", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (Exception ex) {
+            response.put("error", true);
+            response.put("message", "Password reset failed");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
     @PostMapping("/logout")
     public ResponseEntity<Map<String, Object>> logout() {
         ResponseCookie clearCookie = ResponseCookie.from("jwt", "")
