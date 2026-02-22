@@ -85,11 +85,15 @@ const aubHousingListings = [
 function Housing() {
   const [search, setSearch] = useState("");
   const [selectedType, setSelectedType] = useState("All Types");
-  const [maxBudget, setMaxBudget] = useState(1400);
+  const [minBudget, setMinBudget] = useState(400);
+  const [maxBudget, setMaxBudget] = useState(1600);
 
   const typeOptions = useMemo(() => {
     return ["All Types", ...new Set(aubHousingListings.map((item) => item.type))];
   }, []);
+
+  const normalizedMinBudget = Math.min(minBudget, maxBudget);
+  const normalizedMaxBudget = Math.max(minBudget, maxBudget);
 
   const filteredListings = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -101,11 +105,12 @@ function Housing() {
         item.commuteToAUB.toLowerCase().includes(query);
 
       const matchesType = selectedType === "All Types" || item.type === selectedType;
-      const matchesBudget = item.monthlyRentUsd <= maxBudget;
+      const matchesBudget =
+        item.monthlyRentUsd >= normalizedMinBudget && item.monthlyRentUsd <= normalizedMaxBudget;
 
       return matchesSearch && matchesType && matchesBudget;
     });
-  }, [search, selectedType, maxBudget]);
+  }, [search, selectedType, normalizedMinBudget, normalizedMaxBudget]);
 
   return (
     <main className="housing-page">
@@ -133,18 +138,47 @@ function Housing() {
           ))}
         </select>
 
-        <label htmlFor="max-budget-slider">
-          Max Budget: <strong>${maxBudget}</strong>/month
-        </label>
-        <input
-          id="max-budget-slider"
-          type="range"
-          min="400"
-          max="1600"
-          step="50"
-          value={maxBudget}
-          onChange={(event) => setMaxBudget(Number(event.target.value))}
-        />
+        <div className="budget-range" role="group" aria-label="Budget range filter">
+          <label htmlFor="min-budget-input">
+            Min Budget ($)
+            <input
+              id="min-budget-input"
+              type="number"
+              min="0"
+              step="50"
+              value={minBudget}
+              onChange={(event) => setMinBudget(Number(event.target.value) || 0)}
+            />
+          </label>
+
+          <label htmlFor="max-budget-input">
+            Max Budget ($)
+            <input
+              id="max-budget-input"
+              type="number"
+              min="0"
+              step="50"
+              value={maxBudget}
+              onChange={(event) => setMaxBudget(Number(event.target.value) || 0)}
+            />
+          </label>
+
+          <button
+            type="button"
+            className="clear-budget"
+            onClick={() => {
+              setMinBudget(400);
+              setMaxBudget(1600);
+            }}
+          >
+            Reset Budget
+          </button>
+        </div>
+
+        <p className="budget-summary">
+          Showing listings between <strong>${normalizedMinBudget}</strong> and
+          <strong> ${normalizedMaxBudget}</strong> / month.
+        </p>
       </section>
 
       <section className="housing-grid" aria-live="polite">
