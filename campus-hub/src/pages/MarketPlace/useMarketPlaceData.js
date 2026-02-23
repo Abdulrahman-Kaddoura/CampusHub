@@ -6,8 +6,8 @@ function toListingShape(p) {
   if (p.listingId != null) {
     return {
       ...p,
-      imageUrl: p.firstImageId
-        ? buildApiUrl(`/api/listingImage/download-listing-image/${p.firstImageId}`)
+      imageUrl: (p.firstImageId ?? p.imageId)
+        ? buildApiUrl(`/api/listingImage/download-listing-image/${(p.firstImageId ?? p.imageId)}`)
         : (p.imageUrl ?? p.productImage),
     };
   }

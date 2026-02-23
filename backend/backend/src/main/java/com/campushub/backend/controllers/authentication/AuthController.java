@@ -97,6 +97,14 @@ public class AuthController {
         }
     }
 
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponseDTO> getCurrentUser() {
+        User user = userService.getAuthenticatedUser();
+        UserResponseDTO userResponseDTO = modelMapper.map(user, UserResponseDTO.class);
+        return ResponseEntity.ok(userResponseDTO);
+    }
+
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody UserRequestDTO userRequestDTO) {
         if (!featureManager.isActive(REGISTER)) {

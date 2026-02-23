@@ -16,6 +16,7 @@ export default function AuthPage() {
   const [mode, setMode] = useState("login");
   const [formState, setFormState] = useState(initialRegisterState);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login, register } = useAuth();
   const navigate = useNavigate();
@@ -29,17 +30,23 @@ export default function AuthPage() {
     event.preventDefault();
     setIsSubmitting(true);
     setError("");
+    setSuccessMessage("");
 
     try {
       if (mode === "login") {
-        await login({ username: formState.username, password: formState.password });
-      } else {
-        await register({
-          ...formState,
-          phoneNumber: formState.phoneNumber.trim() || null,
-        });
+        await login({ email: formState.email, password: formState.password });
+        navigate("/");
+        return;
       }
-      navigate("/");
+
+      const response = await register({
+        ...formState,
+        phoneNumber: formState.phoneNumber.trim() || null,
+      });
+
+      setSuccessMessage(response?.message || "Registration successful. Please verify your email.");
+      setMode("login");
+      setFormState((prev) => ({ ...prev, password: "" }));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -55,15 +62,23 @@ export default function AuthPage() {
 
         <form onSubmit={handleSubmit} className="auth-form">
           <input
-            name="username"
-            value={formState.username}
+            name="email"
+            type="email"
+            value={formState.email}
             onChange={handleChange}
-            placeholder="Username"
+            placeholder="Email"
             required
           />
 
           {mode === "register" ? (
             <>
+              <input
+                name="username"
+                value={formState.username}
+                onChange={handleChange}
+                placeholder="Username"
+                required
+              />
               <input
                 name="firstName"
                 value={formState.firstName}
@@ -76,14 +91,6 @@ export default function AuthPage() {
                 value={formState.lastName}
                 onChange={handleChange}
                 placeholder="Last name"
-                required
-              />
-              <input
-                name="email"
-                type="email"
-                value={formState.email}
-                onChange={handleChange}
-                placeholder="Email"
                 required
               />
               <input
@@ -109,6 +116,7 @@ export default function AuthPage() {
           </button>
 
           {error ? <p className="auth-error">{error}</p> : null}
+          {successMessage ? <p>{successMessage}</p> : null}
         </form>
 
         <button

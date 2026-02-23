@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { buildApiUrl } from "./client";
+import { buildApiUrl, buildJsonHeaders, parseApiResponse } from "./client";
 
 const BASE_PATH = "/api/user";
 const TEMP_USER_STORAGE_KEY = "campusHubTempUserId";
@@ -12,8 +12,8 @@ const buildTempUserPayload = () => {
     username,
     firstName: "Temp",
     lastName: "User",
-    email: `${username}@exaple.com`,
-    phoneNumber: "000000000",
+    email: `${username}@example.com`,
+    phoneNumber: "0000000000",
     password: `TempPass-${randomId}`,
   };
 };
@@ -26,18 +26,11 @@ export const createTempUser = async () => {
 
   const response = await fetch(buildApiUrl(`${BASE_PATH}/create-user`), {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: buildJsonHeaders(),
     body: JSON.stringify(buildTempUserPayload()),
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || "Failed to create a temporary user.");
-  }
-
-  const data = await response.json();
+  const data = await parseApiResponse(response, "Failed to create a temporary user.");
   const userId = data?.id;
   if (!userId) {
     throw new Error("Temporary user creation did not return a user ID.");

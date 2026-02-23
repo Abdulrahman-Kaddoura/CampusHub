@@ -35,4 +35,6 @@ public class ListingResponseDTO {
     private UUID buyerId;
 
     private String categoryName;
+
+    private UUID firstImageId;
 }

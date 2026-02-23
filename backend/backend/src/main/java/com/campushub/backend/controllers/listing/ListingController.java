@@ -2,6 +2,7 @@ package com.campushub.backend.controllers.listing;
 
 import com.campushub.backend.dtos.listing.ListingRequestDTO;
 import com.campushub.backend.dtos.listing.ListingResponseDTO;
+import com.campushub.backend.models.listings.ListingImage;
 import com.campushub.backend.enums.listings.ListingStatus;
 import com.campushub.backend.models.listings.Category;
 import com.campushub.backend.models.listings.Listing;
@@ -30,6 +31,17 @@ import static com.campushub.backend.configurations.togglz.Features.*;
 @RequestMapping("/listings")
 @Tag(name = "Listings", description = "Listing related operations")
 public class ListingController {
+
+    private ListingResponseDTO toListingResponseDTO(Listing listing) {
+        ListingResponseDTO response = modelMapper.map(listing, ListingResponseDTO.class);
+
+        if (listing.getListingImages() != null && !listing.getListingImages().isEmpty()) {
+            ListingImage firstImage = listing.getListingImages().get(0);
+            response.setFirstImageId(firstImage.getImageId());
+        }
+
+        return response;
+    }
 
     @Autowired
     ListingService listingService;
@@ -78,7 +90,7 @@ public class ListingController {
 
         Listing createdListing = listingService.createListing(listing);
 
-        ListingResponseDTO response = modelMapper.map(createdListing, ListingResponseDTO.class);
+        ListingResponseDTO response = toListingResponseDTO(createdListing);
         response.setListingId(createdListing.getListingId());
         response.setUserId(createdListing.getUser().getId());
         response.setBuyerId(
@@ -105,8 +117,7 @@ public class ListingController {
         User buyer = userService.getAuthenticatedUser();
         Listing listing = listingService.buyListing(listingId, buyer.getId());
 
-        ListingResponseDTO response =
-                modelMapper.map(listing, ListingResponseDTO.class);
+        ListingResponseDTO response = toListingResponseDTO(listing);
 
         response.setListingId(listing.getListingId());
         response.setUserId(listing.getUser().getId());
@@ -129,7 +140,7 @@ public class ListingController {
         }
         List<Listing> listings = listingService.getAllListings();
         List<ListingResponseDTO> listingResponseDTOS = listings.stream()
-                .map(listing -> modelMapper.map(listing, ListingResponseDTO.class))
+                .map(this::toListingResponseDTO)
                 .toList();
         return new ResponseEntity<>(listingResponseDTOS, HttpStatus.OK);
     }
@@ -146,7 +157,7 @@ public class ListingController {
         userService.requireAuthenticatedUser(userId);
         List<Listing> listings = listingService.getAllListingsByUser(userId);
         List<ListingResponseDTO> listingResponseDTOS = listings.stream()
-                .map(listing -> modelMapper.map(listing, ListingResponseDTO.class))
+                .map(this::toListingResponseDTO)
                 .toList();
         return new ResponseEntity<>(listingResponseDTOS, HttpStatus.OK);
     }
@@ -162,7 +173,7 @@ public class ListingController {
         }
         List<Listing> listings = listingService.getAllListingsByCategory(categoryName);
         List<ListingResponseDTO> listingResponseDTOS = listings.stream()
-                .map(listing -> modelMapper.map(listing, ListingResponseDTO.class))
+                .map(this::toListingResponseDTO)
                 .toList();
         return new ResponseEntity<>(listingResponseDTOS, HttpStatus.OK);
     }
@@ -178,7 +189,7 @@ public class ListingController {
         }
         User actingUser = userService.getAuthenticatedUser();
         Listing listing = listingService.deleteListingByIdForUser(listingId, actingUser.getId());
-        ListingResponseDTO listingResponseDTO = modelMapper.map(listing, ListingResponseDTO.class);
+        ListingResponseDTO listingResponseDTO = toListingResponseDTO(listing);
         return new ResponseEntity<>(listingResponseDTO, HttpStatus.OK);
     }
 }

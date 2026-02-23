@@ -1,34 +1,24 @@
-import { buildApiUrl, buildAuthHeaders } from "./client";
+import { buildApiUrl, buildJsonHeaders, parseApiResponse } from "./client";
 
 const BASE_PATH = "/api/tutoring";
 
-const parseResponse = async (response, fallbackMessage) => {
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || fallbackMessage);
-  }
-
-  return response.json();
-};
 
 export const fetchTutoringPosts = async () => {
   const response = await fetch(buildApiUrl(`${BASE_PATH}/get-tutoring`), {
     method: "GET",
-    headers: { "Content-Type": "application/json" },
+    headers: buildJsonHeaders(),
   });
 
-  return parseResponse(response, "Failed to fetch tutoring posts");
+  return parseApiResponse(response, "Failed to fetch tutoring posts");
 };
 
 export const createTutoringPost = async (payload, token) => {
   const response = await fetch(buildApiUrl(`${BASE_PATH}/create-tutoring`), {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...buildAuthHeaders(token),
-    },
+    headers: buildJsonHeaders(token),
+    credentials: "include",
     body: JSON.stringify(payload),
   });
 
-  return parseResponse(response, "Failed to create tutoring post");
+  return parseApiResponse(response, "Failed to create tutoring post");
 };
