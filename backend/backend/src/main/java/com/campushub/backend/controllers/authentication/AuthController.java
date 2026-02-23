@@ -1,9 +1,6 @@
 package com.campushub.backend.controllers.authentication;
 
-import com.campushub.backend.dtos.authentication.AuthRequestDTO;
-import com.campushub.backend.dtos.authentication.AuthResponseDTO;
-import com.campushub.backend.dtos.authentication.ResendVerificationRequestDTO;
-import com.campushub.backend.dtos.authentication.VerifyEmailRequestDTO;
+import com.campushub.backend.dtos.authentication.*;
 import com.campushub.backend.dtos.user.UserRequestDTO;
 import com.campushub.backend.dtos.user.UserResponseDTO;
 import com.campushub.backend.models.user.User;
