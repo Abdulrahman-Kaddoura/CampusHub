@@ -31,7 +31,7 @@ import java.util.Map;
 import static com.campushub.backend.configurations.togglz.Features.*;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping({"/auth", "/api/auth"})
 public class AuthController {
 
     @Autowired
