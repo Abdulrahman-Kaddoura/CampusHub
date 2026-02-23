@@ -1,96 +1,52 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { createDormListing, fetchDormListings } from "../api/dorms";
+import { useAuth } from "../context/AuthContext";
 import "./Housing.css";
 
-const aubHousingListings = [
-  {
-    id: 1,
-    title: "Furnished Studio - Bliss Street",
-    neighborhood: "Ras Beirut",
-    type: "Studio",
-    monthlyRentUsd: 850,
-    beds: 1,
-    baths: 1,
-    commuteToAUB: "5 min walk to AUB Main Gate",
-    availability: "Available now",
-    utilitiesIncluded: true,
-    furnished: true,
-  },
-  {
-    id: 2,
-    title: "Shared 3BR Apartment - Hamra",
-    neighborhood: "Hamra",
-    type: "Shared Apartment",
-    monthlyRentUsd: 500,
-    beds: 1,
-    baths: 1,
-    commuteToAUB: "10 min walk to campus",
-    availability: "Available next month",
-    utilitiesIncluded: false,
-    furnished: true,
-  },
-  {
-    id: 3,
-    title: "1BR Apartment - Ain El Mreisseh",
-    neighborhood: "Ain El Mreisseh",
-    type: "Apartment",
-    monthlyRentUsd: 1000,
-    beds: 1,
-    baths: 1,
-    commuteToAUB: "7 min walk to AUB",
-    availability: "Available now",
-    utilitiesIncluded: false,
-    furnished: false,
-  },
-  {
-    id: 4,
-    title: "2BR Family Flat - Manara",
-    neighborhood: "Manara",
-    type: "Apartment",
-    monthlyRentUsd: 1300,
-    beds: 2,
-    baths: 2,
-    commuteToAUB: "12 min walk to AUB",
-    availability: "Available in 2 weeks",
-    utilitiesIncluded: true,
-    furnished: false,
-  },
-  {
-    id: 5,
-    title: "Graduate Room - Clemenceau",
-    neighborhood: "Clemenceau",
-    type: "Private Room",
-    monthlyRentUsd: 650,
-    beds: 1,
-    baths: 1,
-    commuteToAUB: "15 min by bus",
-    availability: "Available now",
-    utilitiesIncluded: true,
-    furnished: true,
-  },
-  {
-    id: 6,
-    title: "2BR Apartment - Verdun",
-    neighborhood: "Verdun",
-    type: "Apartment",
-    monthlyRentUsd: 1200,
-    beds: 2,
-    baths: 1,
-    commuteToAUB: "15 min by bike",
-    availability: "Available next month",
-    utilitiesIncluded: false,
-    furnished: true,
-  },
-];
+
 
 function Housing() {
+    const { currentUser, token, isAuthenticated } = useAuth();
   const [search, setSearch] = useState("");
   const [selectedType, setSelectedType] = useState("All Types");
   const [minBudget, setMinBudget] = useState(400);
   const [maxBudget, setMaxBudget] = useState(1600);
+  const [listings, setListings] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [apiError, setApiError] = useState("");
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState("");
+    const [formState, setFormState] = useState({
+      title: "",
+      description: "",
+      location: "",
+      roomType: "",
+      monthlyRent: "",
+      availableFrom: "",
+    });
+
+  const loadDorms = async () => {
+      try {
+        setApiError("");
+        const data = await fetchDormListings();
+        setListings(Array.isArray(data) ? data : []);
+      } catch (error) {
+        setApiError(error.message);
+        setListings([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    useEffect(() => {
+      loadDorms();
+  }, []);
 
   const typeOptions = useMemo(() => {
-    return ["All Types", ...new Set(aubHousingListings.map((item) => item.type))];
-  }, []);
+      return ["All Types", ...new Set(listings.map((item) => item.roomType).filter(Boolean))];
+    }, [listings]);
 
   const normalizedMinBudget = Math.min(minBudget, maxBudget);
   const normalizedMaxBudget = Math.max(minBudget, maxBudget);
@@ -98,35 +54,141 @@ function Housing() {
   const filteredListings = useMemo(() => {
     const query = search.trim().toLowerCase();
 
-    return aubHousingListings.filter((item) => {
+    return listings.filter((item) => {
+          const title = item.title || "";
+          const location = item.location || "";
+          const description = item.description || "";
       const matchesSearch =
-        item.title.toLowerCase().includes(query) ||
-        item.neighborhood.toLowerCase().includes(query) ||
-        item.commuteToAUB.toLowerCase().includes(query);
+        title.toLowerCase().includes(query) ||
+                location.toLowerCase().includes(query) ||
+                description.toLowerCase().includes(query);
 
-      const matchesType = selectedType === "All Types" || item.type === selectedType;
-      const matchesBudget =
-        item.monthlyRentUsd >= normalizedMinBudget && item.monthlyRentUsd <= normalizedMaxBudget;
+      const matchesType = selectedType === "All Types" || item.roomType === selectedType;
+            const rent = Number(item.monthlyRent || 0);
+            const matchesBudget = rent >= normalizedMinBudget && rent <= normalizedMaxBudget;
 
       return matchesSearch && matchesType && matchesBudget;
     });
-  }, [search, selectedType, normalizedMinBudget, normalizedMaxBudget]);
+  }, [listings, search, selectedType, normalizedMinBudget, normalizedMaxBudget]);
+
+    const handleCreateDorm = async (event) => {
+      event.preventDefault();
+      if (!currentUser?.id) {
+        setSubmitError("You must be logged in to create a housing listing.");
+        return;
+      }
+
+      setIsSubmitting(true);
+      setSubmitError("");
+
+      try {
+        await createDormListing(
+          {
+            ...formState,
+            monthlyRent: Number(formState.monthlyRent),
+            userId: currentUser.id,
+          },
+          token
+        );
+        setFormState({
+          title: "",
+          description: "",
+          location: "",
+          roomType: "",
+          monthlyRent: "",
+          availableFrom: "",
+        });
+        setIsFormOpen(false);
+        setIsLoading(true);
+        await loadDorms();
+      } catch (error) {
+        setSubmitError(error.message);
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
 
   return (
     <main className="housing-page">
       <header className="housing-header">
         <h1>Housing at AUB</h1>
         <p>
-          Explore student-friendly rentals around the American University of Beirut.
-          Filter by budget, property type, and location near campus.
+          Explore student-friendly rentals around the American University of Beirut. Filter by
+                    budget, property type, and location near campus.
         </p>
+        {isAuthenticated ? (
+                  <button type="button" onClick={() => setIsFormOpen((v) => !v)}>
+                    {isFormOpen ? "Cancel" : "Add Housing Listing"}
+                  </button>
+                ) : (
+                  <Link className="add-item" to="/auth">
+                    Login to Add Housing Listing
+                  </Link>
+                )}
       </header>
+
+      {isFormOpen && (
+              <form className="housing-filters" onSubmit={handleCreateDorm}>
+                <input
+                  type="text"
+                  placeholder="Title"
+                  required
+                  value={formState.title}
+                  onChange={(event) => setFormState((prev) => ({ ...prev, title: event.target.value }))}
+                />
+                <input
+                  type="text"
+                  placeholder="Location"
+                  required
+                  value={formState.location}
+                  onChange={(event) => setFormState((prev) => ({ ...prev, location: event.target.value }))}
+                />
+                <input
+                  type="text"
+                  placeholder="Room Type (e.g. Studio)"
+                  required
+                  value={formState.roomType}
+                  onChange={(event) => setFormState((prev) => ({ ...prev, roomType: event.target.value }))}
+                />
+                <input
+                  type="number"
+                  placeholder="Monthly Rent"
+                  min="0"
+                  step="0.01"
+                  required
+                  value={formState.monthlyRent}
+                  onChange={(event) =>
+                    setFormState((prev) => ({ ...prev, monthlyRent: event.target.value }))
+                  }
+                />
+                <input
+                  type="date"
+                  required
+                  value={formState.availableFrom}
+                  onChange={(event) =>
+                    setFormState((prev) => ({ ...prev, availableFrom: event.target.value }))
+                  }
+                />
+                <input
+                  type="text"
+                  placeholder="Description"
+                  value={formState.description}
+                  onChange={(event) =>
+                    setFormState((prev) => ({ ...prev, description: event.target.value }))
+                  }
+                />
+                <button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Submitting..." : "Submit Listing"}
+                </button>
+                {submitError && <p className="empty-state">{submitError}</p>}
+              </form>
+            )}
 
       <section className="housing-filters" aria-label="Housing filters">
         <input
           type="text"
           value={search}
-          placeholder="Search by title, neighborhood, or commute"
+          placeholder="Search by title, location, or description"
           onChange={(event) => setSearch(event.target.value)}
         />
 
@@ -181,33 +243,31 @@ function Housing() {
         </p>
       </section>
 
+      {apiError && <p className="empty-state">{apiError}</p>}
+
       <section className="housing-grid" aria-live="polite">
-        {filteredListings.length > 0 ? (
+        {isLoading ? (
+                  <p className="empty-state">Loading housing listings...</p>
+                ) : filteredListings.length > 0 ? (
           filteredListings.map((listing) => (
-            <article className="housing-card" key={listing.id}>
+            <article className="housing-card" key={listing.dormId}>
               <h2>{listing.title}</h2>
-              <p className="housing-location">{listing.neighborhood}</p>
+              <p className="housing-location">{listing.location}</p>
 
               <p>
-                <strong>Type:</strong> {listing.type}
+                <strong>Type:</strong> {listing.roomType}
               </p>
               <p>
-                <strong>Rent:</strong> ${listing.monthlyRentUsd} / month
+                <strong>Rent:</strong> ${listing.monthlyRent} / month
               </p>
               <p>
-                <strong>Beds/Baths:</strong> {listing.beds} bed • {listing.baths} bath
+                <strong>Available From:</strong> {listing.availableFrom}
               </p>
-              <p>
-                <strong>Commute:</strong> {listing.commuteToAUB}
-              </p>
-              <p>
-                <strong>Availability:</strong> {listing.availability}
-              </p>
-
-              <div className="housing-badges">
-                <span>{listing.utilitiesIncluded ? "Utilities Included" : "Utilities Separate"}</span>
-                <span>{listing.furnished ? "Furnished" : "Unfurnished"}</span>
-              </div>
+              {listing.description && (
+                              <p>
+                                <strong>Description:</strong> {listing.description}
+                              </p>
+                            )}
 
               <button type="button">Contact Landlord</button>
             </article>

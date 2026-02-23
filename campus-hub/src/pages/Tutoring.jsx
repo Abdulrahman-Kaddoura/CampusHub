@@ -1,100 +1,105 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { createTutoringPost, fetchTutoringPosts } from "../api/tutoring";
+import { useAuth } from "../context/AuthContext";
 import "./Tutoring.css";
 
-const tutoringOffers = [
-  {
-    id: 1,
-    tutorName: "Maya Khoury",
-    course: "MATH 201 - Calculus II",
-    department: "Mathematics",
-    level: "Undergraduate",
-    format: "In Person",
-    rateUsd: 20,
-    availability: "Mon & Wed · 5:00 PM - 7:00 PM",
-    tags: ["Exam Prep", "Homework Help"],
-  },
-  {
-    id: 2,
-    tutorName: "Karim Haddad",
-    course: "CMPS 211 - Discrete Math",
-    department: "Computer Science",
-    level: "Undergraduate",
-    format: "Hybrid",
-    rateUsd: 25,
-    availability: "Tue & Thu · 6:00 PM - 8:00 PM",
-    tags: ["Projects", "Coding Interviews"],
-  },
-  {
-    id: 3,
-    tutorName: "Lina Nassar",
-    course: "ECON 212 - Macroeconomics",
-    department: "Economics",
-    level: "Undergraduate",
-    format: "Online",
-    rateUsd: 18,
-    availability: "Weekdays · 4:00 PM - 6:00 PM",
-    tags: ["Concept Review", "Problem Sets"],
-  },
-  {
-    id: 4,
-    tutorName: "Rami Saab",
-    course: "PHYS 205 - Modern Physics",
-    department: "Physics",
-    level: "Undergraduate",
-    format: "In Person",
-    rateUsd: 22,
-    availability: "Sat · 10:00 AM - 1:00 PM",
-    tags: ["Lab Reports", "Exam Prep"],
-  },
-  {
-    id: 5,
-    tutorName: "Nour El-Hage",
-    course: "ENGL 203 - Academic Writing",
-    department: "English",
-    level: "Undergraduate",
-    format: "Online",
-    rateUsd: 16,
-    availability: "Sun - Thu · 7:00 PM - 9:00 PM",
-    tags: ["Essay Feedback", "Presentations"],
-  },
-  {
-    id: 6,
-    tutorName: "Sami Daher",
-    course: "EECE 230 - Introduction to Programming",
-    department: "Engineering",
-    level: "Undergraduate",
-    format: "Hybrid",
-    rateUsd: 28,
-    availability: "Fri · 3:00 PM - 6:00 PM",
-    tags: ["Quizzes", "Past Papers"],
-  },
-];
+
 
 function Tutoring() {
+    const { currentUser, token, isAuthenticated } = useAuth();
   const [search, setSearch] = useState("");
   const [selectedFormat, setSelectedFormat] = useState("All Formats");
-  const [maxRate, setMaxRate] = useState(30);
+  const [maxRate, setMaxRate] = useState(100);
+    const [offers, setOffers] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [apiError, setApiError] = useState("");
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState("");
+    const [formState, setFormState] = useState({
+      course: "",
+      tutorName: "",
+      department: "",
+      format: "In Person",
+      hourlyRate: "",
+      description: "",
+    });
+
+    const loadTutoringPosts = async () => {
+      try {
+        setApiError("");
+        const data = await fetchTutoringPosts();
+        setOffers(Array.isArray(data) ? data : []);
+      } catch (error) {
+        setApiError(error.message);
+        setOffers([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    useEffect(() => {
+      loadTutoringPosts();
+    }, []);
 
   const formatOptions = useMemo(
-    () => ["All Formats", ...new Set(tutoringOffers.map((offer) => offer.format))],
-    []
+    () => ["All Formats", ...new Set(offers.map((offer) => offer.format).filter(Boolean))],
+        [offers]
   );
 
   const filteredOffers = useMemo(() => {
     const query = search.trim().toLowerCase();
 
-    return tutoringOffers.filter((offer) => {
+    return offers.filter((offer) => {
       const matchesSearch =
-        offer.course.toLowerCase().includes(query) ||
-        offer.tutorName.toLowerCase().includes(query) ||
-        offer.department.toLowerCase().includes(query);
+        (offer.course || "").toLowerCase().includes(query) ||
+                (offer.tutorName || "").toLowerCase().includes(query) ||
+                (offer.department || "").toLowerCase().includes(query);
 
       const matchesFormat = selectedFormat === "All Formats" || offer.format === selectedFormat;
-      const matchesRate = offer.rateUsd <= maxRate;
+      const matchesRate = Number(offer.hourlyRate || 0) <= maxRate;
 
       return matchesSearch && matchesFormat && matchesRate;
     });
-  }, [search, selectedFormat, maxRate]);
+  }, [offers, search, selectedFormat, maxRate]);
+
+    const handleCreateTutoring = async (event) => {
+      event.preventDefault();
+      if (!currentUser?.id) {
+        setSubmitError("You must be logged in to create a tutoring post.");
+        return;
+      }
+
+      setIsSubmitting(true);
+      setSubmitError("");
+
+      try {
+        await createTutoringPost(
+          {
+            ...formState,
+            hourlyRate: Number(formState.hourlyRate),
+            userId: currentUser.id,
+          },
+          token
+        );
+        setFormState({
+          course: "",
+          tutorName: "",
+          department: "",
+          format: "In Person",
+          hourlyRate: "",
+          description: "",
+        });
+        setIsFormOpen(false);
+        setIsLoading(true);
+        await loadTutoringPosts();
+      } catch (error) {
+        setSubmitError(error.message);
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
 
   return (
     <main className="tutoring-page">
@@ -104,7 +109,77 @@ function Tutoring() {
           Connect with AUB peer tutors for core courses. Browse by subject, preferred session
           format, and hourly rate to find the right match.
         </p>
+        {isAuthenticated ? (
+                  <button type="button" onClick={() => setIsFormOpen((v) => !v)}>
+                    {isFormOpen ? "Cancel" : "Add Tutoring Post"}
+                  </button>
+                ) : (
+                  <Link className="add-item" to="/auth">
+                    Login to Add Tutoring Post
+                  </Link>
+                )}
       </header>
+
+      {isFormOpen && (
+              <form className="tutoring-filters" onSubmit={handleCreateTutoring}>
+                <input
+                  type="text"
+                  placeholder="Course"
+                  required
+                  value={formState.course}
+                  onChange={(event) => setFormState((prev) => ({ ...prev, course: event.target.value }))}
+                />
+                <input
+                  type="text"
+                  placeholder="Tutor Name"
+                  required
+                  value={formState.tutorName}
+                  onChange={(event) =>
+                    setFormState((prev) => ({ ...prev, tutorName: event.target.value }))
+                  }
+                />
+                <input
+                  type="text"
+                  placeholder="Department"
+                  required
+                  value={formState.department}
+                  onChange={(event) =>
+                    setFormState((prev) => ({ ...prev, department: event.target.value }))
+                  }
+                />
+                <select
+                  value={formState.format}
+                  onChange={(event) => setFormState((prev) => ({ ...prev, format: event.target.value }))}
+                >
+                  <option value="In Person">In Person</option>
+                  <option value="Online">Online</option>
+                  <option value="Hybrid">Hybrid</option>
+                </select>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="Hourly Rate"
+                  required
+                  value={formState.hourlyRate}
+                  onChange={(event) =>
+                    setFormState((prev) => ({ ...prev, hourlyRate: event.target.value }))
+                  }
+                />
+                <input
+                  type="text"
+                  placeholder="Description"
+                  value={formState.description}
+                  onChange={(event) =>
+                    setFormState((prev) => ({ ...prev, description: event.target.value }))
+                  }
+                />
+                <button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Submitting..." : "Submit Post"}
+                </button>
+                {submitError && <p className="empty-state">{submitError}</p>}
+              </form>
+            )}
 
       <section className="tutoring-filters" aria-label="Tutoring filters">
         <input
@@ -128,18 +203,22 @@ function Tutoring() {
         <input
           id="max-rate-slider"
           type="range"
-          min="10"
-          max="35"
+          min="0"
+                    max="200"
           step="1"
           value={maxRate}
           onChange={(event) => setMaxRate(Number(event.target.value))}
         />
       </section>
 
+      {apiError && <p className="empty-state">{apiError}</p>}
+
       <section className="tutoring-grid" aria-live="polite">
-        {filteredOffers.length > 0 ? (
+        {isLoading ? (
+                  <p className="empty-state">Loading tutoring posts...</p>
+                ) : filteredOffers.length > 0 ? (
           filteredOffers.map((offer) => (
-            <article className="tutoring-card" key={offer.id}>
+            <article className="tutoring-card" key={offer.tutoringId}>
               <h2>{offer.course}</h2>
               <p className="tutoring-tutor">Tutor: {offer.tutorName}</p>
 
@@ -147,23 +226,16 @@ function Tutoring() {
                 <strong>Department:</strong> {offer.department}
               </p>
               <p>
-                <strong>Level:</strong> {offer.level}
-              </p>
-              <p>
                 <strong>Format:</strong> {offer.format}
               </p>
               <p>
-                <strong>Rate:</strong> ${offer.rateUsd} / hour
+                <strong>Rate:</strong> ${offer.hourlyRate} / hour
               </p>
-              <p>
-                <strong>Availability:</strong> {offer.availability}
-              </p>
-
-              <div className="tutoring-tags">
-                {offer.tags.map((tag) => (
-                  <span key={tag}>{tag}</span>
-                ))}
-              </div>
+              {offer.description && (
+                              <p>
+                                <strong>Description:</strong> {offer.description}
+                              </p>
+                            )}
 
               <button type="button">Request Session</button>
             </article>

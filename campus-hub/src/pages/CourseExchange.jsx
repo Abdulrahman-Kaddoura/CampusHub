@@ -1,98 +1,171 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { createCourseExchangePost, fetchCourseExchangePosts } from "../api/courseExchange";
+import { useAuth } from "../context/AuthContext";
 import "./CourseExchange.css";
 
-const courseExchangePosts = [
-  {
-    id: 1,
-    studentName: "Layal N.",
-    currentCourse: "CMPS 211 - Discrete Math",
-    desiredCourse: "CMPS 212 - Data Structures",
-    section: "A1",
-    schedule: "Mon/Wed 10:00 - 11:15",
-    reason: "Schedule conflict with lab",
-    status: "Open",
-  },
-  {
-    id: 2,
-    studentName: "Tarek M.",
-    currentCourse: "PHYS 205 - Modern Physics",
-    desiredCourse: "PHYS 210 - Electricity & Magnetism",
-    section: "B2",
-    schedule: "Tue/Thu 8:00 - 9:15",
-    reason: "Prefers afternoon section",
-    status: "Matched",
-  },
-  {
-    id: 3,
-    studentName: "Hana S.",
-    currentCourse: "ECON 212 - Macroeconomics",
-    desiredCourse: "ECON 211 - Microeconomics",
-    section: "C1",
-    schedule: "Mon/Wed 1:00 - 2:15",
-    reason: "Required for major pathway",
-    status: "Open",
-  },
-  {
-    id: 4,
-    studentName: "Omar K.",
-    currentCourse: "EECE 230 - Introduction to Programming",
-    desiredCourse: "EECE 230 - Introduction to Programming",
-    section: "D3",
-    schedule: "Tue/Thu 3:30 - 4:45",
-    reason: "Needs earlier class timing",
-    status: "Open",
-  },
-  {
-    id: 5,
-    studentName: "Rita B.",
-    currentCourse: "MATH 201 - Calculus II",
-    desiredCourse: "MATH 202 - Linear Algebra",
-    section: "E1",
-    schedule: "Fri 9:00 - 11:30",
-    reason: "Wants to rebalance workload",
-    status: "Closed",
-  },
-];
-
 function CourseExchange() {
-  const [search, setSearch] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("All Statuses");
+
+    const { currentUser, token, isAuthenticated } = useAuth();
+    const [search, setSearch] = useState("");
+    const [selectedStatus, setSelectedStatus] = useState("All Statuses");
+    const [posts, setPosts] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [apiError, setApiError] = useState("");
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState("");
+    const [formState, setFormState] = useState({
+      currentCourse: "",
+      desiredCourse: "",
+      section: "",
+      status: "Open",
+      notes: "",
+    });
+
+    const loadPosts = async () => {
+      try {
+        setApiError("");
+        const data = await fetchCourseExchangePosts();
+        setPosts(Array.isArray(data) ? data : []);
+      } catch (error) {
+        setApiError(error.message);
+        setPosts([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    useEffect(() => {
+      loadPosts();
+    }, []);
 
   const statusOptions = useMemo(
-    () => ["All Statuses", ...new Set(courseExchangePosts.map((post) => post.status))],
-    []
+    () => ["All Statuses", ...new Set(posts.map((post) => post.status).filter(Boolean))],
+        [posts]
   );
 
   const filteredPosts = useMemo(() => {
     const query = search.trim().toLowerCase();
 
-    return courseExchangePosts.filter((post) => {
+    return posts.filter((post) => {
       const matchesSearch =
-        post.currentCourse.toLowerCase().includes(query) ||
-        post.desiredCourse.toLowerCase().includes(query) ||
-        post.studentName.toLowerCase().includes(query);
+        (post.currentCourse || "").toLowerCase().includes(query) ||
+                (post.desiredCourse || "").toLowerCase().includes(query);
 
       const matchesStatus = selectedStatus === "All Statuses" || post.status === selectedStatus;
 
       return matchesSearch && matchesStatus;
     });
-  }, [search, selectedStatus]);
+  }, [posts, search, selectedStatus]);
+
+    const handleCreatePost = async (event) => {
+      event.preventDefault();
+      if (!currentUser?.id) {
+        setSubmitError("You must be logged in to create a post.");
+        return;
+      }
+
+      setIsSubmitting(true);
+      setSubmitError("");
+
+      try {
+        await createCourseExchangePost(
+          {
+            ...formState,
+            userId: currentUser.id,
+          },
+          token
+        );
+
+        setFormState({
+          currentCourse: "",
+          desiredCourse: "",
+          section: "",
+          status: "Open",
+          notes: "",
+        });
+        setIsFormOpen(false);
+        setIsLoading(true);
+        await loadPosts();
+      } catch (error) {
+        setSubmitError(error.message);
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
 
   return (
     <main className="course-exchange-page">
       <header className="course-exchange-header">
         <h1>Course Exchange</h1>
         <p>
-          Find students willing to swap sections or exchange course slots. Filter by course, student,
-          and exchange status to quickly discover available opportunities.
+          Find students willing to swap sections or exchange course slots. Filter by course and
+                    exchange status to quickly discover available opportunities.
         </p>
+        {isAuthenticated ? (
+                  <button type="button" onClick={() => setIsFormOpen((v) => !v)}>
+                    {isFormOpen ? "Cancel" : "Add Exchange Post"}
+                  </button>
+                ) : (
+                  <Link className="add-item" to="/auth">
+                    Login to Add Exchange Post
+                  </Link>
+                )}
       </header>
+
+      {isFormOpen && (
+              <form className="course-exchange-filters" onSubmit={handleCreatePost}>
+                <input
+                  type="text"
+                  placeholder="Current course"
+                  required
+                  value={formState.currentCourse}
+                  onChange={(event) =>
+                    setFormState((prev) => ({ ...prev, currentCourse: event.target.value }))
+                  }
+                />
+                <input
+                  type="text"
+                  placeholder="Desired course"
+                  required
+                  value={formState.desiredCourse}
+                  onChange={(event) =>
+                    setFormState((prev) => ({ ...prev, desiredCourse: event.target.value }))
+                  }
+                />
+                <input
+                  type="text"
+                  placeholder="Section (optional)"
+                  value={formState.section}
+                  onChange={(event) => setFormState((prev) => ({ ...prev, section: event.target.value }))}
+                />
+                <select
+                  value={formState.status}
+                  onChange={(event) => setFormState((prev) => ({ ...prev, status: event.target.value }))}
+                >
+                  <option value="Open">Open</option>
+                  <option value="Matched">Matched</option>
+                  <option value="Closed">Closed</option>
+                </select>
+                <input
+                  type="text"
+                  placeholder="Notes / reason"
+                  value={formState.notes}
+                  onChange={(event) => setFormState((prev) => ({ ...prev, notes: event.target.value }))}
+                />
+                <button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Submitting..." : "Submit Post"}
+                </button>
+                {submitError && <p className="empty-state">{submitError}</p>}
+              </form>
+            )}
 
       <section className="course-exchange-filters" aria-label="Course exchange filters">
         <input
           type="text"
           value={search}
-          placeholder="Search by current course, desired course, or student"
+          placeholder="Search by current or desired course"
           onChange={(event) => setSearch(event.target.value)}
         />
 
@@ -105,28 +178,34 @@ function CourseExchange() {
         </select>
       </section>
 
+      {apiError && <p className="empty-state">{apiError}</p>}
+
       <section className="course-exchange-grid" aria-live="polite">
-        {filteredPosts.length > 0 ? (
+        {isLoading ? (
+                  <p className="empty-state">Loading course exchange posts...</p>
+                ) : filteredPosts.length > 0 ? (
           filteredPosts.map((post) => (
-            <article className="course-exchange-card" key={post.id}>
+            <article className="course-exchange-card" key={post.courseExchangeId}>
               <div className="card-top-row">
                 <h2>{post.currentCourse}</h2>
-                <span className={`status-pill ${post.status.toLowerCase()}`}>{post.status}</span>
+                <span className={`status-pill ${(post.status || "open").toLowerCase()}`}>
+                                   {post.status}
+                                 </span>
               </div>
 
-              <p className="student-name">Posted by: {post.studentName}</p>
               <p>
                 <strong>Wants:</strong> {post.desiredCourse}
               </p>
-              <p>
-                <strong>Section:</strong> {post.section}
-              </p>
-              <p>
-                <strong>Schedule:</strong> {post.schedule}
-              </p>
-              <p>
-                <strong>Reason:</strong> {post.reason}
-              </p>
+              {post.section && (
+                              <p>
+                                <strong>Section:</strong> {post.section}
+                              </p>
+                            )}
+                            {post.notes && (
+                              <p>
+                                <strong>Notes:</strong> {post.notes}
+                              </p>
+                            )}
 
               <button type="button">Contact Student</button>
             </article>
