@@ -1,16 +1,4 @@
 services:
-  postgres:
-    image: postgres:15
-    container_name: hub-postgres
-    environment:
-      POSTGRES_DB: ${DATABASE_NAME}
-      POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME}
-      POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - campus-net
-
   backend1:
     build:
       context: ./backend/backend
@@ -60,9 +48,6 @@ services:
       - backend1
     networks:
       - campus-net
-
-volumes:
-  postgres_data:
 
 networks:
   campus-net:
