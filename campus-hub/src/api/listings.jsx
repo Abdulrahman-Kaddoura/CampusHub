@@ -1,37 +1,23 @@
-import { buildApiUrl, buildAuthHeaders } from "./client";
+import { buildApiUrl, buildJsonHeaders, parseApiResponse } from "./client";
 
 const BASE_PATH = "/api/listings";
 
 export const fetchListings = async () => {
   const response = await fetch(buildApiUrl(`${BASE_PATH}/get-listings`), {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: buildJsonHeaders(),
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || "Failed to fetch listings");
-  }
-
-  return response.json();
+  return parseApiResponse(response, "Failed to fetch listings");
 };
 
 export const createListing = async (payload, token) => {
   const response = await fetch(buildApiUrl(`${BASE_PATH}/create-listing`), {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...buildAuthHeaders(token),
-    },
+    headers: buildJsonHeaders(token),
+    credentials: "include",
     body: JSON.stringify(payload),
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || "Failed to create listing");
-  }
-
-  return response.json();
+  return parseApiResponse(response, "Failed to create listing");
 };

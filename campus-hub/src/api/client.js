@@ -33,3 +33,25 @@ export const buildAuthHeaders = (token) => {
   const resolvedToken = resolveAuthToken(token);
   return resolvedToken ? { Authorization: `Bearer ${resolvedToken}` } : {};
 };
+
+export const buildJsonHeaders = (token) => ({
+  "Content-Type": "application/json",
+  ...buildAuthHeaders(token),
+});
+
+export const parseApiResponse = async (response, fallbackMessage) => {
+  const contentType = response.headers.get("content-type") || "";
+  const isJson = contentType.includes("application/json");
+  const body = isJson ? await response.json() : await response.text();
+
+  if (!response.ok) {
+    if (isJson) {
+      const jsonMessage = body?.message || body?.error;
+      throw new Error(jsonMessage || fallbackMessage);
+    }
+
+    throw new Error(body || fallbackMessage);
+  }
+
+  return body;
+};

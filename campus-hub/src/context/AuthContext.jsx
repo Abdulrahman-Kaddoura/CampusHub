@@ -3,6 +3,7 @@ import {
   AUTH_TOKEN_STORAGE_KEY,
   fetchCurrentUser,
   loginUser,
+  logoutUser,
   registerUser,
 } from "../api/auth";
 
@@ -11,16 +12,11 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [token, setToken] = useState(() => localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || "");
-  const [authLoading, setAuthLoading] = useState(Boolean(localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)));
+  const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
-    if (!token) {
-      setCurrentUser(null);
-      setAuthLoading(false);
-      return;
-    }
-
     let isMounted = true;
+
     fetchCurrentUser(token)
       .then((user) => {
         if (isMounted) {
@@ -45,28 +41,37 @@ export function AuthProvider({ children }) {
     };
   }, [token]);
 
-  const saveSession = (authPayload) => {
+  const saveToken = (authPayload) => {
+    if (!authPayload?.token) {
+      return;
+    }
+
     localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, authPayload.token);
     setToken(authPayload.token);
-    setCurrentUser(authPayload.user);
   };
 
   const register = async (payload) => {
     const response = await registerUser(payload);
-    saveSession(response);
-    return response.user;
+    return response;
   };
 
   const login = async (payload) => {
     const response = await loginUser(payload);
-    saveSession(response);
-    return response.user;
+    saveToken(response);
+
+    const user = await fetchCurrentUser(response?.token || token);
+    setCurrentUser(user);
+    return user;
   };
 
-  const logout = () => {
-    localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
-    setToken("");
-    setCurrentUser(null);
+  const logout = async () => {
+    try {
+      await logoutUser();
+    } finally {
+      localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+      setToken("");
+      setCurrentUser(null);
+    }
   };
 
   const updateProfile = useCallback((updates) => {
