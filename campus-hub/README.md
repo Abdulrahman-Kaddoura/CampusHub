@@ -29,3 +29,4 @@ Once the dev server is running, keep it open in one terminal tab/window. In anot
 - Refresh the browser to see changes instantly (Vite hot reload).
 - Navigate directly to any route above.
 - Stop the app anytime with `Ctrl + C` in the terminal running `npm run dev`.
+
