@@ -3,6 +3,7 @@ import "./NavBar.css";
 import logo from "../assets/logo.svg";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { FEATURE_FLAGS } from "../config/features";
 
 function NavBar() {
   const { currentUser, isAuthenticated, logout } = useAuth();
@@ -43,21 +44,27 @@ function NavBar() {
                 Market Place
               </NavLink>
             </li>
-            <li className="list-item">
-              <NavLink to="/CourseExchange" className={({ isActive }) => (isActive ? "active" : "")} onClick={closeMenu}>
-                Course Exchange
-              </NavLink>
-            </li>
-            <li className="list-item">
-              <NavLink to="/Tutoring" className={({ isActive }) => (isActive ? "active" : "")} onClick={closeMenu}>
-                Tutoring
-              </NavLink>
-            </li>
-            <li className="list-item">
-              <NavLink to="/Housing" className={({ isActive }) => (isActive ? "active" : "")} onClick={closeMenu}>
-                Housing
-              </NavLink>
-            </li>
+            {FEATURE_FLAGS.courseExchange ? (
+              <li className="list-item">
+                <NavLink to="/CourseExchange" className={({ isActive }) => (isActive ? "active" : "")} onClick={closeMenu}>
+                  Course Exchange
+                </NavLink>
+              </li>
+            ) : null}
+            {FEATURE_FLAGS.tutoring ? (
+              <li className="list-item">
+                <NavLink to="/Tutoring" className={({ isActive }) => (isActive ? "active" : "")} onClick={closeMenu}>
+                  Tutoring
+                </NavLink>
+              </li>
+            ) : null}
+            {FEATURE_FLAGS.housing ? (
+              <li className="list-item">
+                <NavLink to="/Housing" className={({ isActive }) => (isActive ? "active" : "")} onClick={closeMenu}>
+                  Housing
+                </NavLink>
+              </li>
+            ) : null}
           </ul>
 
           <div className="student">
@@ -65,7 +72,7 @@ function NavBar() {
               {isAuthenticated ? "Welcome, Student!" : "Welcome, Guest!"}
             </p>
             <div className="auth-buttons">
-              {isAuthenticated ? (
+              {FEATURE_FLAGS.auth && isAuthenticated ? (
                 <>
                   <Link to="/profile" className="auth-button link-button profile-link" onClick={closeMenu}>
                     Profile
@@ -74,10 +81,12 @@ function NavBar() {
                     Logout
                   </button>
                 </>
-              ) : (
+              ) : FEATURE_FLAGS.auth ? (
                 <Link to="/auth" className="auth-button link-button" onClick={closeMenu}>
                   Login / Register
                 </Link>
+              ) : (
+                <p className="welcome">Auth unavailable</p>
               )}
             </div>
           </div>

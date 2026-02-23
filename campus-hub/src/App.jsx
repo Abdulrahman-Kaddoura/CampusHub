@@ -1,5 +1,5 @@
 import './App.css'
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import MarketPlace from './pages/MarketPlace/MarketPlace';
 import MarketPlaceCategory from './pages/MarketPlace/MarketPlaceCategory';
 import CourseExchange from './pages/CourseExchange';
@@ -8,6 +8,7 @@ import Tutoring from './pages/Tutoring';
 import NavBar from './components/NavBar';
 import AuthPage from './pages/Auth/AuthPage';
 import ProfilePage from './pages/Profile/ProfilePage';
+import { FEATURE_FLAGS } from './config/features';
 
 function App() {
   const location = useLocation();
@@ -15,15 +16,15 @@ function App() {
 
   return (
     <>
-      {!isAuthPage && <NavBar />}
+      {(!isAuthPage || !FEATURE_FLAGS.auth) && <NavBar />}
       <Routes>
         <Route path="/" element={<MarketPlace />} />
         <Route path="/marketplace/category/:categoryName" element={<MarketPlaceCategory />} />
-        <Route path="/tutoring" element={<Tutoring />} />
-        <Route path="/housing" element={<Housing />} />
-        <Route path="/courseexchange" element={<CourseExchange />} />
-        <Route path="/auth" element={<AuthPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/tutoring" element={FEATURE_FLAGS.tutoring ? <Tutoring /> : <Navigate to="/" replace />} />
+        <Route path="/housing" element={FEATURE_FLAGS.housing ? <Housing /> : <Navigate to="/" replace />} />
+        <Route path="/courseexchange" element={FEATURE_FLAGS.courseExchange ? <CourseExchange /> : <Navigate to="/" replace />} />
+        <Route path="/auth" element={FEATURE_FLAGS.auth ? <AuthPage /> : <Navigate to="/" replace />} />
+        <Route path="/profile" element={FEATURE_FLAGS.auth ? <ProfilePage /> : <Navigate to="/" replace />} />
       </Routes>
     </>
   )

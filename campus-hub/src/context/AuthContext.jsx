@@ -6,6 +6,7 @@ import {
   logoutUser,
   registerUser,
 } from "../api/auth";
+import { FEATURE_FLAGS } from "../config/features";
 
 const AuthContext = createContext(null);
 
@@ -15,6 +16,12 @@ export function AuthProvider({ children }) {
   const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
+    if (!FEATURE_FLAGS.auth) {
+      setCurrentUser(null);
+      setAuthLoading(false);
+      return;
+    }
+
     let isMounted = true;
 
     fetchCurrentUser(token)
@@ -51,11 +58,19 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (payload) => {
+    if (!FEATURE_FLAGS.auth) {
+      throw new Error("Authentication is currently unavailable.");
+    }
+
     const response = await registerUser(payload);
     return response;
   };
 
   const login = async (payload) => {
+    if (!FEATURE_FLAGS.auth) {
+      throw new Error("Authentication is currently unavailable.");
+    }
+
     const response = await loginUser(payload);
     saveToken(response);
 
@@ -65,6 +80,10 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
+    if (!FEATURE_FLAGS.auth) {
+      return;
+    }
+
     try {
       await logoutUser();
     } finally {
