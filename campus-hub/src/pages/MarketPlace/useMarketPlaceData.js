@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import { fetchListings } from "../../api/listings";
-import { products } from "../../products";
 
 function toListingShape(p) {
   if (p.listingId != null) {
@@ -49,25 +48,7 @@ export function useMarketPlaceData() {
   }, []);
 
   const items = useMemo(() => {
-    const fromApi = (apiListings || []).map(toListingShape);
-    const fromProducts = (products || []).map(toListingShape);
-    const seen = new Set();
-    const merged = [];
-    fromApi.forEach((item) => {
-      const key = item.listingId ?? item.title;
-      if (!seen.has(key)) {
-        seen.add(key);
-        merged.push(item);
-      }
-    });
-    fromProducts.forEach((item) => {
-      const key = item.listingId ?? item.title;
-      if (!seen.has(key)) {
-        seen.add(key);
-        merged.push(item);
-      }
-    });
-    return merged;
+    return (apiListings || []).map(toListingShape);
   }, [apiListings]);
 
   const categoriesWithItems = useMemo(() => {
