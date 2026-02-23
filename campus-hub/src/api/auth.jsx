@@ -2,11 +2,22 @@ import { buildApiUrl, buildJsonHeaders, parseApiResponse } from "./client";
 import { AUTH_TOKEN_STORAGE_KEY } from "./constants";
 
 const BASE_PATH = "/api/auth";
+const FALLBACK_BASE_PATH = "/auth";
 
 export { AUTH_TOKEN_STORAGE_KEY };
 
+const sendAuthRequest = async (path, options) => {
+  const response = await fetch(buildApiUrl(`${BASE_PATH}${path}`), options);
+
+  if (response.status !== 404) {
+    return response;
+  }
+
+  return fetch(buildApiUrl(`${FALLBACK_BASE_PATH}${path}`), options);
+};
+
 export const registerUser = async (payload) => {
-  const response = await fetch(buildApiUrl(`${BASE_PATH}/register`), {
+  const response = await sendAuthRequest("/register", {
     method: "POST",
     headers: buildJsonHeaders(),
     credentials: "include",
@@ -17,7 +28,7 @@ export const registerUser = async (payload) => {
 };
 
 export const loginUser = async (payload) => {
-  const response = await fetch(buildApiUrl(`${BASE_PATH}/login`), {
+  const response = await sendAuthRequest("/login", {
     method: "POST",
     headers: buildJsonHeaders(),
     credentials: "include",
@@ -28,7 +39,7 @@ export const loginUser = async (payload) => {
 };
 
 export const logoutUser = async () => {
-  const response = await fetch(buildApiUrl(`${BASE_PATH}/logout`), {
+  const response = await sendAuthRequest("/logout", {
     method: "POST",
     headers: buildJsonHeaders(),
     credentials: "include",
@@ -38,7 +49,7 @@ export const logoutUser = async () => {
 };
 
 export const fetchCurrentUser = async (token) => {
-  const response = await fetch(buildApiUrl(`${BASE_PATH}/me`), {
+  const response = await sendAuthRequest("/me", {
     method: "GET",
     headers: buildJsonHeaders(token),
     credentials: "include",
