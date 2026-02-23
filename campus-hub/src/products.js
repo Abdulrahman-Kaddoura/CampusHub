@@ -1,7 +1,7 @@
 import bookImg from "./assets/book.jpg";
 import book2Img from "./assets/book2.jpg";
-import book4Img from "./assets/book4.webp";
 import organicChemImg from "./assets/organic-chem.svg";
+import graphingCalculatorImg from "./assets/graphing-calculator.svg";
 
 const placeholder = (id, w = 400, h = 300) =>
   `https://images.unsplash.com/photo-${id}?w=${w}&h=${h}&fit=crop`;
@@ -60,7 +60,7 @@ export const products = [
     price: 35,
     description: "Sample description of the item's current state.",
     category: "Books",
-    productImage: book4Img,
+    productImage: graphingCalculatorImg,
     discountPercent: 56,
   },
 ];
