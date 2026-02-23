@@ -1,7 +1,9 @@
-const BASE_URL = "/api/listings";
+import { buildApiUrl, buildAuthHeaders } from "./client";
+
+const BASE_PATH = "/api/listings";
 
 export const fetchListings = async () => {
-  const response = await fetch(`${BASE_URL}/get-listings`, {
+  const response = await fetch(buildApiUrl(`${BASE_PATH}/get-listings`), {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -13,15 +15,15 @@ export const fetchListings = async () => {
     throw new Error(errorText || "Failed to fetch listings");
   }
 
-  return await response.json();
+  return response.json();
 };
 
 export const createListing = async (payload, token) => {
-  const response = await fetch(`${BASE_URL}/create-listing`, {
+  const response = await fetch(buildApiUrl(`${BASE_PATH}/create-listing`), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...buildAuthHeaders(token),
     },
     body: JSON.stringify(payload),
   });
@@ -31,5 +33,5 @@ export const createListing = async (payload, token) => {
     throw new Error(errorText || "Failed to create listing");
   }
 
-  return await response.json();
+  return response.json();
 };

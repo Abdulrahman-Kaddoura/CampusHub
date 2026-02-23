@@ -1,4 +1,6 @@
-const BASE_URL = "/api/listingImage";
+import { buildApiUrl, buildAuthHeaders } from "./client";
+
+const BASE_PATH = "/api/listingImage";
 
 /**
  * Upload an image for a listing. Call after creating the listing to attach an image.
@@ -10,10 +12,10 @@ export const uploadListingImage = async (listingId, file, token) => {
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await fetch(`${BASE_URL}/upload-listing-image/${listingId}`, {
+  const response = await fetch(buildApiUrl(`${BASE_PATH}/upload-listing-image/${listingId}`), {
     method: "POST",
     headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...buildAuthHeaders(token),
     },
     body: formData,
   });
@@ -23,5 +25,5 @@ export const uploadListingImage = async (listingId, file, token) => {
     throw new Error(errorText || "Failed to upload image");
   }
 
-  return await response.json();
+  return response.json();
 };

@@ -1,5 +1,7 @@
-const BASE_URL = "/api/auth";
-export const AUTH_TOKEN_STORAGE_KEY = "campusHubAuthToken";
+import { buildApiUrl, buildAuthHeaders } from "./client";
+import { AUTH_TOKEN_STORAGE_KEY } from "./constants";
+
+const BASE_PATH = "/api/auth";
 
 const parseResponse = async (response, fallbackMessage) => {
   if (!response.ok) {
@@ -10,8 +12,10 @@ const parseResponse = async (response, fallbackMessage) => {
   return response.json();
 };
 
+export { AUTH_TOKEN_STORAGE_KEY };
+
 export const registerUser = async (payload) => {
-  const response = await fetch(`${BASE_URL}/register`, {
+  const response = await fetch(buildApiUrl(`${BASE_PATH}/register`), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -21,7 +25,7 @@ export const registerUser = async (payload) => {
 };
 
 export const loginUser = async (payload) => {
-  const response = await fetch(`${BASE_URL}/login`, {
+  const response = await fetch(buildApiUrl(`${BASE_PATH}/login`), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -31,11 +35,11 @@ export const loginUser = async (payload) => {
 };
 
 export const fetchCurrentUser = async (token) => {
-  const response = await fetch(`${BASE_URL}/me`, {
+  const response = await fetch(buildApiUrl(`${BASE_PATH}/me`), {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      ...buildAuthHeaders(token),
     },
   });
 

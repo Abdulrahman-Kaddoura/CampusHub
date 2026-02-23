@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
 import { fetchListings } from "../../api/listings";
+import { buildApiUrl } from "../../api/client";
 
 function toListingShape(p) {
   if (p.listingId != null) {
     return {
       ...p,
       imageUrl: p.firstImageId
-        ? `/api/listingImage/download-listing-image/${p.firstImageId}`
+        ? buildApiUrl(`/api/listingImage/download-listing-image/${p.firstImageId}`)
         : (p.imageUrl ?? p.productImage),
     };
   }

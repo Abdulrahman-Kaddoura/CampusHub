@@ -1,4 +1,6 @@
-const BASE_URL = "/api/tutoring";
+import { buildApiUrl, buildAuthHeaders } from "./client";
+
+const BASE_PATH = "/api/tutoring";
 
 const parseResponse = async (response, fallbackMessage) => {
   if (!response.ok) {
@@ -10,7 +12,7 @@ const parseResponse = async (response, fallbackMessage) => {
 };
 
 export const fetchTutoringPosts = async () => {
-  const response = await fetch(`${BASE_URL}/get-tutoring`, {
+  const response = await fetch(buildApiUrl(`${BASE_PATH}/get-tutoring`), {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
@@ -19,11 +21,11 @@ export const fetchTutoringPosts = async () => {
 };
 
 export const createTutoringPost = async (payload, token) => {
-  const response = await fetch(`${BASE_URL}/create-tutoring`, {
+  const response = await fetch(buildApiUrl(`${BASE_PATH}/create-tutoring`), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...buildAuthHeaders(token),
     },
     body: JSON.stringify(payload),
   });
