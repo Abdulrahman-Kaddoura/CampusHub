@@ -1,4 +1,6 @@
-const BASE_URL = "/api/course-exchange";
+import { buildApiUrl, buildAuthHeaders } from "./client";
+
+const BASE_PATH = "/api/course-exchange";
 
 const parseResponse = async (response, fallbackMessage) => {
   if (!response.ok) {
@@ -10,7 +12,7 @@ const parseResponse = async (response, fallbackMessage) => {
 };
 
 export const fetchCourseExchangePosts = async () => {
-  const response = await fetch(`${BASE_URL}/get-course-exchanges`, {
+  const response = await fetch(buildApiUrl(`${BASE_PATH}/get-course-exchanges`), {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
@@ -19,11 +21,11 @@ export const fetchCourseExchangePosts = async () => {
 };
 
 export const createCourseExchangePost = async (payload, token) => {
-  const response = await fetch(`${BASE_URL}/create-course-exchange`, {
+  const response = await fetch(buildApiUrl(`${BASE_PATH}/create-course-exchange`), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...buildAuthHeaders(token),
     },
     body: JSON.stringify(payload),
   });

@@ -1,6 +1,8 @@
-const BASE_URL = "/api/user";
+import { v4 as uuidv4 } from "uuid";
+import { buildApiUrl } from "./client";
+
+const BASE_PATH = "/api/user";
 const TEMP_USER_STORAGE_KEY = "campusHubTempUserId";
-import { v4 as uuidv4 } from 'uuid';
 
 const buildTempUserPayload = () => {
   const randomId = crypto?.randomUUID?.() || uuidv4();
@@ -17,14 +19,12 @@ const buildTempUserPayload = () => {
 };
 
 export const createTempUser = async () => {
-  // Check if we already have a temp user ID stored
   const storedUserId = localStorage.getItem(TEMP_USER_STORAGE_KEY);
   if (storedUserId) {
     return storedUserId;
   }
 
-  // Create a new temp user via API
-  const response = await fetch(`${BASE_URL}/create-user`, {
+  const response = await fetch(buildApiUrl(`${BASE_PATH}/create-user`), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -43,7 +43,6 @@ export const createTempUser = async () => {
     throw new Error("Temporary user creation did not return a user ID.");
   }
 
-  // Store the user ID in localStorage
   localStorage.setItem(TEMP_USER_STORAGE_KEY, userId);
   return userId;
 };
