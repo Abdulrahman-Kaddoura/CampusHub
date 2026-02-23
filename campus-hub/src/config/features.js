@@ -16,9 +16,9 @@ const readBooleanEnv = (value, defaultValue = false) => {
 };
 
 export const FEATURE_FLAGS = {
-  auth: readBooleanEnv(import.meta.env.VITE_ENABLE_AUTH, false),
-  housing: readBooleanEnv(import.meta.env.VITE_ENABLE_HOUSING, false),
-  tutoring: readBooleanEnv(import.meta.env.VITE_ENABLE_TUTORING, false),
-  courseExchange: readBooleanEnv(import.meta.env.VITE_ENABLE_COURSE_EXCHANGE, false),
+  auth: readBooleanEnv(import.meta.env.VITE_ENABLE_AUTH, true),
+  housing: readBooleanEnv(import.meta.env.VITE_ENABLE_HOUSING, true),
+  tutoring: readBooleanEnv(import.meta.env.VITE_ENABLE_TUTORING, true),
+  courseExchange: readBooleanEnv(import.meta.env.VITE_ENABLE_COURSE_EXCHANGE, true),
 };
 
