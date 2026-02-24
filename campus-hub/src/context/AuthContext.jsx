@@ -5,6 +5,8 @@ import {
   loginUser,
   logoutUser,
   registerUser,
+  resendVerificationEmail,
+  verifyEmailCode,
 } from "../api/auth";
 import { FEATURE_FLAGS } from "../config/features";
 
@@ -79,6 +81,22 @@ export function AuthProvider({ children }) {
     return user;
   };
 
+  const verifyEmail = async (payload) => {
+    if (!FEATURE_FLAGS.auth) {
+      throw new Error("Authentication is currently unavailable.");
+    }
+
+    return verifyEmailCode(payload);
+  };
+
+  const resendVerification = async (payload) => {
+    if (!FEATURE_FLAGS.auth) {
+      throw new Error("Authentication is currently unavailable.");
+    }
+
+    return resendVerificationEmail(payload);
+  };
+
   const logout = async () => {
     if (!FEATURE_FLAGS.auth) {
       return;
@@ -113,6 +131,8 @@ export function AuthProvider({ children }) {
       authLoading,
       isAuthenticated: Boolean(currentUser),
       register,
+      verifyEmail,
+      resendVerification,
       login,
       logout,
       updateProfile,
