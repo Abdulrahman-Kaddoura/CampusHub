@@ -55,6 +55,23 @@
   cursor: pointer;
 }
 
+.auth-secondary-button {
+  margin-top: 0.4rem;
+  padding: 0.8rem;
+  border: 1px solid #008ecc;
+  border-radius: 8px;
+  background: white;
+  color: #008ecc;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .auth-error {
   color: #cc0000;
   margin: 0;
