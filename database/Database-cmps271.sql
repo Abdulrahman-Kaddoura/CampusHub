@@ -1,67 +1,115 @@
-CREATE TABLE users (
-  user_id INT PRIMARY KEY,
-  full_name VARCHAR(100) NOT NULL,
-  email VARCHAR(100) NOT NULL UNIQUE,
-  password_hash VARCHAR(255) NOT NULL,
+-- CampusHub PostgreSQL schema aligned with JPA entities in backend/backend/src/main/java/com/campushub/backend/models
+-- Run this script on RDS before starting the app if you do not want Hibernate auto-ddl to manage schema.
+
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+CREATE TABLE IF NOT EXISTS users (
+  user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  username VARCHAR(50) NOT NULL UNIQUE,
+  first_name VARCHAR(100) NOT NULL,
+  last_name VARCHAR(100) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  phone_number VARCHAR(20) UNIQUE,
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
-  phone VARCHAR(20),
   status VARCHAR(20) NOT NULL,
-  profile_picture VARCHAR(255)
+  password VARCHAR(255) NOT NULL,
+  email_verification_token VARCHAR(255),
+  email_verification_expires_at TIMESTAMP,
+  email_verified_at TIMESTAMP,
+  password_reset_token VARCHAR(255),
+  password_reset_expires_at TIMESTAMP
 );
 
-CREATE TABLE category (
-  category_id INT PRIMARY KEY,
-  name VARCHAR(50) NOT NULL UNIQUE
+CREATE TABLE IF NOT EXISTS category (
+  category_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(50) NOT NULL UNIQUE,
+  parent_id UUID,
+  CONSTRAINT fk_category_parent FOREIGN KEY (parent_id) REFERENCES category(category_id)
 );
 
-CREATE TABLE listing (
-  listing_id INT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS listings (
+  listing_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title VARCHAR(100) NOT NULL,
-  description TEXT NOT NULL,
-  condition VARCHAR(50) NOT NULL,
-  location VARCHAR(100),
+  description VARCHAR(500),
   price DECIMAL(10,2) NOT NULL,
+  created_at TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP NOT NULL,
+  category_id UUID NOT NULL,
   status VARCHAR(20) NOT NULL,
-  created_at TIMESTAMP NOT NULL,
-  seller_id INT NOT NULL,
-  category_id INT NOT NULL,
-  FOREIGN KEY (seller_id) REFERENCES users(user_id),
-  FOREIGN KEY (category_id) REFERENCES category(category_id)
+  user_id UUID NOT NULL,
+  buyer_id UUID,
+  CONSTRAINT fk_listings_category FOREIGN KEY (category_id) REFERENCES category(category_id),
+  CONSTRAINT fk_listings_user FOREIGN KEY (user_id) REFERENCES users(user_id),
+  CONSTRAINT fk_listings_buyer FOREIGN KEY (buyer_id) REFERENCES users(user_id)
 );
 
-CREATE TABLE listing_image (
-  image_id INT PRIMARY KEY,
-  image_path VARCHAR(255) NOT NULL,
-  sort_order INT,
-  listing_id INT NOT NULL,
-  FOREIGN KEY (listing_id) REFERENCES listing(listing_id)
+CREATE TABLE IF NOT EXISTS listing_images (
+  image_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  file_name VARCHAR(255) NOT NULL,
+  file_type VARCHAR(255) NOT NULL,
+  image_data BYTEA NOT NULL,
+  file_size BIGINT,
+  upload_date TIMESTAMP,
+  listing_id UUID NOT NULL,
+  CONSTRAINT fk_listing_images_listing FOREIGN KEY (listing_id) REFERENCES listings(listing_id)
 );
 
-CREATE TABLE wanted_item (
-  item_id INT PRIMARY KEY,
-  title VARCHAR(100) NOT NULL,
-  description TEXT NOT NULL,
-  created_at TIMESTAMP NOT NULL,
-  category_id INT NOT NULL,
-  user_id INT NOT NULL,
-  FOREIGN KEY (category_id) REFERENCES category(category_id),
-  FOREIGN KEY (user_id) REFERENCES users(user_id)
+CREATE TABLE IF NOT EXISTS cart (
+  cart_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  total_price DECIMAL(10,2) NOT NULL DEFAULT 0,
+  listings_quantity INTEGER NOT NULL DEFAULT 0,
+  user_id UUID NOT NULL UNIQUE,
+  CONSTRAINT fk_cart_user FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
-CREATE TABLE cart (
-  cart_id INT PRIMARY KEY,
-  user_id INT NOT NULL UNIQUE,
-  FOREIGN KEY (user_id) REFERENCES users(user_id)
-);
-
-CREATE TABLE cart_item (
-  cart_item_id INT PRIMARY KEY,
-  cart_id INT NOT NULL,
-  listing_id INT NOT NULL,
+CREATE TABLE IF NOT EXISTS cart_items (
+  cart_item_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  listing_id UUID NOT NULL,
   unit_price DECIMAL(10,2) NOT NULL,
-  quantity INT NOT NULL CHECK (quantity > 0),
-  FOREIGN KEY (cart_id) REFERENCES cart(cart_id),
-  FOREIGN KEY (listing_id) REFERENCES listing(listing_id),
-  UNIQUE (cart_id, listing_id)
+  quantity INTEGER NOT NULL CHECK (quantity > 0),
+  cart_id UUID,
+  CONSTRAINT fk_cart_items_listing FOREIGN KEY (listing_id) REFERENCES listings(listing_id),
+  CONSTRAINT fk_cart_items_cart FOREIGN KEY (cart_id) REFERENCES cart(cart_id)
+);
+
+CREATE TABLE IF NOT EXISTS dorms (
+  dorm_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title VARCHAR(100) NOT NULL,
+  description VARCHAR(500),
+  location VARCHAR(150) NOT NULL,
+  room_type VARCHAR(50) NOT NULL,
+  monthly_rent DECIMAL(10,2) NOT NULL,
+  available_from DATE NOT NULL,
+  created_at TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP NOT NULL,
+  user_id UUID NOT NULL,
+  CONSTRAINT fk_dorms_user FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE IF NOT EXISTS tutoring_posts (
+  tutoring_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  course VARCHAR(120) NOT NULL,
+  tutor_name VARCHAR(120) NOT NULL,
+  department VARCHAR(80) NOT NULL,
+  format VARCHAR(50) NOT NULL,
+  hourly_rate DECIMAL(10,2) NOT NULL,
+  description VARCHAR(500),
+  created_at TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP NOT NULL,
+  user_id UUID NOT NULL,
+  CONSTRAINT fk_tutoring_posts_user FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE IF NOT EXISTS course_exchange_posts (
+  course_exchange_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  current_course VARCHAR(120) NOT NULL,
+  desired_course VARCHAR(120) NOT NULL,
+  section VARCHAR(50),
+  status VARCHAR(40) NOT NULL,
+  notes VARCHAR(500),
+  created_at TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP NOT NULL,
+  user_id UUID NOT NULL,
+  CONSTRAINT fk_course_exchange_posts_user FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
