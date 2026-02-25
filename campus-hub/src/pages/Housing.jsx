@@ -4,185 +4,321 @@ import { createDormListing, fetchDormListings } from "../api/dorms";
 import { useAuth } from "../context/AuthContext";
 import "./Housing.css";
 
+const AUB_AREAS = ["Bliss Street", "Hamra", "Ain Mraisseh", "Manara", "Ras Beirut"];
 
+const FEATURED_AUB_LISTINGS = [
+  {
+    dormId: "featured-1",
+    title: "Modern Studio on Bliss Street",
+    location: "Bliss Street",
+    roomType: "Studio",
+    monthlyRent: 850,
+    availableFrom: "2026-03-01",
+    description: "2-minute walk to AUB Gate 2, fully furnished, 24/7 electricity and fiber internet.",
+    isFeatured: true,
+  },
+  {
+    dormId: "featured-2",
+    title: "Shared Flat for 2 in Hamra",
+    location: "Hamra",
+    roomType: "Shared Apartment",
+    monthlyRent: 600,
+    availableFrom: "2026-03-10",
+    description: "Quiet street, close to cafes and supermarkets, ideal for AUB undergrads.",
+    isFeatured: true,
+  },
+  {
+    dormId: "featured-3",
+    title: "Sea-View One Bedroom in Ain Mraisseh",
+    location: "Ain Mraisseh",
+    roomType: "1 Bedroom",
+    monthlyRent: 1200,
+    availableFrom: "2026-04-01",
+    description: "Spacious apartment with balcony, 8-minute walk to campus and corniche access.",
+    isFeatured: true,
+  },
+  {
+    dormId: "featured-4",
+    title: "Budget Room near Manara",
+    location: "Manara",
+    roomType: "Private Room",
+    monthlyRent: 500,
+    availableFrom: "2026-02-15",
+    description: "Affordable option with shared kitchen and great bus access to AUB.",
+    isFeatured: true,
+  },
+  {
+    dormId: "featured-5",
+    title: "Premium Apartment in Ras Beirut",
+    location: "Ras Beirut",
+    roomType: "2 Bedroom",
+    monthlyRent: 1450,
+    availableFrom: "2026-03-20",
+    description: "Ideal for roommates, newly renovated, AC and generator included.",
+    isFeatured: true,
+  },
+];
+
+const formatDate = (dateString) =>
+  new Date(dateString).toLocaleDateString("en-GB", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 
 function Housing() {
-    const { currentUser, token, isAuthenticated } = useAuth();
+  const { currentUser, token, isAuthenticated } = useAuth();
   const [search, setSearch] = useState("");
   const [selectedType, setSelectedType] = useState("All Types");
+  const [selectedArea, setSelectedArea] = useState("All Areas");
   const [minBudget, setMinBudget] = useState(400);
   const [maxBudget, setMaxBudget] = useState(1600);
-  const [listings, setListings] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [apiError, setApiError] = useState("");
-    const [isFormOpen, setIsFormOpen] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitError, setSubmitError] = useState("");
-    const [formState, setFormState] = useState({
-      title: "",
-      description: "",
-      location: "",
-      roomType: "",
-      monthlyRent: "",
-      availableFrom: "",
-    });
+  const [apiListings, setApiListings] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [apiError, setApiError] = useState("");
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [formState, setFormState] = useState({
+    title: "",
+    description: "",
+    location: "",
+    roomType: "",
+    monthlyRent: "",
+    availableFrom: "",
+  });
+
+  const listings = useMemo(() => {
+    if (apiListings.length === 0) {
+      return FEATURED_AUB_LISTINGS;
+    }
+
+    const mappedApiListings = apiListings.map((listing) => ({
+      ...listing,
+      isFeatured: false,
+    }));
+
+    return [...FEATURED_AUB_LISTINGS, ...mappedApiListings];
+  }, [apiListings]);
 
   const loadDorms = async () => {
-      try {
-        setApiError("");
-        const data = await fetchDormListings();
-        setListings(Array.isArray(data) ? data : []);
-      } catch (error) {
-        setApiError(error.message);
-        setListings([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    try {
+      setApiError("");
+      const data = await fetchDormListings();
+      setApiListings(Array.isArray(data) ? data : []);
+    } catch (error) {
+      setApiError("Live listings are unavailable right now. Showing curated AUB housing options.");
+      setApiListings([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    useEffect(() => {
-      loadDorms();
+  useEffect(() => {
+    loadDorms();
   }, []);
 
-  const typeOptions = useMemo(() => {
-      return ["All Types", ...new Set(listings.map((item) => item.roomType).filter(Boolean))];
-    }, [listings]);
+  const typeOptions = useMemo(
+    () => ["All Types", ...new Set(listings.map((item) => item.roomType).filter(Boolean))],
+    [listings]
+  );
+
+  const areaOptions = useMemo(() => {
+    const dynamicAreas = listings
+      .map((item) => item.location)
+      .filter(Boolean)
+      .map((location) => AUB_AREAS.find((area) => location.toLowerCase().includes(area.toLowerCase())))
+      .filter(Boolean);
+
+    return ["All Areas", ...new Set([...AUB_AREAS, ...dynamicAreas])];
+  }, [listings]);
 
   const normalizedMinBudget = Math.min(minBudget, maxBudget);
   const normalizedMaxBudget = Math.max(minBudget, maxBudget);
+
+  const housingMetrics = useMemo(() => {
+    if (listings.length === 0) {
+      return { totalListings: 0, avgRent: 0, cheapestRent: 0 };
+    }
+
+    const rents = listings.map((item) => Number(item.monthlyRent || 0)).filter((rent) => rent > 0);
+
+    return {
+      totalListings: listings.length,
+      avgRent: Math.round(rents.reduce((acc, rent) => acc + rent, 0) / rents.length),
+      cheapestRent: Math.min(...rents),
+    };
+  }, [listings]);
 
   const filteredListings = useMemo(() => {
     const query = search.trim().toLowerCase();
 
     return listings.filter((item) => {
-          const title = item.title || "";
-          const location = item.location || "";
-          const description = item.description || "";
+      const title = item.title || "";
+      const location = item.location || "";
+      const description = item.description || "";
       const matchesSearch =
         title.toLowerCase().includes(query) ||
-                location.toLowerCase().includes(query) ||
-                description.toLowerCase().includes(query);
+        location.toLowerCase().includes(query) ||
+        description.toLowerCase().includes(query);
 
       const matchesType = selectedType === "All Types" || item.roomType === selectedType;
-            const rent = Number(item.monthlyRent || 0);
-            const matchesBudget = rent >= normalizedMinBudget && rent <= normalizedMaxBudget;
+      const matchesArea =
+        selectedArea === "All Areas" ||
+        location.toLowerCase().includes(selectedArea.toLowerCase());
+      const rent = Number(item.monthlyRent || 0);
+      const matchesBudget = rent >= normalizedMinBudget && rent <= normalizedMaxBudget;
 
-      return matchesSearch && matchesType && matchesBudget;
+      return matchesSearch && matchesType && matchesArea && matchesBudget;
     });
-  }, [listings, search, selectedType, normalizedMinBudget, normalizedMaxBudget]);
+  }, [listings, search, selectedType, selectedArea, normalizedMinBudget, normalizedMaxBudget]);
 
-    const handleCreateDorm = async (event) => {
-      event.preventDefault();
-      if (!currentUser?.id) {
-        setSubmitError("You must be logged in to create a housing listing.");
-        return;
-      }
+  const handleCreateDorm = async (event) => {
+    event.preventDefault();
+    if (!currentUser?.id) {
+      setSubmitError("You must be logged in to create a housing listing.");
+      return;
+    }
 
-      setIsSubmitting(true);
-      setSubmitError("");
+    setIsSubmitting(true);
+    setSubmitError("");
 
-      try {
-        await createDormListing(
-          {
-            ...formState,
-            monthlyRent: Number(formState.monthlyRent),
-            userId: currentUser.id,
-          },
-          token
-        );
-        setFormState({
-          title: "",
-          description: "",
-          location: "",
-          roomType: "",
-          monthlyRent: "",
-          availableFrom: "",
-        });
-        setIsFormOpen(false);
-        setIsLoading(true);
-        await loadDorms();
-      } catch (error) {
-        setSubmitError(error.message);
-      } finally {
-        setIsSubmitting(false);
-      }
-    };
+    try {
+      await createDormListing(
+        {
+          ...formState,
+          monthlyRent: Number(formState.monthlyRent),
+          userId: currentUser.id,
+        },
+        token
+      );
+      setFormState({
+        title: "",
+        description: "",
+        location: "",
+        roomType: "",
+        monthlyRent: "",
+        availableFrom: "",
+      });
+      setIsFormOpen(false);
+      setIsLoading(true);
+      await loadDorms();
+    } catch (error) {
+      setSubmitError(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <main className="housing-page">
       <header className="housing-header">
-        <h1>Housing at AUB</h1>
+        <p className="housing-eyebrow">AUB Student Housing Hub</p>
+        <h1>Housing options built for AUB students</h1>
         <p>
-          Explore student-friendly rentals around the American University of Beirut. Filter by
-                    budget, property type, and location near campus.
+          Discover curated listings in Hamra, Ain Mraisseh, Bliss Street, and surrounding
+          neighborhoods near the American University of Beirut.
         </p>
+
+        <div className="housing-neighborhoods" aria-label="AUB neighborhood quick filters">
+          {AUB_AREAS.map((area) => (
+            <button
+              key={area}
+              type="button"
+              className={selectedArea === area ? "neighborhood-chip active" : "neighborhood-chip"}
+              onClick={() => setSelectedArea(area)}
+            >
+              {area}
+            </button>
+          ))}
+        </div>
+
+        <div className="housing-metrics" aria-label="AUB housing market summary">
+          <article>
+            <strong>{housingMetrics.totalListings}</strong>
+            <span>Active Listings</span>
+          </article>
+          <article>
+            <strong>${housingMetrics.avgRent || "-"}</strong>
+            <span>Average Monthly Rent</span>
+          </article>
+          <article>
+            <strong>${housingMetrics.cheapestRent || "-"}</strong>
+            <span>Cheapest Option</span>
+          </article>
+        </div>
+
         {isAuthenticated ? (
-                  <button type="button" onClick={() => setIsFormOpen((v) => !v)}>
-                    {isFormOpen ? "Cancel" : "Add Housing Listing"}
-                  </button>
-                ) : (
-                  <Link className="add-item" to="/auth">
-                    Login to Add Housing Listing
-                  </Link>
-                )}
+          <button type="button" onClick={() => setIsFormOpen((value) => !value)}>
+            {isFormOpen ? "Cancel" : "Post AUB Listing"}
+          </button>
+        ) : (
+          <Link className="add-item" to="/auth">
+            Login to Add Housing Listing
+          </Link>
+        )}
       </header>
 
       {isFormOpen && (
-              <form className="housing-filters" onSubmit={handleCreateDorm}>
-                <input
-                  type="text"
-                  placeholder="Title"
-                  required
-                  value={formState.title}
-                  onChange={(event) => setFormState((prev) => ({ ...prev, title: event.target.value }))}
-                />
-                <input
-                  type="text"
-                  placeholder="Location"
-                  required
-                  value={formState.location}
-                  onChange={(event) => setFormState((prev) => ({ ...prev, location: event.target.value }))}
-                />
-                <input
-                  type="text"
-                  placeholder="Room Type (e.g. Studio)"
-                  required
-                  value={formState.roomType}
-                  onChange={(event) => setFormState((prev) => ({ ...prev, roomType: event.target.value }))}
-                />
-                <input
-                  type="number"
-                  placeholder="Monthly Rent"
-                  min="0"
-                  step="0.01"
-                  required
-                  value={formState.monthlyRent}
-                  onChange={(event) =>
-                    setFormState((prev) => ({ ...prev, monthlyRent: event.target.value }))
-                  }
-                />
-                <input
-                  type="date"
-                  required
-                  value={formState.availableFrom}
-                  onChange={(event) =>
-                    setFormState((prev) => ({ ...prev, availableFrom: event.target.value }))
-                  }
-                />
-                <input
-                  type="text"
-                  placeholder="Description"
-                  value={formState.description}
-                  onChange={(event) =>
-                    setFormState((prev) => ({ ...prev, description: event.target.value }))
-                  }
-                />
-                <button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Submitting..." : "Submit Listing"}
-                </button>
-                {submitError && <p className="empty-state">{submitError}</p>}
-              </form>
-            )}
+        <form className="housing-filters" onSubmit={handleCreateDorm}>
+          <input
+            type="text"
+            placeholder="Title"
+            required
+            value={formState.title}
+            onChange={(event) => setFormState((prev) => ({ ...prev, title: event.target.value }))}
+          />
+          <input
+            type="text"
+            placeholder="Location"
+            required
+            value={formState.location}
+            onChange={(event) =>
+              setFormState((prev) => ({ ...prev, location: event.target.value }))
+            }
+          />
+          <input
+            type="text"
+            placeholder="Room Type (e.g. Studio)"
+            required
+            value={formState.roomType}
+            onChange={(event) =>
+              setFormState((prev) => ({ ...prev, roomType: event.target.value }))
+            }
+          />
+          <input
+            type="number"
+            placeholder="Monthly Rent"
+            min="0"
+            step="0.01"
+            required
+            value={formState.monthlyRent}
+            onChange={(event) =>
+              setFormState((prev) => ({ ...prev, monthlyRent: event.target.value }))
+            }
+          />
+          <input
+            type="date"
+            required
+            value={formState.availableFrom}
+            onChange={(event) =>
+              setFormState((prev) => ({ ...prev, availableFrom: event.target.value }))
+            }
+          />
+          <input
+            type="text"
+            placeholder="Description"
+            value={formState.description}
+            onChange={(event) =>
+              setFormState((prev) => ({ ...prev, description: event.target.value }))
+            }
+          />
+          <button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Submitting..." : "Submit Listing"}
+          </button>
+          {submitError && <p className="empty-state">{submitError}</p>}
+        </form>
+      )}
 
       <section className="housing-filters" aria-label="Housing filters">
         <input
@@ -194,6 +330,14 @@ function Housing() {
 
         <select value={selectedType} onChange={(event) => setSelectedType(event.target.value)}>
           {typeOptions.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+
+        <select value={selectedArea} onChange={(event) => setSelectedArea(event.target.value)}>
+          {areaOptions.map((option) => (
             <option key={option} value={option}>
               {option}
             </option>
@@ -231,9 +375,11 @@ function Housing() {
             onClick={() => {
               setMinBudget(400);
               setMaxBudget(1600);
+              setSelectedArea("All Areas");
+              setSelectedType("All Types");
             }}
           >
-            Reset Budget
+            Reset Filters
           </button>
         </div>
 
@@ -247,11 +393,14 @@ function Housing() {
 
       <section className="housing-grid" aria-live="polite">
         {isLoading ? (
-                  <p className="empty-state">Loading housing listings...</p>
-                ) : filteredListings.length > 0 ? (
+          <p className="empty-state">Loading housing listings...</p>
+        ) : filteredListings.length > 0 ? (
           filteredListings.map((listing) => (
             <article className="housing-card" key={listing.dormId}>
-              <h2>{listing.title}</h2>
+              <div className="housing-card-head">
+                <h2>{listing.title}</h2>
+                {listing.isFeatured && <span className="featured-badge">Featured AUB Pick</span>}
+              </div>
               <p className="housing-location">{listing.location}</p>
 
               <p>
@@ -261,13 +410,13 @@ function Housing() {
                 <strong>Rent:</strong> ${listing.monthlyRent} / month
               </p>
               <p>
-                <strong>Available From:</strong> {listing.availableFrom}
+                <strong>Available From:</strong> {formatDate(listing.availableFrom)}
               </p>
               {listing.description && (
-                              <p>
-                                <strong>Description:</strong> {listing.description}
-                              </p>
-                            )}
+                <p>
+                  <strong>Description:</strong> {listing.description}
+                </p>
+              )}
 
               <button type="button">Contact Landlord</button>
             </article>
