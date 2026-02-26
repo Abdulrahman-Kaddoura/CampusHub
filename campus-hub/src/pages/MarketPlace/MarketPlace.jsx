@@ -89,6 +89,10 @@ export default function MarketPlace() {
       <HeroCarousel />
 
       <h1 className="marketplace-page-title">Market Place</h1>
+      <p className="marketplace-intro">
+        Buy and sell essentials with the American University of Beirut (AUB) community, from
+        textbooks to apartment basics.
+      </p>
 
       <div className="marketplace-search-row">
         <div className="search-wrap">

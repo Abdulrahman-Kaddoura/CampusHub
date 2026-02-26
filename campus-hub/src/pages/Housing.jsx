@@ -213,7 +213,7 @@ function Housing() {
   return (
     <main className="housing-page">
       <header className="housing-header">
-        <p className="housing-eyebrow">AUB Student Housing Hub</p>
+        <p className="housing-eyebrow">American University of Beirut (AUB) Student Housing Hub</p>
         <h1>Housing options built for AUB students</h1>
         <p>
           Discover curated listings in Hamra, Ain Mraisseh, Bliss Street, and surrounding

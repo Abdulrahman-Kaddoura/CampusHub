@@ -4,6 +4,41 @@ import { createCourseExchangePost, fetchCourseExchangePosts } from "../api/cours
 import { useAuth } from "../context/AuthContext";
 import "./CourseExchange.css";
 
+const FEATURED_AUB_EXCHANGES = [
+  {
+    courseExchangeId: "aub-exchange-1",
+    currentCourse: "EECE 230 - Circuit Analysis (Section 2)",
+    desiredCourse: "EECE 230 - Circuit Analysis (Section 5)",
+    section: "Swap needed due to Tuesday lab conflict",
+    status: "Open",
+    notes: "Can finalize right after registrar approval window opens.",
+  },
+  {
+    courseExchangeId: "aub-exchange-2",
+    currentCourse: "BIOL 210 - Cell Biology (Section 1)",
+    desiredCourse: "CHEM 203 - Analytical Chemistry",
+    section: "Pre-med schedule balancing",
+    status: "Open",
+    notes: "Looking for a better fit with MCAT prep schedule.",
+  },
+  {
+    courseExchangeId: "aub-exchange-3",
+    currentCourse: "ENGL 204 - Academic Writing",
+    desiredCourse: "ENGL 206 - Writing in the Disciplines",
+    section: "Morning section preferred",
+    status: "Matched",
+    notes: "A match is pending advisor sign-off.",
+  },
+  {
+    courseExchangeId: "aub-exchange-4",
+    currentCourse: "STAT 230 - Intro to Probability",
+    desiredCourse: "MATH 203 - Linear Algebra",
+    section: "Need switch before add/drop deadline",
+    status: "Open",
+    notes: "Open to equivalent section swap in either course.",
+  },
+];
+
 function CourseExchange() {
 
     const { currentUser, token, isAuthenticated } = useAuth();
@@ -27,10 +62,11 @@ function CourseExchange() {
       try {
         setApiError("");
         const data = await fetchCourseExchangePosts();
-        setPosts(Array.isArray(data) ? data : []);
+        const normalized = Array.isArray(data) ? data : [];
+        setPosts(normalized.length > 0 ? normalized : FEATURED_AUB_EXCHANGES);
       } catch (error) {
         setApiError(error.message);
-        setPosts([]);
+        setPosts(FEATURED_AUB_EXCHANGES);
       } finally {
         setIsLoading(false);
       }
@@ -100,7 +136,7 @@ function CourseExchange() {
       <header className="course-exchange-header">
         <h1>Course Exchange</h1>
         <p>
-          Find students willing to swap sections or exchange course slots. Filter by course and
+          Find American University of Beirut (AUB) students willing to swap sections or exchange course slots. Filter by course and
                     exchange status to quickly discover available opportunities.
         </p>
         {isAuthenticated ? (
