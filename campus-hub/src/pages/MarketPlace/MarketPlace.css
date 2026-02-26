@@ -11,6 +11,12 @@
   color: #2e2a33;
 }
 
+.marketplace-intro {
+  margin: -0.5rem 0 1.25rem 0;
+  color: #475467;
+  max-width: 760px;
+}
+
 /* Search + filter + Add Item row */
 .marketplace-search-row {
   display: flex;

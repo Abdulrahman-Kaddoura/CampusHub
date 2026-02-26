@@ -4,6 +4,45 @@ import { createTutoringPost, fetchTutoringPosts } from "../api/tutoring";
 import { useAuth } from "../context/AuthContext";
 import "./Tutoring.css";
 
+const FEATURED_AUB_TUTORING = [
+  {
+    tutoringId: "aub-tutor-1",
+    course: "MATH 201 - Calculus III",
+    tutorName: "Rami Khoury",
+    department: "Mathematics",
+    format: "In Person",
+    hourlyRate: 18,
+    description: "AUB senior focusing on vectors, multiple integrals, and exam prep sessions in Jafet Library.",
+  },
+  {
+    tutoringId: "aub-tutor-2",
+    course: "CMPS 212 - Data Structures",
+    tutorName: "Maya Haddad",
+    department: "Computer Science",
+    format: "Hybrid",
+    hourlyRate: 22,
+    description: "Hands-on support with Java labs, linked lists, trees, and midterm problem-solving strategies.",
+  },
+  {
+    tutoringId: "aub-tutor-3",
+    course: "ECON 211 - Principles of Microeconomics",
+    tutorName: "Kareem Youssef",
+    department: "Economics",
+    format: "Online",
+    hourlyRate: 16,
+    description: "Clear explanations of elasticity, market structures, and weekly quiz practice for AUB sections.",
+  },
+  {
+    tutoringId: "aub-tutor-4",
+    course: "CHEM 201 - Organic Chemistry",
+    tutorName: "Lea Nassar",
+    department: "Chemistry",
+    format: "In Person",
+    hourlyRate: 24,
+    description: "Mechanism drills, reaction mapping, and focused preparation for lab reports and practical exams.",
+  },
+];
+
 
 
 function Tutoring() {
@@ -30,10 +69,11 @@ function Tutoring() {
       try {
         setApiError("");
         const data = await fetchTutoringPosts();
-        setOffers(Array.isArray(data) ? data : []);
+        const normalized = Array.isArray(data) ? data : [];
+        setOffers(normalized.length > 0 ? normalized : FEATURED_AUB_TUTORING);
       } catch (error) {
         setApiError(error.message);
-        setOffers([]);
+        setOffers(FEATURED_AUB_TUTORING);
       } finally {
         setIsLoading(false);
       }
@@ -106,7 +146,7 @@ function Tutoring() {
       <header className="tutoring-header">
         <h1>Tutoring Hub</h1>
         <p>
-          Connect with AUB peer tutors for core courses. Browse by subject, preferred session
+          Connect with peer tutors from the American University of Beirut (AUB) for core courses. Browse by subject, preferred session
           format, and hourly rate to find the right match.
         </p>
         {isAuthenticated ? (
