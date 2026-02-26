@@ -11,7 +11,7 @@ const FEATURED_AUB_MARKETPLACE_ITEMS = [
     price: 65,
     description: "Used in excellent condition, ideal for MATH and EECE problem sets at AUB.",
     category: "Electronics & Gadgets",
-    imageUrl: "https://images.unsplash.com/photo-1635073908681-6f1c034530d6?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.offerup.com/raQPXc7IGAe3lMf7gxiwcRByTII=/756x1008/b797/b797e3fa9de044f8a5cdf56199bef903.jpg",
   },
   {
     id: "aub-market-2",
@@ -21,7 +21,7 @@ const FEATURED_AUB_MARKETPLACE_ITEMS = [
     price: 28,
     description: "AUB CHEM 201/202 aligned textbook with highlighted summaries and reaction sheets.",
     category: "Books, Study & Office Supplies",
-    imageUrl: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://tse2.mm.bing.net/th/id/OIP.2OTW62usHI7CtC6hqGwrYwHaJi?rs=1&pid=ImgDetMain&o=7&rm=3",
   },
   {
     id: "aub-market-3",
@@ -31,17 +31,17 @@ const FEATURED_AUB_MARKETPLACE_ITEMS = [
     price: 120,
     description: "Minimal desk with cable tray, perfect for small student apartments near AUB.",
     category: "Furniture & Home Goods",
-    imageUrl: "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://tse1.mm.bing.net/th/id/OIP.l6z5O0uSf1w_NRr3GCILBwHaHa?rs=1&pid=ImgDetMain&o=7&rm=3",
   },
   {
     id: "aub-market-4",
-    productName: "AUB Hoodie - Medium",
+    productName: "Hoodie - Medium",
     author: "Lynn T.",
     userId: "featured-user-4",
     price: 20,
-    description: "Official AUB merch, lightly worn, great for winter classes.",
+    description: "lightly worn, great for winter classes.",
     category: "Clothing & Accessories",
-    imageUrl: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://tse3.mm.bing.net/th/id/OIP.Z_ZdVdgdxt_mI40Jz5dylQAAAA?rs=1&pid=ImgDetMain&o=7&rm=3",
   },
   {
     id: "aub-market-5",
@@ -49,9 +49,9 @@ const FEATURED_AUB_MARKETPLACE_ITEMS = [
     author: "Hadi R.",
     userId: "featured-user-5",
     price: 95,
-    description: "Energy efficient mini fridge, ideal for shared housing in Ras Beirut.",
+    description: "Energy efficient mini fridge",
     category: "Other",
-    imageUrl: "https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://i.ebayimg.com/images/g/9MEAAOSwxaNeT98b/s-l500.jpg",
   },
 ];
 
