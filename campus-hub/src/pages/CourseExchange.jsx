@@ -7,7 +7,7 @@ import "./CourseExchange.css";
 const FEATURED_AUB_EXCHANGES = [
   {
     courseExchangeId: "aub-exchange-1",
-    currentCourse: "CMPS 271 - Software Engineering (Mohammad Zalghout)",
+    currentCourse: "CMPS 271 - Software Engineering (Prof. Mohammad Zalghout)",
     desiredCourse: "CMPS 271 - Software Engineering (Section with fewer lab clashes)",
     section: "Looking to switch from early section",
     status: "Open",
@@ -15,7 +15,7 @@ const FEATURED_AUB_EXCHANGES = [
   },
   {
     courseExchangeId: "aub-exchange-2",
-    currentCourse: "CMPS 211 - Discrete Mathematics (Mohammad Kobeissi)",
+    currentCourse: "CMPS 211 - Discrete Mathematics (Dr. Mohammad Kobeissi)",
     desiredCourse: "CMPS 211 - Discrete Mathematics (Later section)",
     section: "Need a section after 11:00 AM",
     status: "Open",
@@ -23,7 +23,7 @@ const FEATURED_AUB_EXCHANGES = [
   },
   {
     courseExchangeId: "aub-exchange-3",
-    currentCourse: "MUSC 221 - Music Appreciation (Maya Berta Maalouf)",
+    currentCourse: "MUSC 221 - Music Appreciation (Dr. Maya Berta Maalouf)",
     desiredCourse: "MUSC 221 - Music Appreciation (Any open section)",
     section: "Open to all available section timings",
     status: "Open",
@@ -31,7 +31,7 @@ const FEATURED_AUB_EXCHANGES = [
   },
   {
     courseExchangeId: "aub-exchange-4",
-    currentCourse: "EECE 334 - Programming Languages (Khaled El Dassouki)",
+    currentCourse: "EECE 334 - Programming Languages (Prof. Khaled El Dassouki)",
     desiredCourse: "EECE 334 - Programming Languages (Alternative section)",
     section: "Section change requested before drop deadline",
     status: "Open",
@@ -39,7 +39,7 @@ const FEATURED_AUB_EXCHANGES = [
   },
   {
     courseExchangeId: "aub-exchange-5",
-    currentCourse: "EECE 290 - Analog Signal Processing (Karim Kabalan)",
+    currentCourse: "EECE 290 - Analog Signal Processing (Dr. Karim Kabalan)",
     desiredCourse: "EECE 290 - Analog Signal Processing (Different timing)",
     section: "Looking for an afternoon section",
     status: "Open",
