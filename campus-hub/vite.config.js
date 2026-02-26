@@ -8,7 +8,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: process.env.VITE_BACKEND_URL || 'http://localhost:9090',
+        target: process.env.VITE_BACKEND_URL || 'http://127.0.0.1:9090',
         changeOrigin: true,
       },
     },
