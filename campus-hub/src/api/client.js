@@ -6,6 +6,17 @@ const ENV_API_TOKEN = (import.meta.env.VITE_API_TOKEN || "").trim();
 const trimTrailingSlash = (value) => value.replace(/\/+$/, "");
 const trimLeadingSlash = (value) => value.replace(/^\/+/, "");
 
+const readCookieValue = (name) => {
+  if (typeof document === "undefined") {
+    return "";
+  }
+
+  const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = document.cookie.match(new RegExp(`(?:^|; )${escapedName}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : "";
+};
+
+
 export const buildApiUrl = (path) => {
   if (!API_BASE_URL) {
     return path;
@@ -34,9 +45,15 @@ export const buildAuthHeaders = (token) => {
   return resolvedToken ? { Authorization: `Bearer ${resolvedToken}` } : {};
 };
 
+export const buildCsrfHeaders = () => {
+  const csrfToken = readCookieValue("XSRF-TOKEN");
+  return csrfToken ? { "X-XSRF-TOKEN": csrfToken } : {};
+};
+
 export const buildJsonHeaders = (token) => ({
   "Content-Type": "application/json",
   ...buildAuthHeaders(token),
+  ...buildCsrfHeaders(),
 });
 
 export const parseApiResponse = async (response, fallbackMessage) => {
