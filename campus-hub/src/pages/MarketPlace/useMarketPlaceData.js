@@ -1,5 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
-import { fetchListings } from "../../api/listings";
+import { useState, useMemo } from "react";
 import { buildApiUrl } from "../../api/client";
 
 const FEATURED_AUB_MARKETPLACE_ITEMS = [
@@ -160,32 +159,9 @@ function toListingShape(p) {
 
 export function useMarketPlaceData() {
   const [search, setSearch] = useState("");
-  const [apiListings, setApiListings] = useState([]);
-  const [apiError, setApiError] = useState("");
+  const items = useMemo(() => FEATURED_AUB_MARKETPLACE_ITEMS.map(toListingShape), []);
 
-  const refetch = useMemo(() => () => {
-    setApiError("");
-    fetchListings()
-      .then((data) => setApiListings(Array.isArray(data) ? data : []))
-      .catch((err) => setApiError(err.message));
-  }, []);
-
-  useEffect(() => {
-    let isMounted = true;
-    fetchListings()
-      .then((data) => {
-        if (isMounted) setApiListings(Array.isArray(data) ? data : []);
-      })
-      .catch((err) => {
-        if (isMounted) setApiError(err.message);
-      });
-    return () => { isMounted = false; };
-  }, []);
-
-  const items = useMemo(() => {
-    const sourceListings = (apiListings || []).length > 0 ? apiListings : FEATURED_AUB_MARKETPLACE_ITEMS;
-    return sourceListings.map(toListingShape);
-  }, [apiListings]);
+  const refetch = useMemo(() => () => {}, []);
 
   const categoriesWithItems = useMemo(() => {
     const byCategory = new Map();
@@ -202,7 +178,7 @@ export function useMarketPlaceData() {
     categoriesWithItems,
     search,
     setSearch,
-    apiError,
+    apiError: "",
     refetch,
   };
 }
