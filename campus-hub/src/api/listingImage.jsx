@@ -1,4 +1,4 @@
-import { buildApiUrl, buildAuthHeaders, parseApiResponse } from "./client";
+import { buildApiUrl, buildAuthHeaders, buildCsrfHeaders, parseApiResponse } from "./client";
 
 const BASE_PATH = "/api/listingImage";
 
@@ -14,7 +14,10 @@ export const uploadListingImage = async (listingId, file, token) => {
 
   const response = await fetch(buildApiUrl(`${BASE_PATH}/upload-listing-image/${listingId}`), {
     method: "POST",
-    headers: buildAuthHeaders(token),
+    headers: {
+      ...buildAuthHeaders(token),
+      ...buildCsrfHeaders(),
+    },
     credentials: "include",
     body: formData,
   });
