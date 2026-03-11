@@ -91,7 +91,9 @@ public class SecurityConfig {
                 "http://localhost:4173",
                 "http://localhost:5173",
                 "http://localhost:5174",
-                "http://localhost:9090"
+                "http://localhost:9090",
+                "https://campushub.shop",
+                "https://www.campushub.shop"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "X-XSRF-TOKEN"));
