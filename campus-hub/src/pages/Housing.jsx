@@ -74,6 +74,9 @@ function Housing() {
   const [selectedArea, setSelectedArea] = useState("All Areas");
   const [minBudget, setMinBudget] = useState(400);
   const [maxBudget, setMaxBudget] = useState(1600);
+  const [showContactedOnly, setShowContactedOnly] = useState(false);
+  const [contactedListingIds, setContactedListingIds] = useState([]);
+  const [savedListingIds, setSavedListingIds] = useState([]);
   const [apiListings, setApiListings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [apiError, setApiError] = useState("");
@@ -140,6 +143,8 @@ function Housing() {
   const normalizedMinBudget = Math.min(minBudget, maxBudget);
   const normalizedMaxBudget = Math.max(minBudget, maxBudget);
 
+  const getListingId = (listing) => String(listing.dormId ?? listing.title);
+
   const housingMetrics = useMemo(() => {
     if (listings.length === 0) {
       return { totalListings: 0, avgRent: 0, cheapestRent: 0 };
@@ -172,10 +177,33 @@ function Housing() {
         location.toLowerCase().includes(selectedArea.toLowerCase());
       const rent = Number(item.monthlyRent || 0);
       const matchesBudget = rent >= normalizedMinBudget && rent <= normalizedMaxBudget;
+      const matchesContacted =
+        !showContactedOnly || contactedListingIds.includes(getListingId(item));
 
-      return matchesSearch && matchesType && matchesArea && matchesBudget;
+      return matchesSearch && matchesType && matchesArea && matchesBudget && matchesContacted;
     });
-  }, [listings, search, selectedType, selectedArea, normalizedMinBudget, normalizedMaxBudget]);
+  }, [
+    listings,
+    search,
+    selectedType,
+    selectedArea,
+    normalizedMinBudget,
+    normalizedMaxBudget,
+    showContactedOnly,
+    contactedListingIds,
+  ]);
+
+  const toggleContacted = (listingId) => {
+    setContactedListingIds((prev) =>
+      prev.includes(listingId) ? prev.filter((id) => id !== listingId) : [...prev, listingId]
+    );
+  };
+
+  const toggleSaved = (listingId) => {
+    setSavedListingIds((prev) =>
+      prev.includes(listingId) ? prev.filter((id) => id !== listingId) : [...prev, listingId]
+    );
+  };
 
   const handleCreateDorm = async (event) => {
     event.preventDefault();
@@ -391,6 +419,16 @@ function Housing() {
           Showing listings between <strong>${normalizedMinBudget}</strong> and
           <strong> ${normalizedMaxBudget}</strong> / month.
         </p>
+
+        <label className="saved-only-toggle" htmlFor="contacted-listings-toggle">
+          <input
+            id="contacted-listings-toggle"
+            type="checkbox"
+            checked={showContactedOnly}
+            onChange={(event) => setShowContactedOnly(event.target.checked)}
+          />
+          Show contacted listings only
+        </label>
       </section>
 
       {apiError && <p className="empty-state">{apiError}</p>}
@@ -399,8 +437,13 @@ function Housing() {
         {isLoading ? (
           <p className="empty-state">Loading housing listings...</p>
         ) : filteredListings.length > 0 ? (
-          filteredListings.map((listing) => (
-            <article className="housing-card" key={listing.dormId}>
+          filteredListings.map((listing) => {
+            const listingId = getListingId(listing);
+            const isContacted = contactedListingIds.includes(listingId);
+            const isSaved = savedListingIds.includes(listingId);
+
+            return (
+            <article className="housing-card" key={listingId}>
               <div className="housing-card-head">
                 <h2>{listing.title}</h2>
                 {listing.isFeatured && <span className="featured-badge">Featured AUB Pick</span>}
@@ -422,9 +465,25 @@ function Housing() {
                 </p>
               )}
 
-              <button type="button">Contact Landlord</button>
+              <div className="card-actions-row">
+                <button
+                  type="button"
+                  onClick={() => toggleContacted(listingId)}
+                  className={isContacted ? "is-secondary" : ""}
+                >
+                  {isContacted ? "Message Sent" : "Contact Landlord"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggleSaved(listingId)}
+                  className={isSaved ? "is-secondary" : ""}
+                >
+                  {isSaved ? "Saved" : "Save"}
+                </button>
+              </div>
             </article>
-          ))
+            );
+          })
         ) : (
           <p className="empty-state">No housing listings match your current filters.</p>
         )}

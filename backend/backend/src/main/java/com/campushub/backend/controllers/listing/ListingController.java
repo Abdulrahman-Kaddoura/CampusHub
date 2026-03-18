@@ -2,6 +2,8 @@ package com.campushub.backend.controllers.listing;
 
 import com.campushub.backend.dtos.listing.ListingRequestDTO;
 import com.campushub.backend.dtos.listing.ListingResponseDTO;
+import com.campushub.backend.dtos.listing.StripeCheckoutRequestDTO;
+import com.campushub.backend.dtos.listing.StripeCheckoutResponseDTO;
 import com.campushub.backend.models.listings.ListingImage;
 import com.campushub.backend.enums.listings.ListingStatus;
 import com.campushub.backend.models.listings.Category;
@@ -10,6 +12,7 @@ import com.campushub.backend.models.user.User;
 import com.campushub.backend.services.listings.CategoryService;
 import com.campushub.backend.services.listings.ListingService;
 import com.campushub.backend.services.user.UserService;
+import com.campushub.backend.services.payment.StripeCheckoutService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -23,6 +26,8 @@ import org.togglz.core.manager.FeatureManager;
 
 
 import java.util.List;
+
+import com.stripe.exception.StripeException;
 import java.util.UUID;
 
 import static com.campushub.backend.configurations.togglz.Features.*;
@@ -57,6 +62,9 @@ public class ListingController {
 
     @Autowired
     CategoryService categoryService;
+
+    @Autowired
+    StripeCheckoutService stripeCheckoutService;
 
     @PostMapping("/create-listing")
     @Operation(
@@ -127,6 +135,35 @@ public class ListingController {
         response.setStatus(listing.getListingStatus());
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/create-checkout-session/{listingId}")
+    @Operation(
+            summary = "Create Stripe checkout session",
+            description = "Creates a Stripe Checkout session for a listing purchase."
+    )
+    public ResponseEntity<StripeCheckoutResponseDTO> createCheckoutSession(
+            @PathVariable UUID listingId,
+            @RequestBody(required = false) StripeCheckoutRequestDTO requestDTO) throws StripeException {
+        if (!featureManager.isActive(BUY_LISTING)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        User buyer = userService.getAuthenticatedUser();
+        Listing listing = listingService.getListingById(listingId);
+
+        if (listing.getUser() != null && listing.getUser().getId().equals(buyer.getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot buy your own listing");
+        }
+
+        StripeCheckoutResponseDTO responseDTO = stripeCheckoutService.createCheckoutSession(
+                listing,
+                buyer.getId(),
+                requestDTO != null ? requestDTO.getSuccessUrl() : null,
+                requestDTO != null ? requestDTO.getCancelUrl() : null
+        );
+
+        return ResponseEntity.ok(responseDTO);
     }
 
     @GetMapping("/get-listings")

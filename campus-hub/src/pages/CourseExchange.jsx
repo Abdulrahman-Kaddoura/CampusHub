@@ -6,7 +6,7 @@ import { FEATURE_FLAGS } from "../config/features";
 import "./CourseExchange.css";
 
 const FEATURED_AUB_EXCHANGES = [
-   {
+  {
     courseExchangeId: "aub-exchange-2",
     currentCourse: "CMPS 211 - Discrete Mathematics (Dr. Mohammad Kobeissi)",
     desiredCourse: "CMPS 211 - Discrete Mathematics (Later section)",
@@ -45,6 +45,9 @@ const FEATURED_AUB_EXCHANGES = [
     section: "Seeking any other course",
     status: "Open",
     notes: "Second EECE 380 entry with a different doctor.",
+  },
+  {
+    courseExchangeId: "aub-exchange-10",
     currentCourse: "CMPS 271 - Software Engineering (Prof. Mohammad Zalghout)",
     desiredCourse: "CMPS 271 - Software Engineering (Section with fewer lab clashes)",
     section: "Looking to switch from early section",
@@ -78,51 +81,56 @@ const FEATURED_AUB_EXCHANGES = [
 ];
 
 function CourseExchange() {
+  const { currentUser, token, isAuthenticated } = useAuth();
+  const [search, setSearch] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("All Statuses");
+  const [showSavedOnly, setShowSavedOnly] = useState(false);
+  const [savedPostIds, setSavedPostIds] = useState([]);
+  const [contactedPostIds, setContactedPostIds] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [apiError, setApiError] = useState("");
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [formState, setFormState] = useState({
+    currentCourse: "",
+    desiredCourse: "",
+    section: "",
+    status: "Open",
+    notes: "",
+  });
 
-    const { currentUser, token, isAuthenticated } = useAuth();
-    const [search, setSearch] = useState("");
-    const [selectedStatus, setSelectedStatus] = useState("All Statuses");
-    const [posts, setPosts] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [apiError, setApiError] = useState("");
-    const [isFormOpen, setIsFormOpen] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitError, setSubmitError] = useState("");
-    const [formState, setFormState] = useState({
-      currentCourse: "",
-      desiredCourse: "",
-      section: "",
-      status: "Open",
-      notes: "",
-    });
+  const loadPosts = async () => {
+    if (FEATURE_FLAGS.mockData) {
+      setPosts(FEATURED_AUB_EXCHANGES);
+      setIsLoading(false);
+      return;
+    }
 
-    const loadPosts = async () => {
-      if (FEATURE_FLAGS.mockData) {
-        setPosts(FEATURED_AUB_EXCHANGES);
-        setIsLoading(false);
-        return;
-      }
-      try {
-        setApiError("");
-        const data = await fetchCourseExchangePosts();
-        const normalized = Array.isArray(data) ? data : [];
-        setPosts(normalized.length > 0 ? normalized : FEATURED_AUB_EXCHANGES);
-      } catch (error) {
-        setApiError(error.message);
-        setPosts(FEATURED_AUB_EXCHANGES);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    try {
+      setApiError("");
+      const data = await fetchCourseExchangePosts();
+      const normalized = Array.isArray(data) ? data : [];
+      setPosts(normalized.length > 0 ? normalized : FEATURED_AUB_EXCHANGES);
+    } catch (error) {
+      setApiError(error.message);
+      setPosts(FEATURED_AUB_EXCHANGES);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    useEffect(() => {
-      loadPosts();
-    }, []);
+  useEffect(() => {
+    loadPosts();
+  }, []);
 
   const statusOptions = useMemo(
     () => ["All Statuses", ...new Set(posts.map((post) => post.status).filter(Boolean))],
-        [posts]
+    [posts]
   );
+
+  const getPostId = (post) => String(post.courseExchangeId ?? `${post.currentCourse}-${post.desiredCourse}`);
 
   const filteredPosts = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -130,115 +138,130 @@ function CourseExchange() {
     return posts.filter((post) => {
       const matchesSearch =
         (post.currentCourse || "").toLowerCase().includes(query) ||
-                (post.desiredCourse || "").toLowerCase().includes(query);
+        (post.desiredCourse || "").toLowerCase().includes(query);
 
       const matchesStatus = selectedStatus === "All Statuses" || post.status === selectedStatus;
+      const matchesSaved = !showSavedOnly || savedPostIds.includes(getPostId(post));
 
-      return matchesSearch && matchesStatus;
+      return matchesSearch && matchesStatus && matchesSaved;
     });
-  }, [posts, search, selectedStatus]);
+  }, [posts, search, selectedStatus, showSavedOnly, savedPostIds]);
 
-    const handleCreatePost = async (event) => {
-      event.preventDefault();
-      if (!currentUser?.id) {
-        setSubmitError("You must be logged in to create a post.");
-        return;
-      }
+  const handleCreatePost = async (event) => {
+    event.preventDefault();
+    if (!currentUser?.id) {
+      setSubmitError("You must be logged in to create a post.");
+      return;
+    }
 
-      setIsSubmitting(true);
-      setSubmitError("");
+    setIsSubmitting(true);
+    setSubmitError("");
 
-      try {
-        await createCourseExchangePost(
-          {
-            ...formState,
-            userId: currentUser.id,
-          },
-          token
-        );
+    try {
+      await createCourseExchangePost(
+        {
+          ...formState,
+          userId: currentUser.id,
+        },
+        token
+      );
 
-        setFormState({
-          currentCourse: "",
-          desiredCourse: "",
-          section: "",
-          status: "Open",
-          notes: "",
-        });
-        setIsFormOpen(false);
-        setIsLoading(true);
-        await loadPosts();
-      } catch (error) {
-        setSubmitError(error.message);
-      } finally {
-        setIsSubmitting(false);
-      }
-    };
+      setFormState({
+        currentCourse: "",
+        desiredCourse: "",
+        section: "",
+        status: "Open",
+        notes: "",
+      });
+      setIsFormOpen(false);
+      setIsLoading(true);
+      await loadPosts();
+    } catch (error) {
+      setSubmitError(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const toggleSavedPost = (postId) => {
+    setSavedPostIds((prev) =>
+      prev.includes(postId) ? prev.filter((id) => id !== postId) : [...prev, postId]
+    );
+  };
+
+  const markContacted = (postId) => {
+    if (contactedPostIds.includes(postId)) {
+      return;
+    }
+    setContactedPostIds((prev) => [...prev, postId]);
+  };
 
   return (
     <main className="course-exchange-page">
       <header className="course-exchange-header">
         <h1>Course Exchange</h1>
         <p>
-          Find American University of Beirut (AUB) students willing to swap sections or exchange course slots. Filter by course and
-                    exchange status to quickly discover available opportunities.
+          Find American University of Beirut (AUB) students willing to swap sections or exchange
+          course slots. Filter by course and exchange status to quickly discover available
+          opportunities.
         </p>
         {isAuthenticated ? (
-                  <button type="button" onClick={() => setIsFormOpen((v) => !v)}>
-                    {isFormOpen ? "Cancel" : "Add Exchange Post"}
-                  </button>
-                ) : (
-                  <Link className="add-item" to="/auth">
-                    Login to Add Exchange Post
-                  </Link>
-                )}
+          <button type="button" onClick={() => setIsFormOpen((v) => !v)}>
+            {isFormOpen ? "Cancel" : "Add Exchange Post"}
+          </button>
+        ) : (
+          <Link className="add-item" to="/auth">
+            Login to Add Exchange Post
+          </Link>
+        )}
       </header>
 
       {isFormOpen && (
-              <form className="course-exchange-filters" onSubmit={handleCreatePost}>
-                <input
-                  type="text"
-                  placeholder="Current course"
-                  required
-                  value={formState.currentCourse}
-                  onChange={(event) =>
-                    setFormState((prev) => ({ ...prev, currentCourse: event.target.value }))
-                  }
-                />
-                <input
-                  type="text"
-                  placeholder="Desired course"
-                  required
-                  value={formState.desiredCourse}
-                  onChange={(event) =>
-                    setFormState((prev) => ({ ...prev, desiredCourse: event.target.value }))
-                  }
-                />
-                <input
-                  type="text"
-                  placeholder="Section (optional)"
-                  value={formState.section}
-                  onChange={(event) => setFormState((prev) => ({ ...prev, section: event.target.value }))}
-                />
-                <select
-                  value={formState.status}
-                  onChange={(event) => setFormState((prev) => ({ ...prev, status: event.target.value }))}
-                >
-                  <option value="Open">Open</option>
-                  <option value="Matched">Matched</option>
-                  <option value="Closed">Closed</option>
-                </select>
-                <input
-                  type="text"
-                  placeholder="Notes / reason"
-                  value={formState.notes}
-                  onChange={(event) => setFormState((prev) => ({ ...prev, notes: event.target.value }))}
-                />
-                <button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Submitting..." : "Submit Post"}
-                </button>
-                {submitError && <p className="empty-state">{submitError}</p>}
-              </form>
-            )}
+        <form className="course-exchange-filters" onSubmit={handleCreatePost}>
+          <input
+            type="text"
+            placeholder="Current course"
+            required
+            value={formState.currentCourse}
+            onChange={(event) =>
+              setFormState((prev) => ({ ...prev, currentCourse: event.target.value }))
+            }
+          />
+          <input
+            type="text"
+            placeholder="Desired course"
+            required
+            value={formState.desiredCourse}
+            onChange={(event) =>
+              setFormState((prev) => ({ ...prev, desiredCourse: event.target.value }))
+            }
+          />
+          <input
+            type="text"
+            placeholder="Section (optional)"
+            value={formState.section}
+            onChange={(event) => setFormState((prev) => ({ ...prev, section: event.target.value }))}
+          />
+          <select
+            value={formState.status}
+            onChange={(event) => setFormState((prev) => ({ ...prev, status: event.target.value }))}
+          >
+            <option value="Open">Open</option>
+            <option value="Matched">Matched</option>
+            <option value="Closed">Closed</option>
+          </select>
+          <input
+            type="text"
+            placeholder="Notes / reason"
+            value={formState.notes}
+            onChange={(event) => setFormState((prev) => ({ ...prev, notes: event.target.value }))}
+          />
+          <button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Submitting..." : "Submit Post"}
+          </button>
+          {submitError && <p className="empty-state">{submitError}</p>}
+        </form>
+      )}
 
       <section className="course-exchange-filters" aria-label="Course exchange filters">
         <input
@@ -255,40 +278,71 @@ function CourseExchange() {
             </option>
           ))}
         </select>
+
+        <label className="saved-only-toggle" htmlFor="saved-posts-toggle">
+          <input
+            id="saved-posts-toggle"
+            type="checkbox"
+            checked={showSavedOnly}
+            onChange={(event) => setShowSavedOnly(event.target.checked)}
+          />
+          Show saved only
+        </label>
       </section>
 
       {apiError && <p className="empty-state">{apiError}</p>}
 
       <section className="course-exchange-grid" aria-live="polite">
         {isLoading ? (
-                  <p className="empty-state">Loading course exchange posts...</p>
-                ) : filteredPosts.length > 0 ? (
-          filteredPosts.map((post) => (
-            <article className="course-exchange-card" key={post.courseExchangeId}>
-              <div className="card-top-row">
-                <h2>{post.currentCourse}</h2>
-                <span className={`status-pill ${(post.status || "open").toLowerCase()}`}>
-                                   {post.status}
-                                 </span>
-              </div>
+          <p className="empty-state">Loading course exchange posts...</p>
+        ) : filteredPosts.length > 0 ? (
+          filteredPosts.map((post) => {
+            const postId = getPostId(post);
+            const isSaved = savedPostIds.includes(postId);
+            const isContacted = contactedPostIds.includes(postId);
 
-              <p>
-                <strong>Wants:</strong> {post.desiredCourse}
-              </p>
-              {post.section && (
-                              <p>
-                                <strong>Section:</strong> {post.section}
-                              </p>
-                            )}
-                            {post.notes && (
-                              <p>
-                                <strong>Notes:</strong> {post.notes}
-                              </p>
-                            )}
+            return (
+              <article className="course-exchange-card" key={postId}>
+                <div className="card-top-row">
+                  <h2>{post.currentCourse}</h2>
+                  <span className={`status-pill ${(post.status || "open").toLowerCase()}`}>
+                    {post.status}
+                  </span>
+                </div>
 
-              <button type="button">Contact Student</button>
-            </article>
-          ))
+                <p>
+                  <strong>Wants:</strong> {post.desiredCourse}
+                </p>
+                {post.section && (
+                  <p>
+                    <strong>Section:</strong> {post.section}
+                  </p>
+                )}
+                {post.notes && (
+                  <p>
+                    <strong>Notes:</strong> {post.notes}
+                  </p>
+                )}
+
+                <div className="card-actions-row">
+                  <button
+                    type="button"
+                    onClick={() => markContacted(postId)}
+                    className={isContacted ? "is-secondary" : ""}
+                  >
+                    {isContacted ? "Message Sent" : "Contact Student"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleSavedPost(postId)}
+                    className={isSaved ? "is-secondary" : ""}
+                  >
+                    {isSaved ? "Saved" : "Save"}
+                  </button>
+                </div>
+              </article>
+            );
+          })
         ) : (
           <p className="empty-state">No course exchange posts match your current filters.</p>
         )}

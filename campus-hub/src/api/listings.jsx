@@ -21,3 +21,28 @@ export const createListing = async (payload, token) => {
 
   return parseApiResponse(response, "Failed to create listing");
 };
+
+export const buyListing = async (listingId, token) => {
+  const response = await fetch(buildApiUrl(`${BASE_PATH}/buy-listing/${listingId}`), {
+    method: "PUT",
+    headers: buildJsonHeaders(token),
+    credentials: "include",
+  });
+
+  return parseApiResponse(response, "Failed to mark listing as purchased");
+};
+
+export const createStripeCheckoutSession = async (
+  listingId,
+  { successUrl, cancelUrl } = {},
+  token
+) => {
+  const response = await fetch(buildApiUrl(`${BASE_PATH}/create-checkout-session/${listingId}`), {
+    method: "POST",
+    headers: buildJsonHeaders(token),
+    credentials: "include",
+    body: JSON.stringify({ successUrl, cancelUrl }),
+  });
+
+  return parseApiResponse(response, "Failed to create Stripe checkout session");
+};

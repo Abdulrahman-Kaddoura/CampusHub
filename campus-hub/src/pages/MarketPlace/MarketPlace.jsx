@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import HeroCarousel from "../../components/HeroCarousel";
 import { Section } from "../../components/ProductSection";
-import { createListing, fetchListings } from "../../api/listings";
+import { buyListing, createListing, fetchListings } from "../../api/listings";
 import { uploadListingImage } from "../../api/listingImage";
 import { useAuth } from "../../context/AuthContext";
 import { useMarketPlaceData } from "./useMarketPlaceData";
@@ -40,6 +40,9 @@ function getCategoryDisplayName(cat) {
 export default function MarketPlace() {
   const { items, categoriesWithItems, search, setSearch, apiError, refetch } = useMarketPlaceData();
   const { currentUser, token, isAuthenticated } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const paymentHandledRef = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -51,6 +54,8 @@ export default function MarketPlace() {
     categoryName: "",
   });
   const [imageFile, setImageFile] = useState(null);
+  const [paymentMessage, setPaymentMessage] = useState("");
+  const [paymentError, setPaymentError] = useState("");
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -84,6 +89,44 @@ export default function MarketPlace() {
     }
   };
 
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const paymentStatus = params.get("payment");
+    const listingId = params.get("listingId");
+
+    if (!paymentStatus || !listingId || paymentHandledRef.current) {
+      return;
+    }
+
+    paymentHandledRef.current = true;
+
+    const finalizePurchase = async () => {
+      if (paymentStatus === "success") {
+        if (!isAuthenticated) {
+          setPaymentError("Payment was successful, but please log in to finalize ownership.");
+          return;
+        }
+
+        try {
+          await buyListing(listingId, token);
+          setPaymentMessage("Payment confirmed. The listing is now marked as sold.");
+          refetch();
+        } catch (error) {
+          setPaymentError(error.message || "Payment succeeded but purchase finalization failed.");
+        }
+      }
+
+      if (paymentStatus === "cancelled") {
+        setPaymentMessage("Checkout was cancelled. You can try again anytime.");
+      }
+
+      navigate({ pathname: location.pathname }, { replace: true });
+    };
+
+    finalizePurchase();
+  }, [location.pathname, location.search, navigate, isAuthenticated, token, refetch]);
+
   return (
     <div className="marketplace">
       <HeroCarousel />
@@ -93,6 +136,9 @@ export default function MarketPlace() {
         Buy and sell essentials with the American University of Beirut (AUB) community, from
         textbooks to apartment basics.
       </p>
+
+      {paymentMessage ? <p className="marketplace-payment-message">{paymentMessage}</p> : null}
+      {paymentError ? <p className="form-error">{paymentError}</p> : null}
 
       <div className="marketplace-search-row">
         <div className="search-wrap">
