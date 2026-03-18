@@ -2,6 +2,7 @@ package com.campushub.backend.security;
 
 import com.campushub.backend.services.user.AppUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -29,6 +30,9 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    @Value("${app.security.csrf.cookie.domain:}")
+    private String csrfCookieDomain;
+
     @Autowired
     AppUserDetailsService appUserDetailsService;
 
@@ -37,9 +41,14 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        if (csrfCookieDomain != null && !csrfCookieDomain.isBlank()) {
+            csrfTokenRepository.setCookieDomain(csrfCookieDomain);
+        }
+
         http.cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRepository(csrfTokenRepository)
                         .ignoringRequestMatchers("/auth/login",
                                 "/auth/register",
                                 "/auth/verify-email",
