@@ -45,7 +45,7 @@ public class StripeCheckoutService {
         String resolvedSuccessUrl = buildSuccessUrl(listing, successUrl);
         String resolvedCancelUrl = buildCancelUrl(listing, cancelUrl);
 
-        long amountInCents = BigDecimal.valueOf(listing.getPrice())
+        long amountInCents = listing.getPrice()
                 .setScale(2, RoundingMode.HALF_UP)
                 .movePointRight(2)
                 .longValueExact();
