@@ -6,6 +6,8 @@ import com.campushub.backend.services.dorm.DormService;
 import com.campushub.backend.services.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
@@ -28,6 +30,8 @@ import static com.campushub.backend.configurations.togglz.Features.*;
 @RequiredArgsConstructor
 public class DormController {
 
+    private static final Logger log = LoggerFactory.getLogger(DormController.class);
+
     private final DormService dormService;
     private final UserService userService;
     private final ModelMapper modelMapper;
@@ -36,12 +40,21 @@ public class DormController {
     @PostMapping("/create-dorm")
     @Operation(summary = "Create Dorm Listing", description = "Creates a dorm listing for the authenticated user.")
     public ResponseEntity<DormResponseDTO> createDorm(@Valid @RequestBody DormRequestDTO dormRequestDTO) {
-        if (!featureManager.isActive(CREATE_DORM)) {
+        // DEBUG: check feature toggle — if CREATE_DORM is disabled this returns 403 immediately
+        boolean createDormEnabled = featureManager.isActive(CREATE_DORM);
+        log.debug("[DEBUG] createDorm: CREATE_DORM feature toggle active = {}", createDormEnabled);
+        if (!createDormEnabled) {
+            log.debug("[DEBUG] createDorm: returning 403 because CREATE_DORM feature toggle is disabled");
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
         User user = userService.getAuthenticatedUser();
+        // DEBUG: log the authenticated user and the userId from the request to detect mismatches
+        log.debug("[DEBUG] createDorm: authenticated user id = {}", user.getId());
+        log.debug("[DEBUG] createDorm: request userId = {}", dormRequestDTO.getUserId());
         if (!dormRequestDTO.getUserId().equals(user.getId())) {
+            log.debug("[DEBUG] createDorm: returning 403 because request userId '{}' does not match authenticated user id '{}'",
+                    dormRequestDTO.getUserId(), user.getId());
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only create dorm listings for your own account");
         }
 

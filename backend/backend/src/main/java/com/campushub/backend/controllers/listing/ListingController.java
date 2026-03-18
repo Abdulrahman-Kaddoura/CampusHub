@@ -17,6 +17,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +38,8 @@ import static com.campushub.backend.configurations.togglz.Features.*;
 @RequestMapping("/listings")
 @Tag(name = "Listings", description = "Listing related operations")
 public class ListingController {
+
+    private static final Logger log = LoggerFactory.getLogger(ListingController.class);
 
     private ListingResponseDTO toListingResponseDTO(Listing listing) {
         ListingResponseDTO response = modelMapper.map(listing, ListingResponseDTO.class);
@@ -74,12 +78,21 @@ public class ListingController {
     public ResponseEntity<ListingResponseDTO> createListing(
             @Valid @RequestBody ListingRequestDTO listingRequestDTO) throws Exception {
 
-        if (!featureManager.isActive(CREATE_LISTING)) {
+        // DEBUG: check feature toggle — if CREATE_LISTING is disabled this returns 403 immediately
+        boolean createListingEnabled = featureManager.isActive(CREATE_LISTING);
+        log.debug("[DEBUG] createListing: CREATE_LISTING feature toggle active = {}", createListingEnabled);
+        if (!createListingEnabled) {
+            log.debug("[DEBUG] createListing: returning 403 because CREATE_LISTING feature toggle is disabled");
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
         User user = userService.getAuthenticatedUser();
+        // DEBUG: log the authenticated user and the userId from the request to detect mismatches
+        log.debug("[DEBUG] createListing: authenticated user id = {}", user.getId());
+        log.debug("[DEBUG] createListing: request userId = {}", listingRequestDTO.getUserId());
         if (listingRequestDTO.getUserId() != null && !listingRequestDTO.getUserId().equals(user.getId())) {
+            log.debug("[DEBUG] createListing: returning 403 because request userId '{}' does not match authenticated user id '{}'",
+                    listingRequestDTO.getUserId(), user.getId());
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only create listings for your own account");
         }
 
