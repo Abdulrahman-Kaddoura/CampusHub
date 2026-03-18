@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { createDormListing, fetchDormListings } from "../api/dorms";
 import { useAuth } from "../context/AuthContext";
+import { FEATURE_FLAGS } from "../config/features";
 import "./Housing.css";
 
 const AUB_AREAS = ["Bliss Street", "Hamra", "Ain Mraisseh", "Manara", "Ras Beirut"];
@@ -93,15 +94,18 @@ function Housing() {
       return FEATURED_AUB_LISTINGS;
     }
 
-    const mappedApiListings = apiListings.map((listing) => ({
+    return apiListings.map((listing) => ({
       ...listing,
       isFeatured: false,
     }));
-
-    return [...FEATURED_AUB_LISTINGS, ...mappedApiListings];
   }, [apiListings]);
 
   const loadDorms = async () => {
+    if (FEATURE_FLAGS.mockData) {
+      setApiListings([]);
+      setIsLoading(false);
+      return;
+    }
     try {
       setApiError("");
       const data = await fetchDormListings();

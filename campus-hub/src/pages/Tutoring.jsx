@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { createTutoringPost, fetchTutoringPosts } from "../api/tutoring";
 import { useAuth } from "../context/AuthContext";
+import { FEATURE_FLAGS } from "../config/features";
 import "./Tutoring.css";
 
 const FEATURED_AUB_TUTORING = [
@@ -66,6 +67,11 @@ function Tutoring() {
     });
 
     const loadTutoringPosts = async () => {
+      if (FEATURE_FLAGS.mockData) {
+        setOffers(FEATURED_AUB_TUTORING);
+        setIsLoading(false);
+        return;
+      }
       try {
         setApiError("");
         const data = await fetchTutoringPosts();
