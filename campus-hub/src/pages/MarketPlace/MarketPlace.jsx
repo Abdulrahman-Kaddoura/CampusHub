@@ -259,6 +259,7 @@ export default function MarketPlace() {
           search={search}
           limit={ITEMS_PER_SECTION}
           showViewAll={true}
+          onDelete={refetch}
         />
       ))}
 

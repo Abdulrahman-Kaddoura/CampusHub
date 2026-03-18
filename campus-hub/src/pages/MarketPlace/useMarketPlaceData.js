@@ -163,13 +163,16 @@ export function useMarketPlaceData() {
   const [search, setSearch] = useState("");
   const [apiListings, setApiListings] = useState([]);
   const [apiError, setApiError] = useState("");
+  const [isLoading, setIsLoading] = useState(!FEATURE_FLAGS.mockData);
 
   const refetch = useMemo(() => () => {
     if (FEATURE_FLAGS.mockData) return;
     setApiError("");
+    setIsLoading(true);
     fetchListings()
       .then((data) => setApiListings(Array.isArray(data) ? data : []))
-      .catch((err) => setApiError(err.message));
+      .catch((err) => setApiError(err.message))
+      .finally(() => setIsLoading(false));
   }, []);
 
   useEffect(() => {
@@ -181,14 +184,18 @@ export function useMarketPlaceData() {
       })
       .catch((err) => {
         if (isMounted) setApiError(err.message);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
       });
     return () => { isMounted = false; };
   }, []);
 
   const items = useMemo(() => {
-    const sourceListings = (apiListings || []).length > 0 ? apiListings : FEATURED_AUB_MARKETPLACE_ITEMS;
+    if (isLoading) return [];
+    const sourceListings = apiListings.length > 0 ? apiListings : FEATURED_AUB_MARKETPLACE_ITEMS;
     return sourceListings.map(toListingShape);
-  }, [apiListings]);
+  }, [apiListings, isLoading]);
 
   const categoriesWithItems = useMemo(() => {
     const byCategory = new Map();
@@ -206,6 +213,7 @@ export function useMarketPlaceData() {
     search,
     setSearch,
     apiError,
+    isLoading,
     refetch,
   };
 }

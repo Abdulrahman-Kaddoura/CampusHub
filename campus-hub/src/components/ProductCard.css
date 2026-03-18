@@ -105,6 +105,27 @@
   cursor: wait;
 }
 
+.product-card-delete-btn {
+  margin-top: 10px;
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  background: #dc2626;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.product-card-delete-btn:hover {
+  background: #b91c1c;
+}
+
+.product-card-delete-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
 .product-card-hint {
   margin-top: 8px;
   font-size: 0.78rem;
