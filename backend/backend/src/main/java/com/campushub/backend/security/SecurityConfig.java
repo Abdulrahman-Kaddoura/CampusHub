@@ -43,7 +43,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         if (csrfCookieDomain != null && !csrfCookieDomain.isBlank()) {
-            csrfTokenRepository.setCookieDomain(csrfCookieDomain);
+            csrfTokenRepository.setCookieCustomizer(cookie -> cookie.domain(csrfCookieDomain));
         }
 
         http.cors(Customizer.withDefaults())
