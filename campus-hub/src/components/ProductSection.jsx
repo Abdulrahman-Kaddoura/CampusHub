@@ -9,6 +9,7 @@ export const Section = ({
   items = [],
   limit,
   showViewAll = true,
+  onDelete,
 }) => {
   const normalizedSearch = search.trim().toLowerCase();
   const filtered = items.filter((p) => {
@@ -41,6 +42,7 @@ export const Section = ({
           <ProductCard
             key={product.listingId ?? product.id ?? product.title ?? Math.random()}
             data={product}
+            onDelete={onDelete}
           />
         ))}
       </div>

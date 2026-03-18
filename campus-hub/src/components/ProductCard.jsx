@@ -1,14 +1,16 @@
 import { useState } from "react";
-import { createStripeCheckoutSession } from "../api/listings";
+import { createStripeCheckoutSession, deleteListing } from "../api/listings";
 import { useAuth } from "../context/AuthContext";
 import "./ProductCard.css";
 
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1589998059171-988d451dfd0d?w=400&h=300&fit=crop";
 
-export const ProductCard = ({ data }) => {
+export const ProductCard = ({ data, onDelete }) => {
   const { token, isAuthenticated, currentUser } = useAuth();
   const [paymentError, setPaymentError] = useState("");
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const title = data.title ?? data.productName ?? "";
   const userName = data.userName ?? data.author ?? data.userId ?? "Campus seller";
@@ -23,6 +25,20 @@ export const ProductCard = ({ data }) => {
   const listingId = data.listingId;
   const isOwnListing = currentUser?.id && data.userId && currentUser.id === data.userId;
   const canPayWithStripe = Boolean(listingId && isAuthenticated && !isOwnListing);
+  const canDelete = Boolean(isOwnListing && listingId && onDelete);
+
+  const handleDelete = async () => {
+    setDeleteError("");
+    setIsDeleting(true);
+    try {
+      await deleteListing(listingId, token);
+      onDelete(listingId);
+    } catch (err) {
+      setDeleteError(err.message || "Could not delete listing.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const handleStripeCheckout = async () => {
     if (!listingId) {
@@ -79,7 +95,18 @@ export const ProductCard = ({ data }) => {
           </button>
         ) : null}
 
-        {isOwnListing ? (
+        {canDelete ? (
+          <button
+            type="button"
+            className="product-card-delete-btn"
+            onClick={handleDelete}
+            disabled={isDeleting}
+          >
+            {isDeleting ? "Deleting..." : "Delete Listing"}
+          </button>
+        ) : null}
+
+        {isOwnListing && !canDelete ? (
           <p className="product-card-hint">This is your listing.</p>
         ) : null}
 
@@ -88,6 +115,7 @@ export const ProductCard = ({ data }) => {
         ) : null}
 
         {paymentError ? <p className="product-card-error">{paymentError}</p> : null}
+        {deleteError ? <p className="product-card-error">{deleteError}</p> : null}
       </div>
     </div>
   );
