@@ -209,6 +209,32 @@
   cursor: pointer;
 }
 
+.saved-only-toggle {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.card-actions-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.card-actions-row button {
+  margin-top: 0;
+  width: 100%;
+}
+
+.card-actions-row .is-secondary {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
 .empty-state {
   color: #6b7280;
   padding: 12px;
