@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { createCourseExchangePost, fetchCourseExchangePosts } from "../api/courseExchange";
 import { useAuth } from "../context/AuthContext";
+import { FEATURE_FLAGS } from "../config/features";
 import "./CourseExchange.css";
 
 const FEATURED_AUB_EXCHANGES = [
@@ -96,6 +97,11 @@ function CourseExchange() {
     });
 
     const loadPosts = async () => {
+      if (FEATURE_FLAGS.mockData) {
+        setPosts(FEATURED_AUB_EXCHANGES);
+        setIsLoading(false);
+        return;
+      }
       try {
         setApiError("");
         const data = await fetchCourseExchangePosts();

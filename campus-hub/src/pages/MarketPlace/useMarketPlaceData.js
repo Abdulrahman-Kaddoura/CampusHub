@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { fetchListings } from "../../api/listings";
 import { buildApiUrl } from "../../api/client";
+import { FEATURE_FLAGS } from "../../config/features";
 
 const FEATURED_AUB_MARKETPLACE_ITEMS = [
   {
@@ -164,6 +165,7 @@ export function useMarketPlaceData() {
   const [apiError, setApiError] = useState("");
 
   const refetch = useMemo(() => () => {
+    if (FEATURE_FLAGS.mockData) return;
     setApiError("");
     fetchListings()
       .then((data) => setApiListings(Array.isArray(data) ? data : []))
@@ -171,6 +173,7 @@ export function useMarketPlaceData() {
   }, []);
 
   useEffect(() => {
+    if (FEATURE_FLAGS.mockData) return;
     let isMounted = true;
     fetchListings()
       .then((data) => {
