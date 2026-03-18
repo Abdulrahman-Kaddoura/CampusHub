@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { createDormListing } from "../api/dorms";
+import { createDormListing, fetchDormListings } from "../api/dorms";
 import { useAuth } from "../context/AuthContext";
+import { FEATURE_FLAGS } from "../config/features";
 import "./Housing.css";
 
 const AUB_AREAS = ["Bliss Street", "Hamra", "Ain Mraisseh", "Manara", "Ras Beirut"];
@@ -74,6 +75,8 @@ function Housing() {
   const [minBudget, setMinBudget] = useState(400);
   const [maxBudget, setMaxBudget] = useState(1600);
   const [apiListings, setApiListings] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [apiError, setApiError] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -91,14 +94,33 @@ function Housing() {
       return FEATURED_AUB_LISTINGS;
     }
 
-    const mappedApiListings = apiListings.map((listing) => ({
+    return apiListings.map((listing) => ({
       ...listing,
       isFeatured: false,
     }));
-
-    return [...FEATURED_AUB_LISTINGS, ...mappedApiListings];
   }, [apiListings]);
 
+  const loadDorms = async () => {
+    if (FEATURE_FLAGS.mockData) {
+      setApiListings([]);
+      setIsLoading(false);
+      return;
+    }
+    try {
+      setApiError("");
+      const data = await fetchDormListings();
+      setApiListings(Array.isArray(data) ? data : []);
+    } catch (error) {
+      setApiError("Live listings are unavailable right now. Showing curated AUB housing options.");
+      setApiListings([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDorms();
+  }, []);
 
   const typeOptions = useMemo(
     () => ["All Types", ...new Set(listings.map((item) => item.roomType).filter(Boolean))],
@@ -183,15 +205,8 @@ function Housing() {
         availableFrom: "",
       });
       setIsFormOpen(false);
-      setApiListings((prev) => [
-              {
-                dormId: `local-dorm-${Date.now()}`,
-                ...formState,
-                monthlyRent: Number(formState.monthlyRent),
-                isFeatured: false,
-              },
-              ...prev,
-            ]);
+      setIsLoading(true);
+      await loadDorms();
     } catch (error) {
       setSubmitError(error.message);
     } finally {
@@ -378,9 +393,12 @@ function Housing() {
         </p>
       </section>
 
+      {apiError && <p className="empty-state">{apiError}</p>}
 
       <section className="housing-grid" aria-live="polite">
-        {filteredListings.length > 0 ? (
+        {isLoading ? (
+          <p className="empty-state">Loading housing listings...</p>
+        ) : filteredListings.length > 0 ? (
           filteredListings.map((listing) => (
             <article className="housing-card" key={listing.dormId}>
               <div className="housing-card-head">

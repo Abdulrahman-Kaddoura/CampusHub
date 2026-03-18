@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { createTutoringPost } from "../api/tutoring";
+import { createTutoringPost, fetchTutoringPosts } from "../api/tutoring";
 import { useAuth } from "../context/AuthContext";
+import { FEATURE_FLAGS } from "../config/features";
 import "./Tutoring.css";
 
 const FEATURED_AUB_TUTORING = [
@@ -50,7 +51,9 @@ function Tutoring() {
   const [search, setSearch] = useState("");
   const [selectedFormat, setSelectedFormat] = useState("All Formats");
   const [maxRate, setMaxRate] = useState(100);
-    const [offers, setOffers] = useState(FEATURED_AUB_TUTORING);
+    const [offers, setOffers] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [apiError, setApiError] = useState("");
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState("");
@@ -62,6 +65,29 @@ function Tutoring() {
       hourlyRate: "",
       description: "",
     });
+
+    const loadTutoringPosts = async () => {
+      if (FEATURE_FLAGS.mockData) {
+        setOffers(FEATURED_AUB_TUTORING);
+        setIsLoading(false);
+        return;
+      }
+      try {
+        setApiError("");
+        const data = await fetchTutoringPosts();
+        const normalized = Array.isArray(data) ? data : [];
+        setOffers(normalized.length > 0 ? normalized : FEATURED_AUB_TUTORING);
+      } catch (error) {
+        setApiError(error.message);
+        setOffers(FEATURED_AUB_TUTORING);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    useEffect(() => {
+      loadTutoringPosts();
+    }, []);
 
   const formatOptions = useMemo(
     () => ["All Formats", ...new Set(offers.map((offer) => offer.format).filter(Boolean))],
@@ -112,14 +138,8 @@ function Tutoring() {
           description: "",
         });
         setIsFormOpen(false);
-        setOffers((prev) => [
-                  {
-                    tutoringId: `local-tutor-${Date.now()}`,
-                    ...formState,
-                    hourlyRate: Number(formState.hourlyRate),
-                  },
-                  ...prev,
-                ]);
+        setIsLoading(true);
+        await loadTutoringPosts();
       } catch (error) {
         setSubmitError(error.message);
       } finally {
@@ -237,9 +257,12 @@ function Tutoring() {
         />
       </section>
 
+      {apiError && <p className="empty-state">{apiError}</p>}
 
       <section className="tutoring-grid" aria-live="polite">
-        {filteredOffers.length > 0 ? (
+        {isLoading ? (
+                  <p className="empty-state">Loading tutoring posts...</p>
+                ) : filteredOffers.length > 0 ? (
           filteredOffers.map((offer) => (
             <article className="tutoring-card" key={offer.tutoringId}>
               <h2>{offer.course}</h2>

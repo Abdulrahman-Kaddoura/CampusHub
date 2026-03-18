@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { createCourseExchangePost } from "../api/courseExchange";
+import { createCourseExchangePost, fetchCourseExchangePosts } from "../api/courseExchange";
 import { useAuth } from "../context/AuthContext";
+import { FEATURE_FLAGS } from "../config/features";
 import "./CourseExchange.css";
 
 const FEATURED_AUB_EXCHANGES = [
@@ -81,7 +82,9 @@ function CourseExchange() {
     const { currentUser, token, isAuthenticated } = useAuth();
     const [search, setSearch] = useState("");
     const [selectedStatus, setSelectedStatus] = useState("All Statuses");
-    const [posts, setPosts] = useState(FEATURED_AUB_EXCHANGES);
+    const [posts, setPosts] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [apiError, setApiError] = useState("");
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState("");
@@ -92,6 +95,29 @@ function CourseExchange() {
       status: "Open",
       notes: "",
     });
+
+    const loadPosts = async () => {
+      if (FEATURE_FLAGS.mockData) {
+        setPosts(FEATURED_AUB_EXCHANGES);
+        setIsLoading(false);
+        return;
+      }
+      try {
+        setApiError("");
+        const data = await fetchCourseExchangePosts();
+        const normalized = Array.isArray(data) ? data : [];
+        setPosts(normalized.length > 0 ? normalized : FEATURED_AUB_EXCHANGES);
+      } catch (error) {
+        setApiError(error.message);
+        setPosts(FEATURED_AUB_EXCHANGES);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    useEffect(() => {
+      loadPosts();
+    }, []);
 
   const statusOptions = useMemo(
     () => ["All Statuses", ...new Set(posts.map((post) => post.status).filter(Boolean))],
@@ -139,13 +165,8 @@ function CourseExchange() {
           notes: "",
         });
         setIsFormOpen(false);
-        setPosts((prev) => [
-                  {
-                    courseExchangeId: `local-exchange-${Date.now()}`,
-                    ...formState,
-                  },
-                  ...prev,
-                ]);
+        setIsLoading(true);
+        await loadPosts();
       } catch (error) {
         setSubmitError(error.message);
       } finally {
@@ -236,9 +257,12 @@ function CourseExchange() {
         </select>
       </section>
 
+      {apiError && <p className="empty-state">{apiError}</p>}
 
       <section className="course-exchange-grid" aria-live="polite">
-        {filteredPosts.length > 0 ? (
+        {isLoading ? (
+                  <p className="empty-state">Loading course exchange posts...</p>
+                ) : filteredPosts.length > 0 ? (
           filteredPosts.map((post) => (
             <article className="course-exchange-card" key={post.courseExchangeId}>
               <div className="card-top-row">

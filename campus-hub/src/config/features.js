@@ -20,5 +20,6 @@ export const FEATURE_FLAGS = {
   housing: readBooleanEnv(import.meta.env.VITE_ENABLE_HOUSING, true),
   tutoring: readBooleanEnv(import.meta.env.VITE_ENABLE_TUTORING, true),
   courseExchange: readBooleanEnv(import.meta.env.VITE_ENABLE_COURSE_EXCHANGE, true),
+  mockData: readBooleanEnv(import.meta.env.VITE_USE_MOCK_DATA, false),
 };
 
