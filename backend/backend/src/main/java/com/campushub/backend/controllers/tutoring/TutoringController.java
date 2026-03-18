@@ -11,6 +11,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +30,8 @@ import static com.campushub.backend.configurations.togglz.Features.*;
 @RequiredArgsConstructor
 public class TutoringController {
 
+    private static final Logger log = LoggerFactory.getLogger(TutoringController.class);
+
     private final TutoringService tutoringService;
     private final UserService userService;
     private final ModelMapper modelMapper;
@@ -36,12 +40,21 @@ public class TutoringController {
     @PostMapping("/create-tutoring")
     @Operation(summary = "Create tutoring post", description = "Creates a tutoring post for the authenticated user.")
     public ResponseEntity<TutoringResponseDTO> createTutoring(@Valid @RequestBody TutoringRequestDTO requestDTO) {
-        if (!featureManager.isActive(CREATE_TUTORING)) {
+        // DEBUG: check feature toggle — if CREATE_TUTORING is disabled this returns 403 immediately
+        boolean createTutoringEnabled = featureManager.isActive(CREATE_TUTORING);
+        log.debug("[DEBUG] createTutoring: CREATE_TUTORING feature toggle active = {}", createTutoringEnabled);
+        if (!createTutoringEnabled) {
+            log.debug("[DEBUG] createTutoring: returning 403 because CREATE_TUTORING feature toggle is disabled");
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
         User user = userService.getAuthenticatedUser();
+        // DEBUG: log the authenticated user and the userId from the request to detect mismatches
+        log.debug("[DEBUG] createTutoring: authenticated user id = {}", user.getId());
+        log.debug("[DEBUG] createTutoring: request userId = {}", requestDTO.getUserId());
         if (!requestDTO.getUserId().equals(user.getId())) {
+            log.debug("[DEBUG] createTutoring: returning 403 because request userId '{}' does not match authenticated user id '{}'",
+                    requestDTO.getUserId(), user.getId());
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only create tutoring posts for your own account");
         }
 
