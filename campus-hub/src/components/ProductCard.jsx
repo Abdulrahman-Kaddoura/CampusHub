@@ -24,7 +24,8 @@ export const ProductCard = ({ data, onDelete }) => {
 
   const listingId = data.listingId;
   const isOwnListing = currentUser?.id && data.userId && currentUser.id === data.userId;
-  const canPayWithStripe = Boolean(listingId && isAuthenticated && !isOwnListing);
+  const hasAuthToken = Boolean(token);
+  const canPayWithStripe = Boolean(listingId && isAuthenticated && hasAuthToken && !isOwnListing);
   const canDelete = Boolean(isOwnListing && listingId && onDelete);
 
   const handleDelete = async () => {
@@ -42,6 +43,11 @@ export const ProductCard = ({ data, onDelete }) => {
 
   const handleStripeCheckout = async () => {
     if (!listingId) {
+      return;
+    }
+
+    if (!isAuthenticated || !hasAuthToken) {
+      setPaymentError("Please log in again before starting Stripe checkout.");
       return;
     }
 
@@ -110,7 +116,7 @@ export const ProductCard = ({ data, onDelete }) => {
           <p className="product-card-hint">This is your listing.</p>
         ) : null}
 
-        {!isAuthenticated ? (
+        {!isAuthenticated || !hasAuthToken ? (
           <p className="product-card-hint">Login to pay securely with Stripe.</p>
         ) : null}
 

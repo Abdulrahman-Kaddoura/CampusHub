@@ -62,6 +62,10 @@ export const createStripeCheckoutSession = async (
   { successUrl, cancelUrl } = {},
   token
 ) => {
+  if (!token) {
+    throw new Error("You need to log in again before starting Stripe checkout.");
+  }
+
   const response = await fetch(buildApiUrl(`${BASE_PATH}/create-checkout-session/${listingId}`), {
     method: "POST",
     headers: buildJsonHeaders(token),
