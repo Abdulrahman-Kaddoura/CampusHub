@@ -106,6 +106,46 @@ const FEATURED_AUB_TUTORING = [
     description:
       "Confidence intervals, hypothesis testing, and SPSS help for lab reports and project data analysis.",
   },
+  {
+    tutoringId: "aub-tutor-11",
+    course: "CMPS 274 - Machine Learning",
+    tutorName: "Omar Sayegh",
+    department: "Computer Science",
+    format: "Online",
+    hourlyRate: 38,
+    description:
+      "Model tuning sessions for regression/classification projects with practical Python notebook reviews.",
+  },
+  {
+    tutoringId: "aub-tutor-12",
+    course: "EECE 338 - Signals and Systems",
+    tutorName: "Rita Azar",
+    department: "Electrical Engineering",
+    format: "Hybrid",
+    hourlyRate: 41,
+    description:
+      "Step-by-step support for Fourier transforms, convolution, and exam-style signal analysis problems.",
+  },
+  {
+    tutoringId: "aub-tutor-13",
+    course: "MATH 251 - Differential Equations",
+    tutorName: "Nadim Fares",
+    department: "Mathematics",
+    format: "In Person",
+    hourlyRate: 44,
+    description:
+      "Advanced coaching on linear systems, Laplace methods, and modeling word problems for upper-level exams.",
+  },
+  {
+    tutoringId: "aub-tutor-14",
+    course: "CHEM 311 - Physical Chemistry",
+    tutorName: "Lina Hatem",
+    department: "Chemistry",
+    format: "Online",
+    hourlyRate: 49,
+    description:
+      "Thermodynamics and kinetics deep dives, including derivation walkthroughs and graded problem set prep.",
+  },
 ];
 
 function Tutoring() {
