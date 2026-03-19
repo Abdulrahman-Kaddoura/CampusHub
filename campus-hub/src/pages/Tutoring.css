@@ -30,6 +30,7 @@
 }
 
 .tutoring-filters input[type="text"],
+.tutoring-filters input[type="number"],
 .tutoring-filters select {
   border: 1px solid #d1d5db;
   border-radius: 8px;
@@ -42,8 +43,54 @@
   color: #374151;
 }
 
-#max-rate-slider {
+.max-rate-controls {
   grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.max-rate-input-wrapper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.max-rate-input-wrapper span {
+  padding: 0 10px;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+#max-rate-slider {
+  border: none;
+  min-width: 120px;
+  padding: 10px 12px 10px 0;
+}
+
+.rate-chip {
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #334155;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.rate-chip:hover {
+  background: #e2e8f0;
+}
+
+.rate-chip-clear {
+  color: #7f1d1d;
+  border-color: #fecaca;
+  background: #fff1f2;
 }
 
 .tutoring-grid {

@@ -106,13 +106,53 @@ const FEATURED_AUB_TUTORING = [
     description:
       "Confidence intervals, hypothesis testing, and SPSS help for lab reports and project data analysis.",
   },
+  {
+    tutoringId: "aub-tutor-11",
+    course: "CMPS 274 - Machine Learning",
+    tutorName: "Omar Sayegh",
+    department: "Computer Science",
+    format: "Online",
+    hourlyRate: 38,
+    description:
+      "Model tuning sessions for regression/classification projects with practical Python notebook reviews.",
+  },
+  {
+    tutoringId: "aub-tutor-12",
+    course: "EECE 338 - Signals and Systems",
+    tutorName: "Rita Azar",
+    department: "Electrical Engineering",
+    format: "Hybrid",
+    hourlyRate: 41,
+    description:
+      "Step-by-step support for Fourier transforms, convolution, and exam-style signal analysis problems.",
+  },
+  {
+    tutoringId: "aub-tutor-13",
+    course: "MATH 251 - Differential Equations",
+    tutorName: "Nadim Fares",
+    department: "Mathematics",
+    format: "In Person",
+    hourlyRate: 44,
+    description:
+      "Advanced coaching on linear systems, Laplace methods, and modeling word problems for upper-level exams.",
+  },
+  {
+    tutoringId: "aub-tutor-14",
+    course: "CHEM 311 - Physical Chemistry",
+    tutorName: "Lina Hatem",
+    department: "Chemistry",
+    format: "Online",
+    hourlyRate: 49,
+    description:
+      "Thermodynamics and kinetics deep dives, including derivation walkthroughs and graded problem set prep.",
+  },
 ];
 
 function Tutoring() {
   const { currentUser, token, isAuthenticated } = useAuth();
   const [search, setSearch] = useState("");
   const [selectedFormat, setSelectedFormat] = useState("All Formats");
-  const [maxRate, setMaxRate] = useState(100);
+  const [maxRate, setMaxRate] = useState("100");
   const [showRequestedOnly, setShowRequestedOnly] = useState(false);
   const [requestedTutorIds, setRequestedTutorIds] = useState([]);
   const [savedTutorIds, setSavedTutorIds] = useState([]);
@@ -172,7 +212,9 @@ function Tutoring() {
         (offer.department || "").toLowerCase().includes(query);
 
       const matchesFormat = selectedFormat === "All Formats" || offer.format === selectedFormat;
-      const matchesRate = Number(offer.hourlyRate || 0) <= maxRate;
+      const rateCap = Number(maxRate);
+      const hasRateCap = maxRate !== "" && Number.isFinite(rateCap);
+      const matchesRate = !hasRateCap || Number(offer.hourlyRate || 0) <= rateCap;
       const matchesRequest = !showRequestedOnly || requestedTutorIds.includes(getOfferId(offer));
 
       return matchesSearch && matchesFormat && matchesRate && matchesRequest;
@@ -325,17 +367,35 @@ function Tutoring() {
         </select>
 
         <label htmlFor="max-rate-slider">
-          Max Rate: <strong>${maxRate}</strong>/hour
+          Max Rate: <strong>{maxRate === "" ? "No limit" : `$${maxRate}`}</strong>/hour
         </label>
-        <input
-          id="max-rate-slider"
-          type="range"
-          min="0"
-          max="200"
-          step="1"
-          value={maxRate}
-          onChange={(event) => setMaxRate(Number(event.target.value))}
-        />
+        <div className="max-rate-controls">
+          <div className="max-rate-input-wrapper">
+            <span aria-hidden="true">$</span>
+            <input
+              id="max-rate-slider"
+              type="number"
+              min="0"
+              step="1"
+              inputMode="numeric"
+              placeholder="No limit"
+              value={maxRate}
+              onChange={(event) => setMaxRate(event.target.value)}
+            />
+          </div>
+          <button type="button" className="rate-chip" onClick={() => setMaxRate("20")}>
+            Under $20
+          </button>
+          <button type="button" className="rate-chip" onClick={() => setMaxRate("35")}>
+            Under $35
+          </button>
+          <button type="button" className="rate-chip" onClick={() => setMaxRate("50")}>
+            Under $50
+          </button>
+          <button type="button" className="rate-chip rate-chip-clear" onClick={() => setMaxRate("")}>
+            Clear
+          </button>
+        </div>
 
         <label className="saved-only-toggle" htmlFor="requested-tutoring-toggle">
           <input
