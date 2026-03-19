@@ -75,7 +75,7 @@ public class AuthController {
                     .secure(secureCookie)
                     .build();
             return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
-                    .body(new AuthResponseDTO(authRequestDTO.getEmail()));
+                    .body(new AuthResponseDTO(authRequestDTO.getEmail(), jwtToken));
         } catch (BadCredentialsException ex) {
             Map<String, Object> error = new HashMap<>();
             error.put("error", true);
