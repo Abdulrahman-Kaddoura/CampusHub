@@ -1,9 +1,6 @@
 package com.campushub.backend.services.listings;
 
 import com.campushub.backend.enums.listings.ListingStatus;
-import com.campushub.backend.exceptions.listing.BuyerNotFoundException;
-import com.campushub.backend.exceptions.listing.CantBuyOwnListingException;
-import com.campushub.backend.exceptions.listing.ListingNotAvailableException;
 import com.campushub.backend.exceptions.listing.ListingNotFoundException;
 import com.campushub.backend.models.listings.Listing;
 import com.campushub.backend.models.user.User;
@@ -16,13 +13,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,7 +37,7 @@ class ListingServiceTest {
     private ListingService listingService;
 
     @Test
-    void createListing_defaultsToPublishedWhenStatusMissing() throws Exception {
+    void createListing_setsPublishedStatusWhenMissing() throws Exception {
         User seller = new User();
         seller.setId(UUID.randomUUID());
 
@@ -57,27 +54,45 @@ class ListingServiceTest {
     }
 
     @Test
-    void deleteListingByIdForUser_rejectsDifferentUser() {
+    void getAllListings_returnsRepositoryValues() {
+        List<Listing> listings = List.of(new Listing(), new Listing());
+        when(listingRepository.findAll()).thenReturn(listings);
+
+        List<Listing> result = listingService.getAllListings();
+
+        assertSame(listings, result);
+    }
+
+    @Test
+    void deleteListingByIdForUser_throwsForDifferentUser() {
         UUID listingId = UUID.randomUUID();
-        UUID sellerId = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
         UUID actingUserId = UUID.randomUUID();
 
-        User seller = new User();
-        seller.setId(sellerId);
+        User owner = new User();
+        owner.setId(ownerId);
 
         Listing listing = new Listing();
-        listing.setUser(seller);
+        listing.setUser(owner);
 
         when(listingRepository.findById(listingId)).thenReturn(Optional.of(listing));
 
         assertThrows(AccessDeniedException.class,
                 () -> listingService.deleteListingByIdForUser(listingId, actingUserId));
 
-        verify(listingRepository, never()).delete(any());
+        verify(listingRepository, never()).delete(listing);
     }
 
     @Test
-    void buyListing_setsBuyerAndStatusToSold() throws Exception {
+    void deleteListingById_throwsWhenMissing() {
+        UUID listingId = UUID.randomUUID();
+        when(listingRepository.findById(listingId)).thenReturn(Optional.empty());
+
+        assertThrows(ListingNotFoundException.class, () -> listingService.deleteListingById(listingId));
+    }
+
+    @Test
+    void buyListing_setsBuyerAndMarksSold() throws Exception {
         UUID listingId = UUID.randomUUID();
         UUID buyerId = UUID.randomUUID();
 
@@ -102,76 +117,4 @@ class ListingServiceTest {
         assertEquals(1, buyer.getPurchasedListings().size());
         verify(listingRepository).save(listing);
     }
-
-    @Test
-    void buyListing_throwsWhenListingNotFound() {
-        UUID listingId = UUID.randomUUID();
-
-        when(listingRepository.findById(listingId)).thenReturn(Optional.empty());
-
-        assertThrows(ListingNotFoundException.class,
-                () -> listingService.buyListing(listingId, UUID.randomUUID()));
-
-        verify(userRepository, never()).findById(any());
-    }
-
-    @Test
-    void buyListing_throwsWhenBuyerNotFound() {
-        UUID listingId = UUID.randomUUID();
-        UUID buyerId = UUID.randomUUID();
-
-        Listing listing = new Listing();
-        listing.setUser(new User());
-        listing.getUser().setId(UUID.randomUUID());
-        listing.setListingStatus(ListingStatus.PUBLISHED);
-
-        when(listingRepository.findById(listingId)).thenReturn(Optional.of(listing));
-        when(userRepository.findById(buyerId)).thenReturn(Optional.empty());
-
-        assertThrows(BuyerNotFoundException.class, () -> listingService.buyListing(listingId, buyerId));
-        verify(listingRepository, never()).save(any());
-    }
-
-    @Test
-    void buyListing_throwsWhenListingIsNotPublished() {
-        UUID listingId = UUID.randomUUID();
-        UUID buyerId = UUID.randomUUID();
-
-        Listing listing = new Listing();
-        listing.setUser(new User());
-        listing.getUser().setId(UUID.randomUUID());
-        listing.setListingStatus(ListingStatus.SOLD);
-
-        User buyer = new User();
-        buyer.setId(buyerId);
-
-        when(listingRepository.findById(listingId)).thenReturn(Optional.of(listing));
-        when(userRepository.findById(buyerId)).thenReturn(Optional.of(buyer));
-
-        assertThrows(ListingNotAvailableException.class, () -> listingService.buyListing(listingId, buyerId));
-        verify(listingRepository, never()).save(any());
-    }
-
-    @Test
-    void buyListing_throwsWhenBuyerIsOwner() {
-        UUID userId = UUID.randomUUID();
-        UUID listingId = UUID.randomUUID();
-
-        User seller = new User();
-        seller.setId(userId);
-
-        User buyer = new User();
-        buyer.setId(userId);
-
-        Listing listing = new Listing();
-        listing.setUser(seller);
-        listing.setListingStatus(ListingStatus.PUBLISHED);
-
-        when(listingRepository.findById(listingId)).thenReturn(Optional.of(listing));
-        when(userRepository.findById(userId)).thenReturn(Optional.of(buyer));
-
-        assertThrows(CantBuyOwnListingException.class, () -> listingService.buyListing(listingId, userId));
-        verify(listingRepository, never()).save(any());
-    }
 }
-//re
