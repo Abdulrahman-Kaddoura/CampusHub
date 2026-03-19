@@ -46,6 +46,66 @@ const FEATURED_AUB_TUTORING = [
     description:
       "Mechanism drills, reaction mapping, and focused preparation for lab reports and practical exams.",
   },
+  {
+    tutoringId: "aub-tutor-5",
+    course: "PHYS 211 - University Physics I",
+    tutorName: "Jad Salameh",
+    department: "Physics",
+    format: "Online",
+    hourlyRate: 20,
+    description:
+      "Problem-by-problem practice for kinematics, Newton's laws, and energy with weekly recitation support.",
+  },
+  {
+    tutoringId: "aub-tutor-6",
+    course: "ENGL 206 - Academic English",
+    tutorName: "Nour Chehab",
+    department: "English",
+    format: "In Person",
+    hourlyRate: 14,
+    description:
+      "Essay outlining, thesis clarity, and grammar feedback tailored for AUB writing-heavy assignments.",
+  },
+  {
+    tutoringId: "aub-tutor-7",
+    course: "EECE 230 - Electric Circuits",
+    tutorName: "Hadi Mansour",
+    department: "Electrical Engineering",
+    format: "Hybrid",
+    hourlyRate: 26,
+    description:
+      "Circuit analysis walkthroughs, Thevenin/Norton shortcuts, and LTSpice simulation guidance.",
+  },
+  {
+    tutoringId: "aub-tutor-8",
+    course: "BIOL 210 - Cell Biology",
+    tutorName: "Dana Fakih",
+    department: "Biology",
+    format: "Online",
+    hourlyRate: 19,
+    description:
+      "Memorable study systems for cell signaling, membranes, and molecular pathways before quizzes.",
+  },
+  {
+    tutoringId: "aub-tutor-9",
+    course: "ACCT 201 - Financial Accounting",
+    tutorName: "Sami Harb",
+    department: "Business",
+    format: "In Person",
+    hourlyRate: 17,
+    description:
+      "Journal entries, balance sheets, and exam-style practice sets with clear solving templates.",
+  },
+  {
+    tutoringId: "aub-tutor-10",
+    course: "STAT 230 - Introduction to Statistics",
+    tutorName: "Yara Abdelnour",
+    department: "Statistics",
+    format: "Hybrid",
+    hourlyRate: 21,
+    description:
+      "Confidence intervals, hypothesis testing, and SPSS help for lab reports and project data analysis.",
+  },
 ];
 
 function Tutoring() {
