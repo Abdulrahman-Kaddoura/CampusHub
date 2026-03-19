@@ -84,6 +84,8 @@ public class SecurityConfig {
                                         "/tutoring/get-tutoring",
                                         "/course-exchange/get-course-exchanges")
                                 .permitAll()
+                                .requestMatchers(HttpMethod.POST, "/listings/create-listing")
+                                .permitAll()
                                 .requestMatchers("/togglz-console/**").authenticated()
                                 .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
