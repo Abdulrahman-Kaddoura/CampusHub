@@ -46,13 +46,73 @@ const FEATURED_AUB_TUTORING = [
     description:
       "Mechanism drills, reaction mapping, and focused preparation for lab reports and practical exams.",
   },
+  {
+    tutoringId: "aub-tutor-5",
+    course: "PHYS 211 - University Physics I",
+    tutorName: "Jad Salameh",
+    department: "Physics",
+    format: "Online",
+    hourlyRate: 20,
+    description:
+      "Problem-by-problem practice for kinematics, Newton's laws, and energy with weekly recitation support.",
+  },
+  {
+    tutoringId: "aub-tutor-6",
+    course: "ENGL 206 - Academic English",
+    tutorName: "Nour Chehab",
+    department: "English",
+    format: "In Person",
+    hourlyRate: 14,
+    description:
+      "Essay outlining, thesis clarity, and grammar feedback tailored for AUB writing-heavy assignments.",
+  },
+  {
+    tutoringId: "aub-tutor-7",
+    course: "EECE 230 - Electric Circuits",
+    tutorName: "Hadi Mansour",
+    department: "Electrical Engineering",
+    format: "Hybrid",
+    hourlyRate: 26,
+    description:
+      "Circuit analysis walkthroughs, Thevenin/Norton shortcuts, and LTSpice simulation guidance.",
+  },
+  {
+    tutoringId: "aub-tutor-8",
+    course: "BIOL 210 - Cell Biology",
+    tutorName: "Dana Fakih",
+    department: "Biology",
+    format: "Online",
+    hourlyRate: 19,
+    description:
+      "Memorable study systems for cell signaling, membranes, and molecular pathways before quizzes.",
+  },
+  {
+    tutoringId: "aub-tutor-9",
+    course: "ACCT 201 - Financial Accounting",
+    tutorName: "Sami Harb",
+    department: "Business",
+    format: "In Person",
+    hourlyRate: 17,
+    description:
+      "Journal entries, balance sheets, and exam-style practice sets with clear solving templates.",
+  },
+  {
+    tutoringId: "aub-tutor-10",
+    course: "STAT 230 - Introduction to Statistics",
+    tutorName: "Yara Abdelnour",
+    department: "Statistics",
+    format: "Hybrid",
+    hourlyRate: 21,
+    description:
+      "Confidence intervals, hypothesis testing, and SPSS help for lab reports and project data analysis.",
+  },
 ];
 
 function Tutoring() {
   const { currentUser, token, isAuthenticated } = useAuth();
   const [search, setSearch] = useState("");
   const [selectedFormat, setSelectedFormat] = useState("All Formats");
-  const [maxRate, setMaxRate] = useState(100);
+  const [maxRate, setMaxRate] = useState("100");
   const [showRequestedOnly, setShowRequestedOnly] = useState(false);
   const [requestedTutorIds, setRequestedTutorIds] = useState([]);
   const [savedTutorIds, setSavedTutorIds] = useState([]);
@@ -112,7 +172,9 @@ function Tutoring() {
         (offer.department || "").toLowerCase().includes(query);
 
       const matchesFormat = selectedFormat === "All Formats" || offer.format === selectedFormat;
-      const matchesRate = Number(offer.hourlyRate || 0) <= maxRate;
+      const rateCap = Number(maxRate);
+      const hasRateCap = maxRate !== "" && Number.isFinite(rateCap);
+      const matchesRate = !hasRateCap || Number(offer.hourlyRate || 0) <= rateCap;
       const matchesRequest = !showRequestedOnly || requestedTutorIds.includes(getOfferId(offer));
 
       return matchesSearch && matchesFormat && matchesRate && matchesRequest;
@@ -265,17 +327,35 @@ function Tutoring() {
         </select>
 
         <label htmlFor="max-rate-slider">
-          Max Rate: <strong>${maxRate}</strong>/hour
+          Max Rate: <strong>{maxRate === "" ? "No limit" : `$${maxRate}`}</strong>/hour
         </label>
-        <input
-          id="max-rate-slider"
-          type="range"
-          min="0"
-          max="200"
-          step="1"
-          value={maxRate}
-          onChange={(event) => setMaxRate(Number(event.target.value))}
-        />
+        <div className="max-rate-controls">
+          <div className="max-rate-input-wrapper">
+            <span aria-hidden="true">$</span>
+            <input
+              id="max-rate-slider"
+              type="number"
+              min="0"
+              step="1"
+              inputMode="numeric"
+              placeholder="No limit"
+              value={maxRate}
+              onChange={(event) => setMaxRate(event.target.value)}
+            />
+          </div>
+          <button type="button" className="rate-chip" onClick={() => setMaxRate("20")}>
+            Under $20
+          </button>
+          <button type="button" className="rate-chip" onClick={() => setMaxRate("35")}>
+            Under $35
+          </button>
+          <button type="button" className="rate-chip" onClick={() => setMaxRate("50")}>
+            Under $50
+          </button>
+          <button type="button" className="rate-chip rate-chip-clear" onClick={() => setMaxRate("")}>
+            Clear
+          </button>
+        </div>
 
         <label className="saved-only-toggle" htmlFor="requested-tutoring-toggle">
           <input
