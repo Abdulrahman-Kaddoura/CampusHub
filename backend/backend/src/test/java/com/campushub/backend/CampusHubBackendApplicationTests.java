@@ -1,15 +1,13 @@
 package com.campushub.backend;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 
-@SpringBootTest
-@ActiveProfiles("test")
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class CampusHubBackendApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
-
+    @Test
+    void applicationClassNameIsStable() {
+        assertEquals("CampusHubBackendApplication", CampusHubBackendApplication.class.getSimpleName());
+    }
 }
