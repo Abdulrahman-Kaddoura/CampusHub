@@ -274,3 +274,9 @@
     justify-content: center;
   }
 }
+
+.marketplace-ai-status {
+  margin: 6px 0 18px;
+  color: #0f4c5c;
+  font-size: 0.95rem;
+}

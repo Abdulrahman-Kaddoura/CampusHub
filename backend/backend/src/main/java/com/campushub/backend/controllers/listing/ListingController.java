@@ -1,5 +1,6 @@
 package com.campushub.backend.controllers.listing;
 
+import com.campushub.backend.dtos.listing.AiSearchResultDTO;
 import com.campushub.backend.dtos.listing.ListingRequestDTO;
 import com.campushub.backend.dtos.listing.ListingResponseDTO;
 import com.campushub.backend.dtos.listing.StripeCheckoutRequestDTO;
@@ -10,6 +11,7 @@ import com.campushub.backend.models.listings.Category;
 import com.campushub.backend.models.listings.Listing;
 import com.campushub.backend.models.user.User;
 import com.campushub.backend.services.listings.CategoryService;
+import com.campushub.backend.services.listings.HuggingFaceSearchService;
 import com.campushub.backend.services.listings.ListingService;
 import com.campushub.backend.services.user.UserService;
 import com.campushub.backend.services.payment.StripeCheckoutService;
@@ -69,6 +71,9 @@ public class ListingController {
 
     @Autowired
     StripeCheckoutService stripeCheckoutService;
+
+    @Autowired
+    HuggingFaceSearchService huggingFaceSearchService;
 
     @PostMapping("/create-listing")
     @Operation(
@@ -220,6 +225,41 @@ public class ListingController {
                 .map(this::toListingResponseDTO)
                 .toList();
         return new ResponseEntity<>(listingResponseDTOS, HttpStatus.OK);
+    }
+
+
+    @GetMapping("/ai-search")
+    @Operation(
+            summary = "AI search listings",
+            description = "Ranks listings using Hugging Face semantic search for the provided query."
+    )
+    public ResponseEntity<List<AiSearchResultDTO>> aiSearchListings(
+            @RequestParam("q") String query,
+            @RequestParam(name = "limit", defaultValue = "25") int limit
+    ) {
+        if (!featureManager.isActive(AI_SEARCH_LISTINGS)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        String normalizedQuery = query == null ? "" : query.trim();
+        if (normalizedQuery.isEmpty()) {
+            return ResponseEntity.ok(List.of());
+        }
+
+        int safeLimit = Math.max(1, Math.min(limit, 50));
+
+        try {
+            List<Listing> listings = listingService.getAllListings();
+            List<AiSearchResultDTO> ranked = huggingFaceSearchService.rankListings(normalizedQuery, listings)
+                    .stream()
+                    .limit(safeLimit)
+                    .toList();
+            return ResponseEntity.ok(ranked);
+        } catch (IllegalStateException ex) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Failed to run Hugging Face AI search");
+        }
     }
 
     @DeleteMapping("/delete-listing/{listingId}")
