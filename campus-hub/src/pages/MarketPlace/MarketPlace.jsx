@@ -294,6 +294,11 @@ export default function MarketPlace() {
       {items.length === 0 && !apiError && (
         <p className="marketplace-empty">No listings yet. Add an item to get started.</p>
       )}
+
+      {items.length > 0 && categoriesWithItems.length === 0 && search.trim() && !isAiSearching && (
+        <p className="marketplace-empty">No results found for "{search.trim()}". Try a shorter phrase or different wording.</p>
+      )}
+
       {apiError && (
         <p className="form-error">Could not load listings: {apiError}</p>
       )}
