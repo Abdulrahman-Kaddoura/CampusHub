@@ -6,6 +6,7 @@ import { FEATURE_FLAGS } from "../config/features";
 import "./Housing.css";
 
 const AUB_AREAS = ["Bliss Street", "Hamra", "Ain Mraisseh", "Manara", "Ras Beirut"];
+const AUB_CAMPUS_QUERY = "American University of Beirut, Beirut";
 
 const FEATURED_AUB_LISTINGS = [
   {
@@ -142,6 +143,8 @@ function Housing() {
 
   const normalizedMinBudget = Math.min(minBudget, maxBudget);
   const normalizedMaxBudget = Math.max(minBudget, maxBudget);
+  const mapQuery = selectedArea === "All Areas" ? AUB_CAMPUS_QUERY : `${selectedArea}, Beirut`;
+  const housingMapUrl = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`;
 
   const getListingId = (listing) => String(listing.dormId ?? listing.title);
 
@@ -264,6 +267,20 @@ function Housing() {
             </button>
           ))}
         </div>
+
+        <section className="housing-map-section" aria-label="Interactive housing map">
+          <div className="housing-map-header">
+            <h2>Housing map</h2>
+            <p>Map API preview centered on {selectedArea === "All Areas" ? "AUB campus" : selectedArea}.</p>
+          </div>
+          <iframe
+            title="Housing map near AUB"
+            src={housingMapUrl}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            allowFullScreen
+          />
+        </section>
 
         <div className="housing-metrics" aria-label="AUB housing market summary">
           <article>
