@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./NavBar.css";
 import logo from "../assets/logo.svg";
 import { NavLink, Link, useNavigate } from "react-router-dom";
@@ -10,6 +10,32 @@ function NavBar() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const displayName = useMemo(() => {
+    if (!isAuthenticated || !currentUser) return "Guest";
+    const nameCandidate = currentUser.firstName ?? currentUser.name ?? currentUser.email;
+    if (!nameCandidate) return "Student";
+    if (nameCandidate.includes("@")) {
+      return nameCandidate.split("@")[0];
+    }
+    return nameCandidate;
+  }, [currentUser, isAuthenticated]);
+
+  useEffect(() => {
+    document.body.classList.toggle("menu-open", menuOpen);
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    return () => {
+      document.body.classList.remove("menu-open");
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [menuOpen]);
+
   const handleLogout = () => {
     logout();
     navigate("/");
@@ -19,7 +45,7 @@ function NavBar() {
   const closeMenu = () => setMenuOpen(false);
 
   return (
-    <nav className="nav">
+    <nav className="nav" aria-label="Primary navigation">
       <div className="navbar-container">
         <Link to="/" className="nav-logo-link" onClick={closeMenu}>
           <img className="logo" src={logo} alt="CampusHub" />
@@ -30,6 +56,7 @@ function NavBar() {
           className="nav-toggle"
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
+          aria-controls="mobile-nav-menu"
           onClick={() => setMenuOpen((open) => !open)}
         >
           <span className="nav-toggle-bar" />
@@ -37,30 +64,30 @@ function NavBar() {
           <span className="nav-toggle-bar" />
         </button>
 
-        <div className={`nav-menu ${menuOpen ? "nav-menu-open" : ""}`}>
+        <div id="mobile-nav-menu" className={`nav-menu ${menuOpen ? "nav-menu-open" : ""}`}>
           <ul className="list">
             <li className="list-item">
-              <NavLink to="/" className={({ isActive }) => (isActive ? "active" : "")} onClick={closeMenu}>
+              <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")} onClick={closeMenu}>
                 Market Place
               </NavLink>
             </li>
             {FEATURE_FLAGS.courseExchange ? (
               <li className="list-item">
-                <NavLink to="/CourseExchange" className={({ isActive }) => (isActive ? "active" : "")} onClick={closeMenu}>
+                <NavLink to="/courseexchange" className={({ isActive }) => (isActive ? "active" : "")} onClick={closeMenu}>
                   Course Exchange
                 </NavLink>
               </li>
             ) : null}
             {FEATURE_FLAGS.tutoring ? (
               <li className="list-item">
-                <NavLink to="/Tutoring" className={({ isActive }) => (isActive ? "active" : "")} onClick={closeMenu}>
+                <NavLink to="/tutoring" className={({ isActive }) => (isActive ? "active" : "")} onClick={closeMenu}>
                   Tutoring
                 </NavLink>
               </li>
             ) : null}
             {FEATURE_FLAGS.housing ? (
               <li className="list-item">
-                <NavLink to="/Housing" className={({ isActive }) => (isActive ? "active" : "")} onClick={closeMenu}>
+                <NavLink to="/housing" className={({ isActive }) => (isActive ? "active" : "")} onClick={closeMenu}>
                   Housing
                 </NavLink>
               </li>
@@ -69,7 +96,7 @@ function NavBar() {
 
           <div className="student">
             <p className="welcome">
-              {isAuthenticated ? "Welcome, Student!" : "Welcome, Guest!"}
+              {isAuthenticated ? `Welcome back, ${displayName}!` : "Welcome, Guest!"}
             </p>
             <div className="auth-buttons">
               {FEATURE_FLAGS.auth && isAuthenticated ? (
@@ -92,6 +119,7 @@ function NavBar() {
           </div>
         </div>
       </div>
+      {menuOpen ? <button type="button" className="nav-backdrop" onClick={closeMenu} aria-label="Close menu overlay" /> : null}
     </nav>
   );
 }

@@ -68,6 +68,10 @@ public enum Features implements Feature {
     @EnabledByDefault
     DELETE_LISTING,
 
+    @Label("LISTING - AiSearchListings")
+    @EnabledByDefault
+    AI_SEARCH_LISTINGS,
+
     //-----------------------
     // Wanted Item APIs
     //-----------------------

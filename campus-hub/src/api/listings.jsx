@@ -75,3 +75,19 @@ export const createStripeCheckoutSession = async (
 
   return parseApiResponse(response, "Failed to create Stripe checkout session");
 };
+
+
+export const fetchAiListingMatches = async (query, limit = 25) => {
+  const params = new URLSearchParams({
+    q: query,
+    limit: String(limit),
+  });
+
+  const response = await fetch(buildApiUrl(`${BASE_PATH}/ai-search?${params.toString()}`), {
+    method: "GET",
+    headers: buildJsonHeaders(),
+    credentials: "include",
+  });
+
+  return parseApiResponse(response, "Failed to run AI listing search");
+};
