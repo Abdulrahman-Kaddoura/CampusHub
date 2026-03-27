@@ -92,6 +92,13 @@ function NavBar() {
                 </NavLink>
               </li>
             ) : null}
+            {FEATURE_FLAGS.chat && FEATURE_FLAGS.auth ? (
+              <li className="list-item">
+                <NavLink to="/chat" className={({ isActive }) => (isActive ? "active" : "")} onClick={closeMenu}>
+                  Chat
+                </NavLink>
+              </li>
+            ) : null}
           </ul>
 
           <div className="student">
