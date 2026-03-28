@@ -5,6 +5,23 @@ import { useAuth } from "../context/AuthContext";
 import { FEATURE_FLAGS } from "../config/features";
 import "./CourseExchange.css";
 
+const SAVED_POSTS_STORAGE_KEY = "courseExchange.savedPostIds";
+const CONTACTED_POSTS_STORAGE_KEY = "courseExchange.contactedPostIds";
+
+const parseStoredIds = (storageKey) => {
+  const rawValue = localStorage.getItem(storageKey);
+  if (!rawValue) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(rawValue);
+    return Array.isArray(parsed) ? parsed.map((value) => String(value)) : [];
+  } catch (error) {
+    return [];
+  }
+};
+
 const FEATURED_AUB_EXCHANGES = [
   {
     courseExchangeId: "aub-exchange-2",
@@ -85,8 +102,11 @@ function CourseExchange() {
   const [search, setSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All Statuses");
   const [showSavedOnly, setShowSavedOnly] = useState(false);
-  const [savedPostIds, setSavedPostIds] = useState([]);
-  const [contactedPostIds, setContactedPostIds] = useState([]);
+  const [savedPostIds, setSavedPostIds] = useState(() => parseStoredIds(SAVED_POSTS_STORAGE_KEY));
+  const [contactedPostIds, setContactedPostIds] = useState(() =>
+    parseStoredIds(CONTACTED_POSTS_STORAGE_KEY)
+  );
+  const [interactionError, setInteractionError] = useState("");
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [apiError, setApiError] = useState("");
@@ -124,6 +144,14 @@ function CourseExchange() {
   useEffect(() => {
     loadPosts();
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem(SAVED_POSTS_STORAGE_KEY, JSON.stringify(savedPostIds));
+  }, [savedPostIds]);
+
+  useEffect(() => {
+    localStorage.setItem(CONTACTED_POSTS_STORAGE_KEY, JSON.stringify(contactedPostIds));
+  }, [contactedPostIds]);
 
   const statusOptions = useMemo(
     () => ["All Statuses", ...new Set(posts.map((post) => post.status).filter(Boolean))],
@@ -184,16 +212,25 @@ function CourseExchange() {
   };
 
   const toggleSavedPost = (postId) => {
+    if (!isAuthenticated) {
+      setInteractionError("Please log in to save posts.");
+      return;
+    }
+    setInteractionError("");
     setSavedPostIds((prev) =>
       prev.includes(postId) ? prev.filter((id) => id !== postId) : [...prev, postId]
     );
   };
 
   const markContacted = (postId) => {
-    if (contactedPostIds.includes(postId)) {
+    if (!isAuthenticated) {
+      setInteractionError("Please log in to contact students.");
       return;
     }
-    setContactedPostIds((prev) => [...prev, postId]);
+    setInteractionError("");
+    setContactedPostIds((prev) =>
+      prev.includes(postId) ? prev.filter((id) => id !== postId) : [...prev, postId]
+    );
   };
 
   return (
@@ -291,6 +328,7 @@ function CourseExchange() {
       </section>
 
       {apiError && <p className="empty-state">{apiError}</p>}
+      {interactionError && <p className="empty-state">{interactionError}</p>}
 
       <section className="course-exchange-grid" aria-live="polite">
         {isLoading ? (
@@ -329,13 +367,15 @@ function CourseExchange() {
                     type="button"
                     onClick={() => markContacted(postId)}
                     className={isContacted ? "is-secondary" : ""}
+                    aria-pressed={isContacted}
                   >
-                    {isContacted ? "Message Sent" : "Contact Student"}
+                  {isContacted ? "Message Sent" : "Contact Student"}
                   </button>
                   <button
                     type="button"
                     onClick={() => toggleSavedPost(postId)}
                     className={isSaved ? "is-secondary" : ""}
+                    aria-pressed={isSaved}
                   >
                     {isSaved ? "Saved" : "Save"}
                   </button>
