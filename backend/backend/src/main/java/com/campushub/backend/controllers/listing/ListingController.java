@@ -86,13 +86,13 @@ public class ListingController {
         User user;
         try {
             user = userService.getAuthenticatedUser();
-            System.out.printf("[DEBUG] createListing: using authenticated user id = {}", user.getId());
+            log.debug("createListing: using authenticated user id={}", user.getId());
         } catch (Exception ex) {
             if (listingRequestDTO.getUserId() == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userId is required when not authenticated");
             }
             user = userService.findById(listingRequestDTO.getUserId());
-            System.out.printf("[DEBUG] createListing: no authenticated user, using request userId = {}", user.getId());
+            log.debug("createListing: no authenticated user, using request userId={}", user.getId());
         }
 
         Listing listing = new Listing();
@@ -101,10 +101,7 @@ public class ListingController {
         listing.setPrice(listingRequestDTO.getPrice());
         listing.setUser(user);
         String categoryName = listingRequestDTO.getCategoryName();
-        Category category = categoryService.findCategoryByName(categoryName);
-        if (category == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category not found: " + categoryName);
-        }
+        Category category = categoryService.findOrCreateCategoryByName(categoryName);
         listing.setCategory(category);
         listing.setListingStatus(ListingStatus.PUBLISHED);
 

@@ -23,10 +23,9 @@ public class ListingRequestDTO {
     @Digits(integer = 10, fraction = 2, message = "Price must have at most 2 decimal places")
     private BigDecimal price;
 
-    @NotNull(message = "User Id is required")
     private UUID userId;
 
-    @NotNull(message = "Category name cannot be null")
+    @NotBlank(message = "Category name cannot be blank")
     private String categoryName;
 
 }

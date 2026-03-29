@@ -28,6 +28,19 @@ public class CategoryService {
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found: " + name));
     }
 
+    public Category findOrCreateCategoryByName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new CategoryNotFoundException("Category name cannot be blank");
+        }
+
+        return categoryRepository.findByName(name)
+                .orElseGet(() -> {
+                    Category category = new Category();
+                    category.setName(name.trim());
+                    return categoryRepository.save(category);
+                });
+    }
+
     public Category deleteCategoryById(UUID id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + id));
