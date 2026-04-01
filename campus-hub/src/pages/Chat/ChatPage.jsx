@@ -57,11 +57,11 @@ function ChatPage() {
   };
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !token) {
       return;
     }
     loadInitialData();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, token]);
 
   useEffect(() => {
     if (!selectedPartnerId) {
