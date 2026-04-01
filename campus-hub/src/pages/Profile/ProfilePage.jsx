@@ -55,7 +55,7 @@ function ProfilePage() {
 
   const handleSave = () => {
     updateProfile(formValues);
-    setSaveMessage("Profile updated successfully.");
+    setSaveMessage("Profile updated locally. Changes will be lost on refresh (backend sync not yet available).");
     setIsEditing(false);
   };
 

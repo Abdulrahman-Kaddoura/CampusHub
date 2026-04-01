@@ -17,6 +17,29 @@
   line-height: 1.5;
 }
 
+.course-exchange-header > button,
+.course-exchange-header > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  background: #008ecc;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.course-exchange-header > button:hover,
+.course-exchange-header > a:hover {
+  background: #007ab8;
+}
+
 .course-exchange-filters {
   margin-top: 20px;
   display: grid;
@@ -149,5 +172,15 @@
 @media (max-width: 900px) {
   .course-exchange-filters {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .course-exchange-page {
+    padding: 20px 16px;
+  }
+
+  .course-exchange-header h1 {
+    font-size: 1.5rem;
   }
 }

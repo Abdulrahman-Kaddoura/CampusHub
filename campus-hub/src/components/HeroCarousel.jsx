@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useCallback, useState } from "react";
 import "./HeroCarousel.css";
 
 const slides = [
@@ -7,9 +7,20 @@ const slides = [
   { tagline: "Deals & sales", title: "Save More", subtitle: "Discounted books, gear, and more" },
 ];
 
+const AUTO_ADVANCE_MS = 5000;
+
 export default function HeroCarousel() {
   const [index, setIndex] = useState(0);
   const slide = slides[index];
+
+  const advance = useCallback(() => {
+    setIndex((prev) => (prev + 1) % slides.length);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(advance, AUTO_ADVANCE_MS);
+    return () => clearInterval(timer);
+  }, [advance, index]);
 
   return (
     <div className="hero-carousel-wrapper">

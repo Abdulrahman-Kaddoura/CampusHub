@@ -34,6 +34,7 @@ function App() {
           <Route path="/auth" element={FEATURE_FLAGS.auth ? <AuthPage /> : <Navigate to="/" replace />} />
           <Route path="/profile" element={FEATURE_FLAGS.auth ? <ProfilePage /> : <Navigate to="/" replace />} />
           <Route path="/chat" element={FEATURE_FLAGS.chat && FEATURE_FLAGS.auth ? <ChatPage /> : <Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
     </div>

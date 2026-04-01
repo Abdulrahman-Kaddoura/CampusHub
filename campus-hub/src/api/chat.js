@@ -1,6 +1,6 @@
 import { buildApiUrl, buildJsonHeaders, parseApiResponse } from "./client";
 
-const BASE_PATH = "/chat";
+const BASE_PATH = "/api/chat";
 
 export const fetchChatUsers = async (token) => {
   const response = await fetch(buildApiUrl(`${BASE_PATH}/users`), {
