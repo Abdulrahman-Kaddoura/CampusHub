@@ -9,6 +9,8 @@ const formatMessageTime = (dateString) => {
   return date.toLocaleString();
 };
 
+const normalizeId = (value) => (value == null ? "" : String(value));
+
 function ChatPage() {
   const { currentUser, token, isAuthenticated } = useAuth();
   const [users, setUsers] = useState([]);
@@ -20,10 +22,12 @@ function ChatPage() {
   const [error, setError] = useState("");
 
   const selectedPartner = useMemo(() => {
-    const fromUsers = users.find((user) => user.userId === selectedPartnerId);
+    const fromUsers = users.find((user) => normalizeId(user.userId) === normalizeId(selectedPartnerId));
     if (fromUsers) return fromUsers;
 
-    const fromConversations = conversations.find((conversation) => conversation.partnerId === selectedPartnerId);
+    const fromConversations = conversations.find(
+      (conversation) => normalizeId(conversation.partnerId) === normalizeId(selectedPartnerId)
+    );
     if (!fromConversations) return null;
 
     return {
@@ -47,7 +51,7 @@ function ChatPage() {
 
       if (!selectedPartnerId) {
         const initialPartner = chatConversations?.[0]?.partnerId || chatUsers?.[0]?.userId || "";
-        setSelectedPartnerId(initialPartner);
+        setSelectedPartnerId(normalizeId(initialPartner));
       }
     } catch (loadError) {
       setError(loadError.message || "Unable to load chat data.");
@@ -74,6 +78,7 @@ function ChatPage() {
       .then((conversationMessages) => {
         if (mounted) {
           setMessages(conversationMessages || []);
+          setError("");
         }
       })
       .catch((loadError) => {
@@ -84,6 +89,26 @@ function ChatPage() {
 
     return () => {
       mounted = false;
+    };
+  }, [selectedPartnerId, token]);
+
+  useEffect(() => {
+    if (!selectedPartnerId) {
+      return undefined;
+    }
+
+    const intervalId = window.setInterval(() => {
+      fetchConversationMessages(selectedPartnerId, token)
+        .then((conversationMessages) => {
+          setMessages(conversationMessages || []);
+        })
+        .catch(() => {
+          // Keep prior messages visible if background refresh fails.
+        });
+    }, 5000);
+
+    return () => {
+      window.clearInterval(intervalId);
     };
   }, [selectedPartnerId, token]);
 
@@ -98,7 +123,7 @@ function ChatPage() {
     try {
       const created = await sendChatMessage(
         {
-          recipientId: selectedPartnerId,
+          recipientId: normalizeId(selectedPartnerId),
           content: messageText,
         },
         token
@@ -140,8 +165,8 @@ function ChatPage() {
               <li key={conversation.partnerId}>
                 <button
                   type="button"
-                  className={`chat-list-button ${selectedPartnerId === conversation.partnerId ? "active" : ""}`}
-                  onClick={() => setSelectedPartnerId(conversation.partnerId)}
+                  className={`chat-list-button ${normalizeId(selectedPartnerId) === normalizeId(conversation.partnerId) ? "active" : ""}`}
+                  onClick={() => setSelectedPartnerId(normalizeId(conversation.partnerId))}
                 >
                   <span>{conversation.partnerName}</span>
                   <small>{conversation.lastMessage}</small>
@@ -153,7 +178,7 @@ function ChatPage() {
           <h2>Start new</h2>
           <select
             value={selectedPartnerId}
-            onChange={(event) => setSelectedPartnerId(event.target.value)}
+            onChange={(event) => setSelectedPartnerId(normalizeId(event.target.value))}
             className="chat-user-select"
           >
             <option value="">Choose a student</option>
@@ -170,7 +195,7 @@ function ChatPage() {
 
           <div className="chat-messages">
             {messages.map((message) => {
-              const isMine = message.senderId === currentUser.id;
+              const isMine = normalizeId(message.senderId) === normalizeId(currentUser.id);
               return (
                 <article key={message.messageId} className={`chat-message ${isMine ? "mine" : "theirs"}`}>
                   <p>{message.content}</p>
