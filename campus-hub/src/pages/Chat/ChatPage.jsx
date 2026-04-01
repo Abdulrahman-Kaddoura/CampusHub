@@ -3,6 +3,8 @@ import { fetchChatUsers, fetchConversationMessages, fetchConversations, sendChat
 import { useAuth } from "../../context/AuthContext";
 import "./ChatPage.css";
 
+const CHAT_REFRESH_INTERVAL_MS = 5000;
+
 const formatMessageTime = (dateString) => {
   if (!dateString) return "";
   const date = new Date(dateString);
@@ -11,6 +13,7 @@ const formatMessageTime = (dateString) => {
 
 function ChatPage() {
   const { currentUser, token, isAuthenticated } = useAuth();
+  const currentUserId = currentUser?.id ?? currentUser?.userId ?? null;
   const [users, setUsers] = useState([]);
   const [conversations, setConversations] = useState([]);
   const [selectedPartnerId, setSelectedPartnerId] = useState("");
@@ -64,26 +67,32 @@ function ChatPage() {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    if (!selectedPartnerId) {
+    if (!selectedPartnerId || !token) {
       setMessages([]);
       return;
     }
 
     let mounted = true;
-    fetchConversationMessages(selectedPartnerId, token)
-      .then((conversationMessages) => {
+
+    const loadMessages = async () => {
+      try {
+        const conversationMessages = await fetchConversationMessages(selectedPartnerId, token);
         if (mounted) {
           setMessages(conversationMessages || []);
         }
-      })
-      .catch((loadError) => {
+      } catch (loadError) {
         if (mounted) {
           setError(loadError.message || "Unable to load conversation messages.");
         }
-      });
+      }
+    };
+
+    loadMessages();
+    const intervalId = window.setInterval(loadMessages, CHAT_REFRESH_INTERVAL_MS);
 
     return () => {
       mounted = false;
+      window.clearInterval(intervalId);
     };
   }, [selectedPartnerId, token]);
 
@@ -104,8 +113,14 @@ function ChatPage() {
         token
       );
 
-      setMessages((previous) => [...previous, created]);
+      setMessages((previous) => {
+        if (previous.some((message) => message.messageId === created.messageId)) {
+          return previous;
+        }
+        return [...previous, created];
+      });
       setMessageText("");
+      setSelectedPartnerId(created.recipientId || selectedPartnerId);
       const refreshedConversations = await fetchConversations(token);
       setConversations(refreshedConversations || []);
     } catch (sendError) {
@@ -170,7 +185,7 @@ function ChatPage() {
 
           <div className="chat-messages">
             {messages.map((message) => {
-              const isMine = message.senderId === currentUser.id;
+              const isMine = message.senderId === currentUserId;
               return (
                 <article key={message.messageId} className={`chat-message ${isMine ? "mine" : "theirs"}`}>
                   <p>{message.content}</p>
