@@ -5,6 +5,23 @@ import { useAuth } from "../context/AuthContext";
 import { FEATURE_FLAGS } from "../config/features";
 import "./Housing.css";
 
+const CONTACTED_LISTINGS_STORAGE_KEY = "housing.contactedListingIds";
+const SAVED_LISTINGS_STORAGE_KEY = "housing.savedListingIds";
+
+const parseStoredIds = (storageKey) => {
+  const rawValue = localStorage.getItem(storageKey);
+  if (!rawValue) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(rawValue);
+    return Array.isArray(parsed) ? parsed.map((value) => String(value)) : [];
+  } catch (error) {
+    return [];
+  }
+};
+
 const AUB_AREAS = ["Bliss Street", "Hamra", "Ain Mraisseh", "Manara", "Ras Beirut"];
 
 const FEATURED_AUB_LISTINGS = [
@@ -75,8 +92,13 @@ function Housing() {
   const [minBudget, setMinBudget] = useState(400);
   const [maxBudget, setMaxBudget] = useState(1600);
   const [showContactedOnly, setShowContactedOnly] = useState(false);
-  const [contactedListingIds, setContactedListingIds] = useState([]);
-  const [savedListingIds, setSavedListingIds] = useState([]);
+  const [contactedListingIds, setContactedListingIds] = useState(() =>
+    parseStoredIds(CONTACTED_LISTINGS_STORAGE_KEY)
+  );
+  const [savedListingIds, setSavedListingIds] = useState(() =>
+    parseStoredIds(SAVED_LISTINGS_STORAGE_KEY)
+  );
+  const [interactionError, setInteractionError] = useState("");
   const [apiListings, setApiListings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [apiError, setApiError] = useState("");
@@ -124,6 +146,14 @@ function Housing() {
   useEffect(() => {
     loadDorms();
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem(CONTACTED_LISTINGS_STORAGE_KEY, JSON.stringify(contactedListingIds));
+  }, [contactedListingIds]);
+
+  useEffect(() => {
+    localStorage.setItem(SAVED_LISTINGS_STORAGE_KEY, JSON.stringify(savedListingIds));
+  }, [savedListingIds]);
 
   const typeOptions = useMemo(
     () => ["All Types", ...new Set(listings.map((item) => item.roomType).filter(Boolean))],
@@ -194,12 +224,22 @@ function Housing() {
   ]);
 
   const toggleContacted = (listingId) => {
+    if (!isAuthenticated) {
+      setInteractionError("Please log in to contact landlords.");
+      return;
+    }
+    setInteractionError("");
     setContactedListingIds((prev) =>
       prev.includes(listingId) ? prev.filter((id) => id !== listingId) : [...prev, listingId]
     );
   };
 
   const toggleSaved = (listingId) => {
+    if (!isAuthenticated) {
+      setInteractionError("Please log in to save listings.");
+      return;
+    }
+    setInteractionError("");
     setSavedListingIds((prev) =>
       prev.includes(listingId) ? prev.filter((id) => id !== listingId) : [...prev, listingId]
     );
@@ -432,6 +472,7 @@ function Housing() {
       </section>
 
       {apiError && <p className="empty-state">{apiError}</p>}
+      {interactionError && <p className="empty-state">{interactionError}</p>}
 
       <section className="housing-grid" aria-live="polite">
         {isLoading ? (
@@ -470,6 +511,7 @@ function Housing() {
                   type="button"
                   onClick={() => toggleContacted(listingId)}
                   className={isContacted ? "is-secondary" : ""}
+                  aria-pressed={isContacted}
                 >
                   {isContacted ? "Message Sent" : "Contact Landlord"}
                 </button>
@@ -477,6 +519,7 @@ function Housing() {
                   type="button"
                   onClick={() => toggleSaved(listingId)}
                   className={isSaved ? "is-secondary" : ""}
+                  aria-pressed={isSaved}
                 >
                   {isSaved ? "Saved" : "Save"}
                 </button>

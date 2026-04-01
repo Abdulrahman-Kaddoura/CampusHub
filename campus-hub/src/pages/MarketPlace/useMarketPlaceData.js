@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { fetchListings } from "../../api/listings";
+import { fetchAiListingMatches, fetchListings } from "../../api/listings";
 import { buildApiUrl } from "../../api/client";
 import { FEATURE_FLAGS } from "../../config/features";
 
@@ -164,6 +164,9 @@ export function useMarketPlaceData() {
   const [apiListings, setApiListings] = useState([]);
   const [apiError, setApiError] = useState("");
   const [isLoading, setIsLoading] = useState(!FEATURE_FLAGS.mockData);
+  const [aiRankedListingIds, setAiRankedListingIds] = useState([]);
+  const [aiSearchError, setAiSearchError] = useState("");
+  const [isAiSearching, setIsAiSearching] = useState(false);
 
   const refetch = useMemo(() => () => {
     if (FEATURE_FLAGS.mockData) return;
@@ -191,6 +194,44 @@ export function useMarketPlaceData() {
     return () => { isMounted = false; };
   }, []);
 
+  useEffect(() => {
+    const trimmedSearch = search.trim();
+
+    if (!trimmedSearch) {
+      setAiRankedListingIds([]);
+      setAiSearchError("");
+      setIsAiSearching(false);
+      return;
+    }
+
+    let isCancelled = false;
+    const timeoutId = window.setTimeout(async () => {
+      setIsAiSearching(true);
+      setAiSearchError("");
+      try {
+        const results = await fetchAiListingMatches(trimmedSearch, 50);
+        if (isCancelled) return;
+        const rankedIds = Array.isArray(results)
+          ? results.map((result) => result.listingId).filter(Boolean)
+          : [];
+        setAiRankedListingIds(rankedIds);
+      } catch (error) {
+        if (isCancelled) return;
+        setAiRankedListingIds([]);
+        setAiSearchError(error.message || "AI search unavailable");
+      } finally {
+        if (!isCancelled) {
+          setIsAiSearching(false);
+        }
+      }
+    }, 350);
+
+    return () => {
+      isCancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [search]);
+
   const items = useMemo(() => {
     if (isLoading) return [];
     const sourceListings = apiListings.length > 0 ? apiListings : FEATURED_AUB_MARKETPLACE_ITEMS;
@@ -198,14 +239,36 @@ export function useMarketPlaceData() {
   }, [apiListings, isLoading]);
 
   const categoriesWithItems = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+    const itemsById = new Map(items.map((item) => [item.listingId, item]));
+
+    let filteredItems = items;
+
+    if (normalizedSearch) {
+      if (aiRankedListingIds.length > 0) {
+        filteredItems = aiRankedListingIds
+          .map((listingId) => itemsById.get(listingId))
+          .filter(Boolean);
+      } else {
+        filteredItems = items.filter((item) => {
+          const title = (item.title ?? item.productName ?? "").toLowerCase();
+          const description = (item.description ?? "").toLowerCase();
+          const category = (item.categoryName ?? item.category ?? "").toLowerCase();
+          return title.includes(normalizedSearch)
+            || description.includes(normalizedSearch)
+            || category.includes(normalizedSearch);
+        });
+      }
+    }
+
     const byCategory = new Map();
-    items.forEach((item) => {
+    filteredItems.forEach((item) => {
       const cat = item.categoryName ?? item.category ?? "Other";
       if (!byCategory.has(cat)) byCategory.set(cat, []);
       byCategory.get(cat).push(item);
     });
     return Array.from(byCategory.entries());
-  }, [items]);
+  }, [aiRankedListingIds, items, search]);
 
   return {
     items,
@@ -215,5 +278,7 @@ export function useMarketPlaceData() {
     apiError,
     isLoading,
     refetch,
+    aiSearchError,
+    isAiSearching,
   };
 }

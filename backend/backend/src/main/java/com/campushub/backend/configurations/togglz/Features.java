@@ -68,6 +68,10 @@ public enum Features implements Feature {
     @EnabledByDefault
     DELETE_LISTING,
 
+    @Label("LISTING - AiSearchListings")
+    @EnabledByDefault
+    AI_SEARCH_LISTINGS,
+
     //-----------------------
     // Wanted Item APIs
     //-----------------------
@@ -207,7 +211,26 @@ public enum Features implements Feature {
 
     @Label("CARTITEM - DeleteCartItem")
     @EnabledByDefault
-    DELETE_CART_ITEM;
+    DELETE_CART_ITEM,
+
+    //-----------------------
+    // Chat APIs
+    //-----------------------
+    @Label("CHAT - SendMessage")
+    @EnabledByDefault
+    CHAT_SEND_MESSAGE,
+
+    @Label("CHAT - GetMessages")
+    @EnabledByDefault
+    CHAT_GET_MESSAGES,
+
+    @Label("CHAT - GetConversations")
+    @EnabledByDefault
+    CHAT_GET_CONVERSATIONS,
+
+    @Label("CHAT - GetUsers")
+    @EnabledByDefault
+    CHAT_GET_USERS;
 
     public boolean isActive(){
         return FeatureContext.getFeatureManager().isActive(this);

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import HeroCarousel from "../../components/HeroCarousel";
 import { Section } from "../../components/ProductSection";
-import { buyListing, createListing, fetchListings } from "../../api/listings";
+import { buyListing, createListing } from "../../api/listings";
 import { uploadListingImage } from "../../api/listingImage";
 import { useAuth } from "../../context/AuthContext";
 import { useMarketPlaceData } from "./useMarketPlaceData";
@@ -38,7 +38,16 @@ function getCategoryDisplayName(cat) {
 }
 
 export default function MarketPlace() {
-  const { items, categoriesWithItems, search, setSearch, apiError, refetch } = useMarketPlaceData();
+  const {
+    items,
+    categoriesWithItems,
+    search,
+    setSearch,
+    apiError,
+    refetch,
+    aiSearchError,
+    isAiSearching,
+  } = useMarketPlaceData();
   const { currentUser, token, isAuthenticated } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -56,6 +65,7 @@ export default function MarketPlace() {
   const [imageFile, setImageFile] = useState(null);
   const [paymentMessage, setPaymentMessage] = useState("");
   const [paymentError, setPaymentError] = useState("");
+  const currentUserId = currentUser?.id ?? currentUser?.userId ?? null;
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -69,9 +79,14 @@ export default function MarketPlace() {
     // DEBUG: log auth state at submit time to verify the user is authenticated with a valid token
     console.debug("[DEBUG] handleSubmit: isAuthenticated =", isAuthenticated);
     console.debug("[DEBUG] handleSubmit: token present =", Boolean(token), "| token length =", token?.length ?? 0);
-    console.debug("[DEBUG] handleSubmit: currentUser =", currentUser ? { id: currentUser.id, email: currentUser.email } : null);
+    console.debug("[DEBUG] handleSubmit: currentUser =", currentUser ? { id: currentUserId, email: currentUser.email } : null);
     if (!isAuthenticated || !token) {
       console.debug("[DEBUG] handleSubmit: WARNING — user is not authenticated or token is missing, request will likely get 401/403");
+    }
+    if (!currentUserId) {
+      setError("Could not detect your account ID. Please log out and log in again.");
+      setIsSubmitting(false);
+      return;
     }
     try {
       const payload = {
@@ -79,7 +94,7 @@ export default function MarketPlace() {
         description: formState.description,
         price: Number(formState.price),
         categoryName: formState.categoryName,
-        userId: currentUser.id,
+        userId: currentUserId,
       };
       const created = await createListing(payload, token);
       if (imageFile && created?.listingId) {
@@ -181,6 +196,18 @@ export default function MarketPlace() {
         )}
       </div>
 
+
+
+      {search.trim() ? (
+        <p className="marketplace-ai-status" role="status">
+          {isAiSearching
+            ? "Searching with Hugging Face AI..."
+            : aiSearchError
+              ? `AI search unavailable (${aiSearchError}). Showing keyword matches instead.`
+              : "Showing Hugging Face AI ranked results."}
+        </p>
+      ) : null}
+
       {isFormOpen && (
         <form className="listing-form" onSubmit={handleSubmit}>
           <div className="form-row">
@@ -241,7 +268,7 @@ export default function MarketPlace() {
             <button
               className="submit-listing"
               type="submit"
-              disabled={isSubmitting || !currentUser?.id}
+              disabled={isSubmitting || !currentUserId}
             >
               {isSubmitting ? "Saving..." : "Create Listing"}
             </button>
@@ -263,7 +290,7 @@ export default function MarketPlace() {
           category={category}
           categoryDisplayName={getCategoryDisplayName(category)}
           items={categoryItems}
-          search={search}
+          search=""
           limit={ITEMS_PER_SECTION}
           showViewAll={true}
           onDelete={refetch}
@@ -273,6 +300,11 @@ export default function MarketPlace() {
       {items.length === 0 && !apiError && (
         <p className="marketplace-empty">No listings yet. Add an item to get started.</p>
       )}
+
+      {items.length > 0 && categoriesWithItems.length === 0 && search.trim() && !isAiSearching && (
+        <p className="marketplace-empty">No results found for "{search.trim()}". Try a shorter phrase or different wording.</p>
+      )}
+
       {apiError && (
         <p className="form-error">Could not load listings: {apiError}</p>
       )}

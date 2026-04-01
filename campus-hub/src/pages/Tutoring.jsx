@@ -5,6 +5,23 @@ import { useAuth } from "../context/AuthContext";
 import { FEATURE_FLAGS } from "../config/features";
 import "./Tutoring.css";
 
+const REQUESTED_TUTORING_STORAGE_KEY = "tutoring.requestedTutorIds";
+const SAVED_TUTORING_STORAGE_KEY = "tutoring.savedTutorIds";
+
+const parseStoredIds = (storageKey) => {
+  const rawValue = localStorage.getItem(storageKey);
+  if (!rawValue) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(rawValue);
+    return Array.isArray(parsed) ? parsed.map((value) => String(value)) : [];
+  } catch (error) {
+    return [];
+  }
+};
+
 const FEATURED_AUB_TUTORING = [
   {
     tutoringId: "aub-tutor-1",
@@ -154,8 +171,13 @@ function Tutoring() {
   const [selectedFormat, setSelectedFormat] = useState("All Formats");
   const [maxRate, setMaxRate] = useState("100");
   const [showRequestedOnly, setShowRequestedOnly] = useState(false);
-  const [requestedTutorIds, setRequestedTutorIds] = useState([]);
-  const [savedTutorIds, setSavedTutorIds] = useState([]);
+  const [requestedTutorIds, setRequestedTutorIds] = useState(() =>
+    parseStoredIds(REQUESTED_TUTORING_STORAGE_KEY)
+  );
+  const [savedTutorIds, setSavedTutorIds] = useState(() =>
+    parseStoredIds(SAVED_TUTORING_STORAGE_KEY)
+  );
+  const [interactionError, setInteractionError] = useState("");
   const [offers, setOffers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [apiError, setApiError] = useState("");
@@ -194,6 +216,14 @@ function Tutoring() {
   useEffect(() => {
     loadTutoringPosts();
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem(REQUESTED_TUTORING_STORAGE_KEY, JSON.stringify(requestedTutorIds));
+  }, [requestedTutorIds]);
+
+  useEffect(() => {
+    localStorage.setItem(SAVED_TUTORING_STORAGE_KEY, JSON.stringify(savedTutorIds));
+  }, [savedTutorIds]);
 
   const formatOptions = useMemo(
     () => ["All Formats", ...new Set(offers.map((offer) => offer.format).filter(Boolean))],
@@ -259,12 +289,22 @@ function Tutoring() {
   };
 
   const toggleRequested = (offerId) => {
+    if (!isAuthenticated) {
+      setInteractionError("Please log in to request tutoring sessions.");
+      return;
+    }
+    setInteractionError("");
     setRequestedTutorIds((prev) =>
       prev.includes(offerId) ? prev.filter((id) => id !== offerId) : [...prev, offerId]
     );
   };
 
   const toggleSaved = (offerId) => {
+    if (!isAuthenticated) {
+      setInteractionError("Please log in to save tutoring offers.");
+      return;
+    }
+    setInteractionError("");
     setSavedTutorIds((prev) =>
       prev.includes(offerId) ? prev.filter((id) => id !== offerId) : [...prev, offerId]
     );
@@ -409,6 +449,7 @@ function Tutoring() {
       </section>
 
       {apiError && <p className="empty-state">{apiError}</p>}
+      {interactionError && <p className="empty-state">{interactionError}</p>}
 
       <section className="tutoring-grid" aria-live="polite">
         {isLoading ? (
@@ -444,6 +485,7 @@ function Tutoring() {
                     type="button"
                     onClick={() => toggleRequested(offerId)}
                     className={isRequested ? "is-secondary" : ""}
+                    aria-pressed={isRequested}
                   >
                     {isRequested ? "Session Requested" : "Request Session"}
                   </button>
@@ -451,6 +493,7 @@ function Tutoring() {
                     type="button"
                     onClick={() => toggleSaved(offerId)}
                     className={isSaved ? "is-secondary" : ""}
+                    aria-pressed={isSaved}
                   >
                     {isSaved ? "Saved" : "Save"}
                   </button>
