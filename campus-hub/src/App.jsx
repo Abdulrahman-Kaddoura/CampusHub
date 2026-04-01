@@ -33,7 +33,7 @@ function App() {
           <Route path="/courseexchange" element={FEATURE_FLAGS.courseExchange ? <CourseExchange /> : <Navigate to="/" replace />} />
           <Route path="/auth" element={FEATURE_FLAGS.auth ? <AuthPage /> : <Navigate to="/" replace />} />
           <Route path="/profile" element={FEATURE_FLAGS.auth ? <ProfilePage /> : <Navigate to="/" replace />} />
-          <Route path="/chat" element={FEATURE_FLAGS.chat && FEATURE_FLAGS.auth ? <ChatPage /> : <Navigate to="/" replace />} />
+          <Route path="/chat" element={FEATURE_FLAGS.auth ? <ChatPage /> : <Navigate to="/" replace />} />
         </Routes>
       </main>
     </div>
