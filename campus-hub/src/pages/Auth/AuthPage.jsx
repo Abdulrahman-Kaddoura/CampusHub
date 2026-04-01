@@ -216,7 +216,7 @@ export default function AuthPage() {
           ) : null}
 
           {error ? <p className="auth-error">{error}</p> : null}
-          {successMessage ? <p>{successMessage}</p> : null}
+          {successMessage ? <p className="auth-success">{successMessage}</p> : null}
         </form>
 
         <div className="auth-actions">

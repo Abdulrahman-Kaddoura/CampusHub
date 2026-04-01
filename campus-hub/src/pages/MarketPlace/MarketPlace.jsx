@@ -55,7 +55,6 @@ export default function MarketPlace() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [showFilter, setShowFilter] = useState(false);
   const [formState, setFormState] = useState({
     title: "",
     description: "",
@@ -76,13 +75,6 @@ export default function MarketPlace() {
     event.preventDefault();
     setError("");
     setIsSubmitting(true);
-    // DEBUG: log auth state at submit time to verify the user is authenticated with a valid token
-    console.debug("[DEBUG] handleSubmit: isAuthenticated =", isAuthenticated);
-    console.debug("[DEBUG] handleSubmit: token present =", Boolean(token), "| token length =", token?.length ?? 0);
-    console.debug("[DEBUG] handleSubmit: currentUser =", currentUser ? { id: currentUserId, email: currentUser.email } : null);
-    if (!isAuthenticated || !token) {
-      console.debug("[DEBUG] handleSubmit: WARNING — user is not authenticated or token is missing, request will likely get 401/403");
-    }
     if (!currentUserId) {
       setError("Could not detect your account ID. Please log out and log in again.");
       setIsSubmitting(false);
@@ -173,14 +165,6 @@ export default function MarketPlace() {
             className="search-input"
           />
         </div>
-        <button
-          type="button"
-          className="filter-btn"
-          aria-label="Filter options"
-          onClick={() => setShowFilter((v) => !v)}
-        >
-          <span className="filter-icon">☰</span>
-        </button>
         {isAuthenticated ? (
           <button
             className="add-item"

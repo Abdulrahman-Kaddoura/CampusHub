@@ -1,7 +1,6 @@
 .product-card {
   width: 100%;
   min-width: 0;
-  max-width: 260px;
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
@@ -82,11 +81,6 @@
   overflow: hidden;
 }
 
-@media (max-width: 640px) {
-  .product-card {
-    max-width: 180px;
-  }
-}
 
 .product-card-pay-btn {
   margin-top: 10px;

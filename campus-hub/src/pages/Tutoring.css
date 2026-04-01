@@ -1,7 +1,7 @@
 .tutoring-page {
   padding: 28px 40px;
   background: #f8fafc;
-  min-height: calc(100vh - 85px);
+  min-height: calc(100vh - 72px);
 }
 
 .tutoring-header h1 {
@@ -15,6 +15,29 @@
   max-width: 760px;
   color: #4b5563;
   line-height: 1.5;
+}
+
+.tutoring-header > button,
+.tutoring-header > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  background: #008ecc;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.tutoring-header > button:hover,
+.tutoring-header > a:hover {
+  background: #007ab8;
 }
 
 .tutoring-filters {
@@ -192,5 +215,15 @@
 @media (max-width: 900px) {
   .tutoring-filters {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .tutoring-page {
+    padding: 20px 16px;
+  }
+
+  .tutoring-header h1 {
+    font-size: 1.5rem;
   }
 }

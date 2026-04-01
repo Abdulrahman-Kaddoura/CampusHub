@@ -1,7 +1,7 @@
 .housing-page {
   padding: 28px 40px;
   background: linear-gradient(180deg, #f7faff 0%, #f8fafc 40%);
-  min-height: calc(100vh - 85px);
+  min-height: calc(100vh - 72px);
 }
 
 .housing-header h1 {
@@ -248,5 +248,15 @@
 
   .housing-card-head {
     flex-direction: column;
+  }
+}
+
+@media (max-width: 768px) {
+  .housing-page {
+    padding: 20px 16px;
+  }
+
+  .housing-header h1 {
+    font-size: 1.5rem;
   }
 }
