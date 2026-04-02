@@ -59,17 +59,6 @@ export const verifyEmailCode = async (payload) => {
   return parseApiResponse(response, "Failed to verify email");
 };
 
-export const resendVerificationEmail = async (payload) => {
-  const response = await sendAuthRequest("/resend-verification", {
-    method: "POST",
-    headers: buildJsonHeaders(),
-    credentials: "include",
-    body: JSON.stringify(payload),
-  });
-
-  return parseApiResponse(response, "Failed to resend verification email");
-};
-
 export const fetchCurrentUser = async (token) => {
   const response = await sendAuthRequest("/me", {
     method: "GET",

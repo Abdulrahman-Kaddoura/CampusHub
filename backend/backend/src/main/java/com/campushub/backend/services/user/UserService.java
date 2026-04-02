@@ -27,7 +27,6 @@ import java.util.UUID;
 public class UserService {
 
     private static final int VERIFICATION_CODE_LENGTH = 6;
-    private static final int PASSWORD_RESET_CODE_LENGTH = 6;
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     @Autowired
@@ -82,20 +81,6 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    @Transactional
-    public void resendEmailVerification(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
-
-        if (user.getStatus() == UserStatus.ACTIVE) {
-            throw new IllegalArgumentException("Email is already verified");
-        }
-
-        String rawVerificationToken = rotateEmailVerificationToken(user);
-        User updatedUser = userRepository.save(user);
-        emailVerificationService.sendVerificationEmail(updatedUser, rawVerificationToken);
-    }
-
     private String rotateEmailVerificationToken(User user) {
         String rawVerificationToken = generateVerificationCode();
         user.setEmailVerificationToken(hashVerificationToken(rawVerificationToken));
@@ -104,20 +89,15 @@ public class UserService {
     }
 
     private String generateVerificationCode() {
-        return generateCode(VERIFICATION_CODE_LENGTH);
-    }
-
-    private String generateCode(int length) {
-        int max = (int) Math.pow(10, length);
+        int max = (int) Math.pow(10, VERIFICATION_CODE_LENGTH);
         int code = SECURE_RANDOM.nextInt(max);
-        return String.format("%0" + length + "d", code);
+        return String.format("%0" + VERIFICATION_CODE_LENGTH + "d", code);
     }
 
     private boolean isTokenMatch(String rawToken, String storedHashedToken) {
         if (rawToken == null || storedHashedToken == null) {
             return false;
         }
-
         byte[] providedTokenHash = hashVerificationToken(rawToken).getBytes(StandardCharsets.UTF_8);
         byte[] storedTokenHash = storedHashedToken.getBytes(StandardCharsets.UTF_8);
         return MessageDigest.isEqual(providedTokenHash, storedTokenHash);
@@ -133,72 +113,26 @@ public class UserService {
         }
     }
 
-    @Transactional
-    public void sendPasswordResetToken(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
-
-        String rawResetToken = rotatePasswordResetToken(user);
-        User updatedUser = userRepository.save(user);
-        emailVerificationService.sendPasswordResetEmail(updatedUser, rawResetToken);
-    }
-
-    @Transactional
-    public void resetPassword(String email, String token, String newPassword) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
-
-        boolean tokenMatches = isTokenMatch(token, user.getPasswordResetToken());
-        boolean tokenNotExpired = user.getPasswordResetExpiresAt() != null
-                && user.getPasswordResetExpiresAt().isAfter(LocalDateTime.now());
-
-        if (!tokenMatches) {
-            throw new IllegalArgumentException("Password reset token is invalid");
-        }
-
-        if (!tokenNotExpired) {
-            throw new IllegalArgumentException("Password reset token has expired");
-        }
-
-        user.setPassword(passwordEncoder.encode(newPassword));
-        user.setPasswordResetToken(null);
-        user.setPasswordResetExpiresAt(null);
-        userRepository.save(user);
-    }
-
-    private String rotatePasswordResetToken(User user) {
-        String rawResetToken = generateCode(PASSWORD_RESET_CODE_LENGTH);
-        user.setPasswordResetToken(hashVerificationToken(rawResetToken));
-        user.setPasswordResetExpiresAt(LocalDateTime.now().plusMinutes(15));
-        return rawResetToken;
-    }
-
     public User findById(UUID userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
-//                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
     }
 
     public User findByUsername(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
-//                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
     }
 
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
-//                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
     }
 
     @Transactional
     public User deleteUserById(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
-//                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
-
         userRepository.deleteById(userId);
-
         return user;
     }
 
@@ -207,7 +141,6 @@ public class UserService {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new AccessDeniedException("User is not authenticated");
         }
-
         String email = authentication.getName();
         return findByEmail(email);
     }
@@ -219,5 +152,4 @@ public class UserService {
         }
         return actingUser;
     }
-
 }

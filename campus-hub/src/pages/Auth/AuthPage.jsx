@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import "./AuthPage.css";
 
-const initialRegisterState = {
+const initialFormState = {
   username: "",
   firstName: "",
   lastName: "",
@@ -19,12 +19,12 @@ const initialVerificationState = {
 
 export default function AuthPage() {
   const [mode, setMode] = useState("login");
-  const [formState, setFormState] = useState(initialRegisterState);
+  const [formState, setFormState] = useState(initialFormState);
   const [verificationState, setVerificationState] = useState(initialVerificationState);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login, register, verifyEmail, resendVerification } = useAuth();
+  const { login, register, verifyEmail } = useAuth();
   const navigate = useNavigate();
 
   const clearMessages = () => {
@@ -54,54 +54,26 @@ export default function AuthPage() {
         return;
       }
 
-      const response =
-        mode === "register"
-          ? await register({
-              ...formState,
-              phoneNumber: formState.phoneNumber.trim() || null,
-            })
-          : await verifyEmail({
-              email: verificationState.email,
-              token: verificationState.token,
-            });
-
-      setSuccessMessage(
-        response?.message ||
-          (mode === "register"
-            ? "Registration successful. Please verify your email."
-            : "Email verified successfully. You can now log in.")
-      );
-
       if (mode === "register") {
-        setVerificationState({
-          email: formState.email,
-          token: "",
+        const response = await register({
+          ...formState,
+          phoneNumber: formState.phoneNumber.trim() || null,
         });
+        setSuccessMessage(response?.message || "Registration successful. Please verify your email.");
+        setVerificationState({ email: formState.email, token: "" });
         setMode("verify");
-      } else {
-        setMode("login");
+        setFormState((prev) => ({ ...prev, password: "" }));
+        return;
       }
 
-      setFormState((prev) => ({ ...prev, password: "" }));
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleResendVerification = async () => {
-    if (!verificationState.email) {
-      setError("Enter your email to resend a verification code.");
-      return;
-    }
-
-    setIsSubmitting(true);
-    clearMessages();
-
-    try {
-      const response = await resendVerification({ email: verificationState.email });
-      setSuccessMessage(response?.message || "Verification email resent.");
+      if (mode === "verify") {
+        const response = await verifyEmail({
+          email: verificationState.email,
+          token: verificationState.token,
+        });
+        setSuccessMessage(response?.message || "Email verified successfully. You can now log in.");
+        setMode("login");
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -204,17 +176,6 @@ export default function AuthPage() {
                   : "Verify email"}
           </button>
 
-          {mode === "verify" ? (
-            <button
-              type="button"
-              className="auth-secondary-button"
-              onClick={handleResendVerification}
-              disabled={isSubmitting}
-            >
-              Resend verification code
-            </button>
-          ) : null}
-
           {error ? <p className="auth-error">{error}</p> : null}
           {successMessage ? <p className="auth-success">{successMessage}</p> : null}
         </form>
@@ -230,23 +191,6 @@ export default function AuthPage() {
           >
             {mode === "login" ? "Need an account? Register" : "Already have an account? Login"}
           </button>
-
-          {mode !== "verify" ? (
-            <button
-              className="auth-switch"
-              type="button"
-              onClick={() => {
-                clearMessages();
-                setMode("verify");
-                setVerificationState((prev) => ({
-                  ...prev,
-                  email: prev.email || formState.email,
-                }));
-              }}
-            >
-              Already have a code? Verify email
-            </button>
-          ) : null}
         </div>
       </div>
     </div>
