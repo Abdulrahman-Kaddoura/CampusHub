@@ -11,6 +11,7 @@ import com.campushub.backend.models.listings.Category;
 import com.campushub.backend.models.listings.Listing;
 import com.campushub.backend.models.user.User;
 import com.campushub.backend.services.listings.CategoryService;
+import com.campushub.backend.services.listings.HuggingFaceContentModerationService;
 import com.campushub.backend.services.listings.HuggingFaceSearchService;
 import com.campushub.backend.services.listings.ListingService;
 import com.campushub.backend.services.user.UserService;
@@ -75,6 +76,9 @@ public class ListingController {
     @Autowired
     HuggingFaceSearchService huggingFaceSearchService;
 
+    @Autowired
+    HuggingFaceContentModerationService contentModerationService;
+
     @PostMapping("/create-listing")
     @Operation(
             summary = "Create Listing",
@@ -86,13 +90,17 @@ public class ListingController {
         User user;
         try {
             user = userService.getAuthenticatedUser();
-            System.out.printf("[DEBUG] createListing: using authenticated user id = {}", user.getId());
         } catch (Exception ex) {
             if (listingRequestDTO.getUserId() == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userId is required when not authenticated");
             }
             user = userService.findById(listingRequestDTO.getUserId());
-            System.out.printf("[DEBUG] createListing: no authenticated user, using request userId = {}", user.getId());
+        }
+
+        String textToScreen = listingRequestDTO.getTitle() + " "
+                + (listingRequestDTO.getDescription() != null ? listingRequestDTO.getDescription() : "");
+        if (!contentModerationService.isAppropriate(textToScreen)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Listing contains inappropriate content.");
         }
 
         Listing listing = new Listing();
