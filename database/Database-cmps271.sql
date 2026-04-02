@@ -113,3 +113,66 @@ CREATE TABLE IF NOT EXISTS course_exchange_posts (
   user_id UUID NOT NULL,
   CONSTRAINT fk_course_exchange_posts_user FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
+
+-- Togglz feature flag state table (used by JDBCStateRepository, table name configured in TogglzConfig.java)
+CREATE TABLE IF NOT EXISTS feature_status (
+  feature_name VARCHAR(100) PRIMARY KEY,
+  feature_enabled INTEGER NOT NULL DEFAULT 1,
+  strategy_id VARCHAR(200),
+  strategy_params VARCHAR(2000)
+);
+
+-- Seed all feature flags as enabled so fresh deployments don't silently disable any API.
+-- ON CONFLICT DO NOTHING preserves any intentional overrides already stored in the table.
+INSERT INTO feature_status (feature_name, feature_enabled) VALUES
+  ('REGISTER', 1),
+  ('LOGIN', 1),
+  ('CREATE_USER', 1),
+  ('DELETE_USER', 1),
+  ('GET_USER_BY_ID', 1),
+  ('GET_USER_BY_USERNAME', 1),
+  ('GET_USER_BY_EMAIL', 1),
+  ('CREATE_LISTING', 1),
+  ('BUY_LISTING', 1),
+  ('GET_ALL_LISTINGS', 1),
+  ('GET_ALL_LISTINGS_BY_USER', 1),
+  ('GET_ALL_LISTINGS_BY_CATEGORY', 1),
+  ('DELETE_LISTING', 1),
+  ('AI_SEARCH_LISTINGS', 1),
+  ('CREATE_WANTED_ITEM', 1),
+  ('GET_ALL_WANTED_ITEMS', 1),
+  ('GET_ALL_WANTED_ITEMS_BY_USER', 1),
+  ('DELETE_WANTED_ITEM', 1),
+  ('CREATE_CATEGORY', 1),
+  ('DELETE_CATEGORY_BY_ID', 1),
+  ('DELETE_CATEGORY_BY_NAME', 1),
+  ('GET_ALL_CATEGORIES', 1),
+  ('UPLOAD_LISTING_IMAGE', 1),
+  ('DOWNLOAD_LISTING_IMAGE', 1),
+  ('GET_LISTING_IMAGES', 1),
+  ('DELETE_LISTING_IMAGE', 1),
+  ('CREATE_DORM', 1),
+  ('GET_ALL_DORMS', 1),
+  ('GET_ALL_DORMS_BY_USER', 1),
+  ('DELETE_DORM', 1),
+  ('CREATE_TUTORING', 1),
+  ('GET_ALL_TUTORING', 1),
+  ('GET_ALL_TUTORING_BY_USER', 1),
+  ('DELETE_TUTORING', 1),
+  ('CREATE_COURSE_EXCHANGE', 1),
+  ('GET_ALL_COURSE_EXCHANGES', 1),
+  ('GET_ALL_COURSE_EXCHANGES_BY_USER', 1),
+  ('DELETE_COURSE_EXCHANGE', 1),
+  ('GET_CART_BY_CART_ID', 1),
+  ('GET_CART_BY_USER_ID', 1),
+  ('CART_ADD_ITEM', 1),
+  ('CART_CHECKOUT', 1),
+  ('BUY_CART', 1),
+  ('GET_CART_ITEMS', 1),
+  ('CREATE_CART_ITEM', 1),
+  ('DELETE_CART_ITEM', 1),
+  ('CHAT_SEND_MESSAGE', 1),
+  ('CHAT_GET_MESSAGES', 1),
+  ('CHAT_GET_CONVERSATIONS', 1),
+  ('CHAT_GET_USERS', 1)
+ON CONFLICT (feature_name) DO NOTHING;
