@@ -72,6 +72,14 @@ public class SecurityConfig {
                                         "/auth/reset-password",
                                         "/auth/logout",
                                         "/auth/csrf-token",
+                                        "/api/auth/login",
+                                        "/api/auth/register",
+                                        "/api/auth/verify-email",
+                                        "/api/auth/resend-verification",
+                                        "/api/auth/send-reset-otp",
+                                        "/api/auth/reset-password",
+                                        "/api/auth/logout",
+                                        "/api/auth/csrf-token",
                                         "/v3/api-docs/**",      // OpenAPI 3 docs
                                         "/api-docs/**",         // (Swagger config)
                                         "/swagger-ui/**",       // Swagger UI resources
@@ -82,13 +90,21 @@ public class SecurityConfig {
                                 .permitAll()
                                 .requestMatchers(HttpMethod.GET,
                                         "/listings/get-listings",
+                                        "/listings/ai-search",
                                         "/listings/get-listings-by-category/**",
                                         "/category/get-all-categories",
                                         "/dorm/get-dorms",
                                         "/tutoring/get-tutoring",
-                                        "/course-exchange/get-course-exchanges")
+                                        "/course-exchange/get-course-exchanges",
+                                        "/api/listings/get-listings",
+                                        "/api/listings/ai-search",
+                                        "/api/listings/get-listings-by-category/**",
+                                        "/api/category/get-all-categories",
+                                        "/api/dorm/get-dorms",
+                                        "/api/tutoring/get-tutoring",
+                                        "/api/course-exchange/get-course-exchanges")
                                 .permitAll()
-                                .requestMatchers(HttpMethod.POST, "/listings/create-listing")
+                        .requestMatchers(HttpMethod.POST, "/listings/create-listing", "/api/listings/create-listing")
                                 .permitAll()
                                 .requestMatchers("/togglz-console/**").authenticated()
                                 .anyRequest().authenticated())
