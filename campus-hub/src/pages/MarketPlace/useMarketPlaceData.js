@@ -6,6 +6,7 @@ import { FEATURE_FLAGS } from "../../config/features";
 const FEATURED_AUB_MARKETPLACE_ITEMS = [
   {
     id: "aub-market-1",
+    listingId: "a1b2c3d4-0001-4000-8000-ef1234567890",
     productName: "TI-84 Plus Graphing Calculator",
     author: "Nour S.",
     userId: "featured-user-1",
@@ -16,6 +17,7 @@ const FEATURED_AUB_MARKETPLACE_ITEMS = [
   },
   {
     id: "aub-market-2",
+    listingId: "a1b2c3d4-0002-4000-8000-ef1234567890",
     productName: "Organic Chemistry Textbook + Notes",
     author: "Sarah M.",
     userId: "featured-user-2",
@@ -26,6 +28,7 @@ const FEATURED_AUB_MARKETPLACE_ITEMS = [
   },
   {
     id: "aub-market-3",
+    listingId: "a1b2c3d4-0003-4000-8000-ef1234567890",
     productName: "Compact Study Desk for Hamra Apartments",
     author: "Karim H.",
     userId: "featured-user-3",
@@ -36,6 +39,7 @@ const FEATURED_AUB_MARKETPLACE_ITEMS = [
   },
   {
     id: "aub-market-4",
+    listingId: "a1b2c3d4-0004-4000-8000-ef1234567890",
     productName: "Hoodie - Medium",
     author: "Lynn T.",
     userId: "featured-user-4",
@@ -46,6 +50,7 @@ const FEATURED_AUB_MARKETPLACE_ITEMS = [
   },
   {
     id: "aub-market-5",
+    listingId: "a1b2c3d4-0005-4000-8000-ef1234567890",
     productName: "Dorm Mini Fridge",
     author: "Hadi R.",
     userId: "featured-user-5",
@@ -56,6 +61,7 @@ const FEATURED_AUB_MARKETPLACE_ITEMS = [
   },
   {
     id: "aub-market-6",
+    listingId: "a1b2c3d4-0006-4000-8000-ef1234567890",
     productName: "Dell 24-inch Monitor",
     author: "Rami K.",
     userId: "featured-user-6",
@@ -66,6 +72,7 @@ const FEATURED_AUB_MARKETPLACE_ITEMS = [
   },
   {
     id: "aub-market-7",
+    listingId: "a1b2c3d4-0007-4000-8000-ef1234567890",
     productName: "Power Bank 20000mAh",
     author: "Lea N.",
     userId: "featured-user-7",
@@ -76,6 +83,7 @@ const FEATURED_AUB_MARKETPLACE_ITEMS = [
   },
   {
     id: "aub-market-8",
+    listingId: "a1b2c3d4-0008-4000-8000-ef1234567890",
     productName: "Linear Algebra Workbook",
     author: "Majd A.",
     userId: "featured-user-8",
@@ -86,6 +94,7 @@ const FEATURED_AUB_MARKETPLACE_ITEMS = [
   },
   {
     id: "aub-market-9",
+    listingId: "a1b2c3d4-0009-4000-8000-ef1234567890",
     productName: "Scientific Notebook Set (Pack of 4)",
     author: "Dana F.",
     userId: "featured-user-9",
@@ -96,6 +105,7 @@ const FEATURED_AUB_MARKETPLACE_ITEMS = [
   },
   {
     id: "aub-market-10",
+    listingId: "a1b2c3d4-0010-4000-8000-ef1234567890",
     productName: "Ergonomic Office Chair",
     author: "Youssef T.",
     userId: "featured-user-10",
@@ -106,6 +116,7 @@ const FEATURED_AUB_MARKETPLACE_ITEMS = [
   },
   {
     id: "aub-market-11",
+    listingId: "a1b2c3d4-0011-4000-8000-ef1234567890",
     productName: "Bedside Lamp",
     author: "Mira J.",
     userId: "featured-user-11",
@@ -114,9 +125,9 @@ const FEATURED_AUB_MARKETPLACE_ITEMS = [
     category: "Furniture & Home Goods",
     imageUrl: "https://tse2.mm.bing.net/th/id/OIP.CEUO8BDwmWiB8PA9RzDSCQHaHa?rs=1&pid=ImgDetMain&o=7&rm=3",
   },
-
   {
     id: "aub-market-12",
+    listingId: "a1b2c3d4-0012-4000-8000-ef1234567890",
     productName: "Running Shoes - Size 42",
     author: "Nadine C.",
     userId: "featured-user-12",
@@ -127,6 +138,7 @@ const FEATURED_AUB_MARKETPLACE_ITEMS = [
   },
   {
     id: "aub-market-13",
+    listingId: "a1b2c3d4-0013-4000-8000-ef1234567890",
     productName: "Acoustic Guitar",
     author: "Omar L.",
     userId: "featured-user-13",
@@ -234,7 +246,9 @@ export function useMarketPlaceData() {
 
   const items = useMemo(() => {
     if (isLoading) return [];
-    const sourceListings = apiListings.length > 0 ? apiListings : FEATURED_AUB_MARKETPLACE_ITEMS;
+    const sourceListings = FEATURE_FLAGS.mockData
+      ? (apiListings.length > 0 ? apiListings : FEATURED_AUB_MARKETPLACE_ITEMS)
+      : apiListings;
     return sourceListings.map(toListingShape);
   }, [apiListings, isLoading]);
 
