@@ -109,6 +109,7 @@ public class CartItemController {
                 .map(item -> {
                     CartItemResponseDTO dto = modelMapper.map(item, CartItemResponseDTO.class);
                     dto.setListingId(item.getListing().getListingId());
+                    dto.setListingTitle(item.getListing().getTitle());
                     dto.setTotalPrice(
                             item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()))
                     );

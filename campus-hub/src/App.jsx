@@ -10,6 +10,7 @@ import NavBar from "./components/NavBar";
 import AuthPage from "./pages/Auth/AuthPage";
 import ProfilePage from "./pages/Profile/ProfilePage";
 import ChatPage from "./pages/Chat/ChatPage";
+import Cart from "./pages/Cart/Cart";
 import { FEATURE_FLAGS } from "./config/features";
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
           <Route path="/auth" element={FEATURE_FLAGS.auth ? <AuthPage /> : <Navigate to="/" replace />} />
           <Route path="/profile" element={FEATURE_FLAGS.auth ? <ProfilePage /> : <Navigate to="/" replace />} />
           <Route path="/chat" element={FEATURE_FLAGS.chat && FEATURE_FLAGS.auth ? <ChatPage /> : <Navigate to="/" replace />} />
+          <Route path="/cart" element={FEATURE_FLAGS.auth ? <Cart /> : <Navigate to="/" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

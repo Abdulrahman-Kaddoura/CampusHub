@@ -12,6 +12,7 @@ public class CartItemResponseDTO {
 
     private UUID cartItemId;
     private UUID listingId;
+    private String listingTitle;
     private BigDecimal unitPrice;
     private Integer quantity;
     private BigDecimal totalPrice; // unitPrice * quantity
