@@ -122,6 +122,24 @@
   cursor: wait;
 }
 
+.product-card-chat-btn {
+  margin-top: 6px;
+  width: 100%;
+  border: 2px solid #16a34a;
+  border-radius: 8px;
+  padding: 9px;
+  background: transparent;
+  color: #16a34a;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.product-card-chat-btn:hover {
+  background: #16a34a;
+  color: #fff;
+}
+
 .product-card-delete-btn {
   margin-top: 10px;
   width: 100%;

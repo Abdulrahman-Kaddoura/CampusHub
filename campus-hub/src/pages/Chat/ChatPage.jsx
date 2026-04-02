@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { fetchChatUsers, fetchConversationMessages, fetchConversations, sendChatMessage } from "../../api/chat";
 import { useAuth } from "../../context/AuthContext";
 import "./ChatPage.css";
@@ -11,9 +12,10 @@ const formatMessageTime = (dateString) => {
 
 function ChatPage() {
   const { currentUser, token, isAuthenticated } = useAuth();
+  const [searchParams] = useSearchParams();
   const [users, setUsers] = useState([]);
   const [conversations, setConversations] = useState([]);
-  const [selectedPartnerId, setSelectedPartnerId] = useState("");
+  const [selectedPartnerId, setSelectedPartnerId] = useState(searchParams.get("partner") || "");
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState("");
   const [loading, setLoading] = useState(false);

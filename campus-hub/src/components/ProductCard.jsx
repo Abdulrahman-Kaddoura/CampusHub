@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { deleteListing } from "../api/listings";
 import { addItemToCart } from "../api/cart";
 import { useAuth } from "../context/AuthContext";
@@ -8,6 +9,7 @@ const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1589998059171-988d451d
 
 export const ProductCard = ({ data, onDelete }) => {
   const { token, isAuthenticated, currentUser } = useAuth();
+  const navigate = useNavigate();
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [cartMessage, setCartMessage] = useState("");
@@ -27,6 +29,7 @@ export const ProductCard = ({ data, onDelete }) => {
   const isOwnListing = currentUser?.id && data.userId && currentUser.id === data.userId;
   const hasAuthToken = Boolean(token);
   const canAddToCart = Boolean(listingId && isAuthenticated && hasAuthToken && !isOwnListing);
+  const canChat = Boolean(listingId && isAuthenticated && !isOwnListing && data.userId);
   const canDelete = Boolean(isOwnListing && listingId && onDelete);
 
   const handleDelete = async () => {
@@ -81,6 +84,16 @@ export const ProductCard = ({ data, onDelete }) => {
           </button>
         ) : null}
         {cartMessage ? <p className={cartMessage === "Added to cart!" ? "product-card-hint" : "product-card-error"}>{cartMessage}</p> : null}
+
+        {canChat ? (
+          <button
+            type="button"
+            className="product-card-chat-btn"
+            onClick={() => navigate(`/chat?partner=${data.userId}`)}
+          >
+            Chat with Seller
+          </button>
+        ) : null}
 
         {canDelete ? (
           <button
