@@ -3,6 +3,10 @@ services:
     build:
       context: ./backend/backend
       dockerfile: Dockerfile
+    deploy:
+      resources:
+        limits:
+          memory: 512m
     environment:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SERVER_PORT: ${SERVER_PORT}

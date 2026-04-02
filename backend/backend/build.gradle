@@ -60,6 +60,9 @@ dependencies {
 
 bootJar {
 	archiveFileName = 'app.jar'
+	layered {
+		enabled = true
+	}
 	classpath = classpath.filter {
 		!it.name.contains('spring-boot-devtools') &&
 				!it.name.contains('togglz-console')
