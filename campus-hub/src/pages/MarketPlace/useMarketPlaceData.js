@@ -147,7 +147,7 @@ function toListingShape(p) {
     };
   }
   return {
-    listingId: p.id,
+    listingId: null,
     title: p.productName ?? p.title,
     userName: p.userName ?? p.author,
     userId: p.userId,

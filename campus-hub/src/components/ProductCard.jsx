@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createStripeCheckoutSession, deleteListing } from "../api/listings";
+import { deleteListing } from "../api/listings";
 import { addItemToCart } from "../api/cart";
 import { useAuth } from "../context/AuthContext";
 import "./ProductCard.css";
@@ -8,8 +8,6 @@ const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1589998059171-988d451d
 
 export const ProductCard = ({ data, onDelete }) => {
   const { token, isAuthenticated, currentUser } = useAuth();
-  const [paymentError, setPaymentError] = useState("");
-  const [isRedirecting, setIsRedirecting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [cartMessage, setCartMessage] = useState("");
@@ -28,7 +26,7 @@ export const ProductCard = ({ data, onDelete }) => {
   const listingId = data.listingId;
   const isOwnListing = currentUser?.id && data.userId && currentUser.id === data.userId;
   const hasAuthToken = Boolean(token);
-  const canPayWithStripe = Boolean(listingId && isAuthenticated && hasAuthToken && !isOwnListing);
+  const canAddToCart = Boolean(listingId && isAuthenticated && hasAuthToken && !isOwnListing);
   const canDelete = Boolean(isOwnListing && listingId && onDelete);
 
   const handleDelete = async () => {
@@ -58,41 +56,6 @@ export const ProductCard = ({ data, onDelete }) => {
     }
   };
 
-  const handleStripeCheckout = async () => {
-    if (!listingId) {
-      return;
-    }
-
-    if (!isAuthenticated || !hasAuthToken) {
-      setPaymentError("Please log in again before starting Stripe checkout.");
-      return;
-    }
-
-    setPaymentError("");
-    setIsRedirecting(true);
-
-    try {
-      const baseUrl = window.location.origin;
-      const session = await createStripeCheckoutSession(
-        listingId,
-        {
-          successUrl: `${baseUrl}/?payment=success&listingId=${listingId}&session_id={CHECKOUT_SESSION_ID}`,
-          cancelUrl: `${baseUrl}/?payment=cancelled&listingId=${listingId}`,
-        },
-        token
-      );
-
-      if (!session?.checkoutUrl) {
-        throw new Error("Stripe checkout URL is missing.");
-      }
-
-      window.location.assign(session.checkoutUrl);
-    } catch (error) {
-      setPaymentError(error.message || "Could not start Stripe checkout.");
-      setIsRedirecting(false);
-    }
-  };
-
   return (
     <div className="product-card">
       <div className="product-card-image-wrap">
@@ -107,25 +70,15 @@ export const ProductCard = ({ data, onDelete }) => {
         <p className="product-card-price">${displayPrice}</p>
         <p className="product-card-description">{description}</p>
 
-        {canPayWithStripe ? (
-          <>
-            <button
-              type="button"
-              className="product-card-cart-btn"
-              onClick={handleAddToCart}
-              disabled={isAddingToCart}
-            >
-              {isAddingToCart ? "Adding..." : "Add to Cart"}
-            </button>
-            <button
-              type="button"
-              className="product-card-pay-btn"
-              onClick={handleStripeCheckout}
-              disabled={isRedirecting}
-            >
-              {isRedirecting ? "Redirecting..." : "Buy Now"}
-            </button>
-          </>
+        {canAddToCart ? (
+          <button
+            type="button"
+            className="product-card-cart-btn"
+            onClick={handleAddToCart}
+            disabled={isAddingToCart}
+          >
+            {isAddingToCart ? "Adding..." : "Add to Cart"}
+          </button>
         ) : null}
         {cartMessage ? <p className={cartMessage === "Added to cart!" ? "product-card-hint" : "product-card-error"}>{cartMessage}</p> : null}
 
@@ -145,10 +98,9 @@ export const ProductCard = ({ data, onDelete }) => {
         ) : null}
 
         {!isAuthenticated || !hasAuthToken ? (
-          <p className="product-card-hint">Login to pay securely with Stripe.</p>
+          <p className="product-card-hint">Login to add items to cart.</p>
         ) : null}
 
-        {paymentError ? <p className="product-card-error">{paymentError}</p> : null}
         {deleteError ? <p className="product-card-error">{deleteError}</p> : null}
       </div>
     </div>
