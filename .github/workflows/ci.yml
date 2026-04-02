@@ -1,4 +1,4 @@
-name: CI
+name: CI / CD
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   frontend:
-    name: Frontend (lint, build)
+    name: Frontend (lint, test, build)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -32,11 +32,14 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Test
+        run: npm test
+
       - name: Build
         run: npm run build
 
   backend:
-    name: Backend (test)
+    name: Backend (test, build JAR)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -55,3 +58,47 @@ jobs:
 
       - name: Run tests
         run: ./gradlew test
+
+      - name: Build JAR
+        run: ./gradlew bootJar
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: backend/backend/build/libs/app.jar
+          retention-days: 7
+
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: [frontend, backend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          command_timeout: 20m
+          script: |
+            set -e
+            cd ${{ secrets.EC2_APP_DIR }}
+
+            echo "==> Pulling latest code"
+            git pull origin main
+
+            echo "==> Pruning Docker to free storage"
+            docker system prune -af
+
+            echo "==> Rebuilding Spring Boot JAR"
+            cd backend/backend
+            ./gradlew bootJar
+            cd ${{ secrets.EC2_APP_DIR }}
+
+            echo "==> Rebuilding images and restarting containers"
+            docker-compose up --build -d
+
+            echo "==> Deploy complete"
