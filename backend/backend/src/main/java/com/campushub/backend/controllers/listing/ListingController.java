@@ -138,9 +138,7 @@ public class ListingController {
     )
     public ResponseEntity<ListingResponseDTO> buyListing(
             @PathVariable UUID listingId) throws Exception {
-        if (!featureManager.isActive(BUY_LISTING)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
+
 
         User buyer = userService.getAuthenticatedUser();
         Listing listing = listingService.buyListing(listingId, buyer.getId());
@@ -165,9 +163,6 @@ public class ListingController {
     public ResponseEntity<StripeCheckoutResponseDTO> createCheckoutSession(
             @PathVariable UUID listingId,
             @RequestBody(required = false) StripeCheckoutRequestDTO requestDTO) throws StripeException {
-        if (!featureManager.isActive(BUY_LISTING)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
 
         User buyer = userService.getAuthenticatedUser();
         Listing listing = listingService.getListingById(listingId);
@@ -192,9 +187,7 @@ public class ListingController {
             description = "Retrieves a list of all listings in the system."
     )
     public ResponseEntity<List<ListingResponseDTO>> getAllListings() {
-        if (!featureManager.isActive(GET_ALL_LISTINGS)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
+
         List<Listing> listings = listingService.getAllListings();
         List<ListingResponseDTO> listingResponseDTOS = listings.stream()
                 .map(this::toListingResponseDTO)
@@ -208,9 +201,7 @@ public class ListingController {
             description = "Retrieves all listings posted by a specific user using the user ID and returns them in a list."
     )
     public ResponseEntity<List<ListingResponseDTO>> getAllListingsByUser(@PathVariable UUID userId) {
-        if (!featureManager.isActive(GET_ALL_LISTINGS_BY_USER)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
+
         userService.requireAuthenticatedUser(userId);
         List<Listing> listings = listingService.getAllListingsByUser(userId);
         List<ListingResponseDTO> listingResponseDTOS = listings.stream()
@@ -225,9 +216,7 @@ public class ListingController {
             description = "Retrieves all listings under a specific category using the category name and returns them in a list."
     )
     public ResponseEntity<List<ListingResponseDTO>> getAllListingsByCategory(@PathVariable String categoryName) {
-        if (!featureManager.isActive(GET_ALL_LISTINGS_BY_CATEGORY)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
+
         List<Listing> listings = listingService.getAllListingsByCategory(categoryName);
         List<ListingResponseDTO> listingResponseDTOS = listings.stream()
                 .map(this::toListingResponseDTO)
@@ -245,9 +234,6 @@ public class ListingController {
             @RequestParam("q") String query,
             @RequestParam(name = "limit", defaultValue = "25") int limit
     ) {
-        if (!featureManager.isActive(AI_SEARCH_LISTINGS)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
 
         String normalizedQuery = query == null ? "" : query.trim();
         if (normalizedQuery.isEmpty()) {
@@ -276,9 +262,7 @@ public class ListingController {
             description = "Deletes a listing by its ID and returns the deleted listing details."
     )
     public ResponseEntity<ListingResponseDTO> deleteListing(@PathVariable UUID listingId) {
-        if (!featureManager.isActive(DELETE_LISTING)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
+
         User actingUser = userService.getAuthenticatedUser();
         Listing listing = listingService.deleteListingByIdForUser(listingId, actingUser.getId());
         ListingResponseDTO listingResponseDTO = toListingResponseDTO(listing);
