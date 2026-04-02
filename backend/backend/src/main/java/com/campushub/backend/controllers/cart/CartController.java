@@ -32,7 +32,7 @@ import java.util.UUID;
 import static com.campushub.backend.configurations.togglz.Features.*;
 
 @RestController
-@RequestMapping("/cart")
+@RequestMapping({"/cart", "/api/cart"})
 @Tag(name = "Cart", description = "Cart related operations")
 public class CartController {
     @Autowired

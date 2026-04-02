@@ -38,7 +38,7 @@ import java.util.UUID;
 import static com.campushub.backend.configurations.togglz.Features.*;
 
 @RestController
-@RequestMapping("/listings")
+@RequestMapping({"/listings", "/api/listings"})
 @Tag(name = "Listings", description = "Listing related operations")
 public class ListingController {
 
