@@ -1,6 +1,7 @@
 package com.campushub.backend.services.payment;
 
 import com.campushub.backend.dtos.listing.StripeCheckoutResponseDTO;
+import com.campushub.backend.models.cart.CartItem;
 import com.campushub.backend.models.listings.Listing;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
@@ -13,6 +14,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -84,6 +87,62 @@ public class StripeCheckoutService {
     private String buildSuccessUrl(Listing listing, String successUrl) {
         String base = (successUrl == null || successUrl.isBlank()) ? defaultSuccessUrl : successUrl;
         return base.replace("{LISTING_ID}", listing.getListingId().toString());
+    }
+
+    public StripeCheckoutResponseDTO createCartCheckoutSession(Set<CartItem> cartItems, UUID buyerId, String successUrl, String cancelUrl)
+            throws StripeException {
+
+        if (stripeSecretKey == null || stripeSecretKey.isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    "Stripe is not configured. Please set stripe.secret-key."
+            );
+        }
+
+        if (cartItems == null || cartItems.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart is empty");
+        }
+
+        Stripe.apiKey = stripeSecretKey;
+
+        String resolvedSuccessUrl = (successUrl == null || successUrl.isBlank()) ? defaultSuccessUrl : successUrl;
+        String resolvedCancelUrl = (cancelUrl == null || cancelUrl.isBlank()) ? defaultCancelUrl : cancelUrl;
+
+        SessionCreateParams.Builder paramsBuilder = SessionCreateParams.builder()
+                .setMode(SessionCreateParams.Mode.PAYMENT)
+                .setSuccessUrl(resolvedSuccessUrl)
+                .setCancelUrl(resolvedCancelUrl)
+                .putMetadata("buyerId", buyerId.toString())
+                .putMetadata("type", "cart");
+
+        for (CartItem item : cartItems) {
+            Listing listing = item.getListing();
+            long amountInCents = item.getUnitPrice()
+                    .setScale(2, RoundingMode.HALF_UP)
+                    .movePointRight(2)
+                    .longValueExact();
+
+            paramsBuilder.addLineItem(
+                    SessionCreateParams.LineItem.builder()
+                            .setQuantity((long) item.getQuantity())
+                            .setPriceData(
+                                    SessionCreateParams.LineItem.PriceData.builder()
+                                            .setCurrency(stripeCurrency.toLowerCase())
+                                            .setUnitAmount(amountInCents)
+                                            .setProductData(
+                                                    SessionCreateParams.LineItem.PriceData.ProductData.builder()
+                                                            .setName(listing.getTitle() != null ? listing.getTitle() : "CampusHub Listing")
+                                                            .setDescription(listing.getDescription() != null ? listing.getDescription() : "CampusHub marketplace purchase")
+                                                            .build()
+                                            )
+                                            .build()
+                            )
+                            .build()
+            );
+        }
+
+        Session session = Session.create(paramsBuilder.build());
+        return new StripeCheckoutResponseDTO(session.getId(), session.getUrl());
     }
 
     private String buildCancelUrl(Listing listing, String cancelUrl) {

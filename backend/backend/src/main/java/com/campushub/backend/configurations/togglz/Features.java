@@ -198,6 +198,18 @@ public enum Features implements Feature {
     @EnabledByDefault
     GET_CART_BY_USER_ID,
 
+    @Label("CART - AddItemToCart")
+    @EnabledByDefault
+    CART_ADD_ITEM,
+
+    @Label("CART - CheckoutCart")
+    @EnabledByDefault
+    CART_CHECKOUT,
+
+    @Label("CART - BuyCart")
+    @EnabledByDefault
+    BUY_CART,
+
     //-----------------------
     // CartItem APIs
     //-----------------------

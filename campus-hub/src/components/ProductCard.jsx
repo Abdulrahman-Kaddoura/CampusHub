@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createStripeCheckoutSession, deleteListing } from "../api/listings";
+import { addItemToCart } from "../api/cart";
 import { useAuth } from "../context/AuthContext";
 import "./ProductCard.css";
 
@@ -11,6 +12,8 @@ export const ProductCard = ({ data, onDelete }) => {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [cartMessage, setCartMessage] = useState("");
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const title = data.title ?? data.productName ?? "";
   const userName = data.userName ?? data.author ?? data.userId ?? "Campus seller";
@@ -38,6 +41,20 @@ export const ProductCard = ({ data, onDelete }) => {
       setDeleteError(err.message || "Could not delete listing.");
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleAddToCart = async () => {
+    if (!listingId || !isAuthenticated || !token) return;
+    setCartMessage("");
+    setIsAddingToCart(true);
+    try {
+      await addItemToCart(listingId, token);
+      setCartMessage("Added to cart!");
+    } catch (err) {
+      setCartMessage(err.message || "Could not add to cart.");
+    } finally {
+      setIsAddingToCart(false);
     }
   };
 
@@ -91,15 +108,26 @@ export const ProductCard = ({ data, onDelete }) => {
         <p className="product-card-description">{description}</p>
 
         {canPayWithStripe ? (
-          <button
-            type="button"
-            className="product-card-pay-btn"
-            onClick={handleStripeCheckout}
-            disabled={isRedirecting}
-          >
-            {isRedirecting ? "Redirecting..." : "Pay with Stripe"}
-          </button>
+          <>
+            <button
+              type="button"
+              className="product-card-cart-btn"
+              onClick={handleAddToCart}
+              disabled={isAddingToCart}
+            >
+              {isAddingToCart ? "Adding..." : "Add to Cart"}
+            </button>
+            <button
+              type="button"
+              className="product-card-pay-btn"
+              onClick={handleStripeCheckout}
+              disabled={isRedirecting}
+            >
+              {isRedirecting ? "Redirecting..." : "Buy Now"}
+            </button>
+          </>
         ) : null}
+        {cartMessage ? <p className={cartMessage === "Added to cart!" ? "product-card-hint" : "product-card-error"}>{cartMessage}</p> : null}
 
         {canDelete ? (
           <button

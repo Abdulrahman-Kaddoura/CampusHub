@@ -108,6 +108,9 @@ function NavBar() {
             <div className="auth-buttons">
               {FEATURE_FLAGS.auth && isAuthenticated ? (
                 <>
+                  <Link to="/cart" className="auth-button link-button" onClick={closeMenu}>
+                    Cart
+                  </Link>
                   <Link to="/profile" className="auth-button link-button profile-link" onClick={closeMenu}>
                     Profile
                   </Link>
