@@ -150,7 +150,7 @@ public class CartController {
             summary = "Finalize cart purchase",
             description = "Marks all listings in the cart as sold and clears the cart. Call after successful Stripe payment."
     )
-    public ResponseEntity<CartResponseDTO> buyCart() {
+    public ResponseEntity<CartResponseDTO> buyCart() throws Exception {
         if (!featureManager.isActive(BUY_CART)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
