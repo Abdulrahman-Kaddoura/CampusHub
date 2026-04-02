@@ -2,7 +2,6 @@ package com.campushub.backend.security;
 
 import com.campushub.backend.services.user.AppUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,24 +17,15 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-//import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-//import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
-    @Value("${app.cors.allowed-origin-patterns:http://localhost:*,http://127.0.0.1:*,https://campushub.shop,https://www.campushub.shop,https://*.campushub.shop}")
-    private String allowedOriginPatterns;
-
-//    @Value("${app.security.csrf.cookie.domain:}")
-//    private String csrfCookieDomain;
 
     @Autowired
     AppUserDetailsService appUserDetailsService;
@@ -45,73 +35,42 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//        CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
-//        if (csrfCookieDomain != null && !csrfCookieDomain.isBlank()) {
-//            String normalizedDomain = csrfCookieDomain.startsWith(".")
-//                    ? csrfCookieDomain.substring(1)
-//                    : csrfCookieDomain;
-//            csrfTokenRepository.setCookieCustomizer(cookie -> cookie.domain(normalizedDomain));
-//        }
-
         http.cors(Customizer.withDefaults())
-//                .csrf(csrf -> csrf
-//                        .csrfTokenRepository(csrfTokenRepository)
-//                        .ignoringRequestMatchers("/auth/login",
-//                                "/auth/register",
-//                                "/auth/verify-email",
-//                                "/auth/resend-verification",
-//                                "/auth/send-reset-otp",
-//                                "/auth/reset-password"))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/auth/login",
-                                        "/auth/register",
-                                        "/auth/verify-email",
-                                        "/auth/resend-verification",
-                                        "/auth/send-reset-otp",
-                                        "/auth/reset-password",
-                                        "/auth/logout",
-                                        "/auth/csrf-token",
-                                        "/api/auth/login",
-                                        "/api/auth/register",
-                                        "/api/auth/verify-email",
-                                        "/api/auth/resend-verification",
-                                        "/api/auth/send-reset-otp",
-                                        "/api/auth/reset-password",
-                                        "/api/auth/logout",
-                                        "/api/auth/csrf-token",
-                                        "/v3/api-docs/**",      // OpenAPI 3 docs
-                                        "/api-docs/**",         // (Swagger config)
-                                        "/swagger-ui/**",       // Swagger UI resources
-                                        "/swagger-ui.html",     // Swagger UI page
-                                        "/swagger-resources/**", // Swagger resources
-                                        "/configuration/**",     // Swagger configuration
-                                        "/webjars/**")
-                                .permitAll()
-                                .requestMatchers(HttpMethod.GET,
-                                        "/listings/get-listings",
-                                        "/listings/ai-search",
-                                        "/listings/get-listings-by-category/**",
-                                        "/category/get-all-categories",
-                                        "/dorm/get-dorms",
-                                        "/tutoring/get-tutoring",
-                                        "/course-exchange/get-course-exchanges",
-                                        "/api/listings/get-listings",
-                                        "/api/listings/ai-search",
-                                        "/api/listings/get-listings-by-category/**",
-                                        "/api/category/get-all-categories",
-                                        "/api/dorm/get-dorms",
-                                        "/api/tutoring/get-tutoring",
-                                        "/api/course-exchange/get-course-exchanges")
-                                .permitAll()
+                        .requestMatchers(
+                                "/auth/login", "/auth/register", "/auth/verify-email",
+                                "/api/auth/login", "/api/auth/register", "/api/auth/verify-email",
+                                "/v3/api-docs/**",
+                                "/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/swagger-resources/**",
+                                "/configuration/**",
+                                "/webjars/**")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/listings/get-listings",
+                                "/listings/ai-search",
+                                "/listings/get-listings-by-category/**",
+                                "/category/get-all-categories",
+                                "/dorm/get-dorms",
+                                "/tutoring/get-tutoring",
+                                "/course-exchange/get-course-exchanges",
+                                "/api/listings/get-listings",
+                                "/api/listings/ai-search",
+                                "/api/listings/get-listings-by-category/**",
+                                "/api/category/get-all-categories",
+                                "/api/dorm/get-dorms",
+                                "/api/tutoring/get-tutoring",
+                                "/api/course-exchange/get-course-exchanges")
+                        .permitAll()
                         .requestMatchers(HttpMethod.POST, "/listings/create-listing", "/api/listings/create-listing")
-                                .permitAll()
-                                .requestMatchers("/togglz-console/**").authenticated()
-                                .anyRequest().authenticated())
+                        .permitAll()
+                        .requestMatchers("/togglz-console/**").authenticated()
+                        .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-//                .logout(AbstractHttpConfigurer::disable)
-//                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
                 .logout(AbstractHttpConfigurer::disable);
         return http.build();
     }
@@ -124,11 +83,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-
-        config.setAllowedOrigins(List.of("*")); // allow everything
+        config.setAllowedOrigins(List.of("*"));
         config.setAllowedMethods(List.of("*"));
         config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(false); // MUST be false with "*"
+        config.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
