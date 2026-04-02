@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { fetchChatUsers, fetchConversationMessages, fetchConversations, sendChatMessage } from "../../api/chat";
 import { useAuth } from "../../context/AuthContext";
@@ -20,6 +20,10 @@ function ChatPage() {
   const [messageText, setMessageText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const messagesEndRef = useRef(null);
+  const messagesPollRef = useRef(null);
+  const conversationsPollRef = useRef(null);
 
   const selectedPartner = useMemo(() => {
     const fromUsers = users.find((user) => user.userId === selectedPartnerId);
@@ -58,6 +62,26 @@ function ChatPage() {
     }
   };
 
+  const pollMessages = useCallback(() => {
+    if (!selectedPartnerId || !token) return;
+    fetchConversationMessages(selectedPartnerId, token)
+      .then((msgs) => {
+        if (!msgs) return;
+        setMessages((prev) => (msgs.length === prev.length ? prev : msgs));
+      })
+      .catch(() => {});
+  }, [selectedPartnerId, token]);
+
+  const pollConversations = useCallback(() => {
+    if (!token) return;
+    fetchConversations(token)
+      .then((convs) => {
+        if (!convs) return;
+        setConversations((prev) => (convs.length === prev.length ? prev : convs));
+      })
+      .catch(() => {});
+  }, [token]);
+
   useEffect(() => {
     if (!isAuthenticated || !token) {
       return;
@@ -66,6 +90,11 @@ function ChatPage() {
   }, [isAuthenticated, token]);
 
   useEffect(() => {
+    if (messagesPollRef.current) {
+      clearInterval(messagesPollRef.current);
+      messagesPollRef.current = null;
+    }
+
     if (!selectedPartnerId) {
       setMessages([]);
       return;
@@ -84,10 +113,28 @@ function ChatPage() {
         }
       });
 
+    messagesPollRef.current = setInterval(pollMessages, 3000);
+
     return () => {
       mounted = false;
+      clearInterval(messagesPollRef.current);
+      messagesPollRef.current = null;
     };
-  }, [selectedPartnerId, token]);
+  }, [selectedPartnerId, token, pollMessages]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !token) return;
+    conversationsPollRef.current = setInterval(pollConversations, 10000);
+    return () => {
+      clearInterval(conversationsPollRef.current);
+      conversationsPollRef.current = null;
+    };
+  }, [isAuthenticated, token, pollConversations]);
+
+  useEffect(() => {
+    if (messages.length === 0) return;
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleSendMessage = async (event) => {
     event.preventDefault();
@@ -180,6 +227,7 @@ function ChatPage() {
                 </article>
               );
             })}
+            <div ref={messagesEndRef} />
           </div>
 
           <form className="chat-compose" onSubmit={handleSendMessage}>
