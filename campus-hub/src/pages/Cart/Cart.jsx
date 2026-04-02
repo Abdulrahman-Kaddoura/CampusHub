@@ -5,7 +5,7 @@ import { getCartByUserId, getCartItems, removeCartItem, checkoutCart, buyCart } 
 import "./Cart.css";
 
 export default function Cart() {
-  const { currentUser, token, isAuthenticated } = useAuth();
+  const { currentUser, token, isAuthenticated, authLoading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const paymentHandledRef = useRef(false);
@@ -41,12 +41,13 @@ export default function Cart() {
   };
 
   useEffect(() => {
+    if (authLoading) return;
     if (!isAuthenticated) {
       navigate("/auth", { replace: true });
       return;
     }
     loadCart();
-  }, [isAuthenticated, currentUserId, token]);
+  }, [authLoading, isAuthenticated, currentUserId, token]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -112,7 +113,7 @@ export default function Cart() {
     }
   };
 
-  if (!isAuthenticated) return null;
+  if (authLoading || !isAuthenticated) return null;
 
   return (
     <div className="cart-page">
