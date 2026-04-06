@@ -138,16 +138,22 @@ public class UserService {
 
     public User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("[DEBUG][UserService] getAuthenticatedUser() — SecurityContext auth: " + authentication);
         if (authentication == null || !authentication.isAuthenticated()) {
+            System.out.println("[DEBUG][UserService] getAuthenticatedUser() — authentication is null or not authenticated → throwing AccessDeniedException");
             throw new AccessDeniedException("User is not authenticated");
         }
         String email = authentication.getName();
+        System.out.println("[DEBUG][UserService] getAuthenticatedUser() — authenticated as: '" + email + "'");
         return findByEmail(email);
     }
 
     public User requireAuthenticatedUser(UUID requestedUserId) {
+        System.out.println("[DEBUG][UserService] requireAuthenticatedUser() — requestedUserId=" + requestedUserId);
         User actingUser = getAuthenticatedUser();
+        System.out.println("[DEBUG][UserService] requireAuthenticatedUser() — actingUser.id=" + actingUser.getId() + ", match=" + actingUser.getId().equals(requestedUserId));
         if (!actingUser.getId().equals(requestedUserId)) {
+            System.out.println("[DEBUG][UserService] requireAuthenticatedUser() — ID mismatch → throwing AccessDeniedException");
             throw new AccessDeniedException("Access denied for requested user resource");
         }
         return actingUser;

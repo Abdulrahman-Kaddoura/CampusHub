@@ -39,26 +39,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        // DEBUG: log the incoming request path and method for tracing
+        System.out.println("[DEBUG][JwtFilter] >>> Incoming request: " + request.getMethod() + " " + request.getRequestURI());
         log.debug("[DEBUG] JwtAuthenticationFilter: {} {}", request.getMethod(), request.getRequestURI());
 
         String jwtToken = resolveToken(request);
 
         if (jwtToken == null) {
-            // DEBUG: no JWT token found in either Authorization header or jwt cookie — request will proceed unauthenticated
+            System.out.println("[DEBUG][JwtFilter] No JWT token found — request will proceed unauthenticated (endpoint may reject it)");
             log.debug("[DEBUG] JwtAuthenticationFilter: no JWT token found in request — endpoint will reject if authentication is required");
         } else if (SecurityContextHolder.getContext().getAuthentication() != null) {
-            // DEBUG: SecurityContext already has authentication set (e.g. from a previous filter)
+            System.out.println("[DEBUG][JwtFilter] SecurityContext already has authentication — skipping JWT processing");
             log.debug("[DEBUG] JwtAuthenticationFilter: SecurityContext already has authentication, skipping JWT processing");
         } else {
+            System.out.println("[DEBUG][JwtFilter] JWT token found — attempting to authenticate");
             try {
                 String email = jwtUtil.extractUsername(jwtToken);
-                // DEBUG: log the email extracted from the token
+                System.out.println("[DEBUG][JwtFilter] Extracted email from token: '" + email + "'");
                 log.debug("[DEBUG] JwtAuthenticationFilter: extracted email from token = '{}'", email);
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                System.out.println("[DEBUG][JwtFilter] Loaded UserDetails for: '" + email + "', authorities: " + userDetails.getAuthorities());
                 boolean tokenValid = jwtUtil.isTokenValid(jwtToken, userDetails);
-                // DEBUG: log the result of token validation
+                System.out.println("[DEBUG][JwtFilter] isTokenValid = " + tokenValid);
                 log.debug("[DEBUG] JwtAuthenticationFilter: isTokenValid = {}", tokenValid);
 
                 if (tokenValid) {
@@ -66,47 +68,49 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                    System.out.println("[DEBUG][JwtFilter] Authentication set in SecurityContext for user '" + email + "'");
                     log.debug("[DEBUG] JwtAuthenticationFilter: authentication set in SecurityContext for user '{}'", email);
                 } else {
-                    // DEBUG: token was parsed but failed validation (expired or wrong user)
+                    System.out.println("[DEBUG][JwtFilter] Token is NOT valid for user '" + email + "' — proceeding unauthenticated");
                     log.debug("[DEBUG] JwtAuthenticationFilter: token is NOT valid for user '{}' — request will proceed unauthenticated", email);
                 }
             } catch (Exception e) {
-                // DEBUG: exception during JWT processing — previously silently ignored, now logged
-                // Common causes: malformed token, wrong secret key, expired signature, or user not found
+                System.out.println("[DEBUG][JwtFilter] Exception processing JWT — type=" + e.getClass().getSimpleName() + ", message='" + e.getMessage() + "'");
                 log.debug("[DEBUG] JwtAuthenticationFilter: exception processing JWT — type={}, message='{}'",
                         e.getClass().getSimpleName(), e.getMessage());
                 SecurityContextHolder.clearContext();
             }
         }
+        System.out.println("[DEBUG][JwtFilter] SecurityContext auth after filter: " + SecurityContextHolder.getContext().getAuthentication());
 
         filterChain.doFilter(request, response);
     }
 
     private String resolveToken(HttpServletRequest request) {
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        System.out.println("[DEBUG][JwtFilter] Authorization header: " + (authHeader != null ? (authHeader.startsWith("Bearer ") ? "Bearer ***present***" : "present but not Bearer: " + authHeader) : "null/missing"));
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            // DEBUG: JWT token extracted from Authorization header
             log.debug("[DEBUG] resolveToken: JWT found in Authorization header");
             return authHeader.substring(7);
         }
 
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
-            // DEBUG: no cookies at all in request
+            System.out.println("[DEBUG][JwtFilter] No cookies present in request");
             log.debug("[DEBUG] resolveToken: no cookies present in request, no jwt cookie to fall back on");
             return null;
         }
 
+        System.out.println("[DEBUG][JwtFilter] Cookies present: " + cookies.length + " — looking for 'jwt' cookie");
         for (Cookie cookie : cookies) {
             if ("jwt".equals(cookie.getName())) {
-                // DEBUG: JWT token extracted from jwt cookie (fallback path)
+                System.out.println("[DEBUG][JwtFilter] Found 'jwt' cookie — using as token");
                 log.debug("[DEBUG] resolveToken: JWT found in 'jwt' cookie");
                 return cookie.getValue();
             }
         }
 
-        // DEBUG: Authorization header absent/invalid and no jwt cookie found
+        System.out.println("[DEBUG][JwtFilter] JWT not found in Authorization header or 'jwt' cookie — returning null");
         log.debug("[DEBUG] resolveToken: JWT not found in Authorization header or jwt cookie");
         return null;
     }

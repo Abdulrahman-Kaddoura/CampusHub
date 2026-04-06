@@ -51,15 +51,24 @@ public class ListingService {
     }
 
     public List<Listing> getAllListings() {
-        return listingRepository.findAll();
+        System.out.println("[DEBUG][ListingService] getAllListings() called — querying DB");
+        List<Listing> results = listingRepository.findAll();
+        System.out.println("[DEBUG][ListingService] getAllListings() — DB returned " + results.size() + " records");
+        return results;
     }
 
     public List<Listing> getAllListingsByUser(UUID userId) {
-        return listingRepository.findByUserId(userId);
+        System.out.println("[DEBUG][ListingService] getAllListingsByUser() called — userId=" + userId);
+        List<Listing> results = listingRepository.findByUserId(userId);
+        System.out.println("[DEBUG][ListingService] getAllListingsByUser() — DB returned " + results.size() + " records");
+        return results;
     }
 
     public List<Listing> getAllListingsByCategory(String categoryName) {
-        return listingRepository.findByCategoryName(categoryName);
+        System.out.println("[DEBUG][ListingService] getAllListingsByCategory() called — categoryName='" + categoryName + "'");
+        List<Listing> results = listingRepository.findByCategoryName(categoryName);
+        System.out.println("[DEBUG][ListingService] getAllListingsByCategory() — DB returned " + results.size() + " records");
+        return results;
     }
 
 

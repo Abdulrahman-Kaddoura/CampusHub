@@ -187,8 +187,10 @@ public class ListingController {
             description = "Retrieves a list of all listings in the system."
     )
     public ResponseEntity<List<ListingResponseDTO>> getAllListings() {
+        System.out.println("[DEBUG][ListingController] GET /get-listings hit");
 
         List<Listing> listings = listingService.getAllListings();
+        System.out.println("[DEBUG][ListingController] getAllListings() returned " + listings.size() + " listings");
         List<ListingResponseDTO> listingResponseDTOS = listings.stream()
                 .map(this::toListingResponseDTO)
                 .toList();
@@ -201,9 +203,13 @@ public class ListingController {
             description = "Retrieves all listings posted by a specific user using the user ID and returns them in a list."
     )
     public ResponseEntity<List<ListingResponseDTO>> getAllListingsByUser(@PathVariable UUID userId) {
+        System.out.println("[DEBUG][ListingController] GET /get-listings-by-user/" + userId + " hit");
 
+        System.out.println("[DEBUG][ListingController] Calling requireAuthenticatedUser for userId=" + userId);
         userService.requireAuthenticatedUser(userId);
+        System.out.println("[DEBUG][ListingController] requireAuthenticatedUser passed — fetching listings");
         List<Listing> listings = listingService.getAllListingsByUser(userId);
+        System.out.println("[DEBUG][ListingController] getAllListingsByUser() returned " + listings.size() + " listings");
         List<ListingResponseDTO> listingResponseDTOS = listings.stream()
                 .map(this::toListingResponseDTO)
                 .toList();
@@ -216,8 +222,10 @@ public class ListingController {
             description = "Retrieves all listings under a specific category using the category name and returns them in a list."
     )
     public ResponseEntity<List<ListingResponseDTO>> getAllListingsByCategory(@PathVariable String categoryName) {
+        System.out.println("[DEBUG][ListingController] GET /get-listings-by-category/" + categoryName + " hit");
 
         List<Listing> listings = listingService.getAllListingsByCategory(categoryName);
+        System.out.println("[DEBUG][ListingController] getAllListingsByCategory() returned " + listings.size() + " listings");
         List<ListingResponseDTO> listingResponseDTOS = listings.stream()
                 .map(this::toListingResponseDTO)
                 .toList();
