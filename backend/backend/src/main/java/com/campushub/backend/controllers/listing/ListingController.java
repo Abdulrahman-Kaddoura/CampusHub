@@ -16,6 +16,7 @@ import com.campushub.backend.services.listings.HuggingFaceSearchService;
 import com.campushub.backend.services.listings.ListingService;
 import com.campushub.backend.services.user.UserService;
 import com.campushub.backend.services.payment.StripeCheckoutService;
+import org.springframework.transaction.annotation.Transactional;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -186,6 +187,7 @@ public class ListingController {
             summary = "Get All Listings",
             description = "Retrieves a list of all listings in the system."
     )
+    @Transactional(readOnly = true)
     public ResponseEntity<List<ListingResponseDTO>> getAllListings() {
         System.out.println("[DEBUG][ListingController] GET /get-listings hit");
 
@@ -202,6 +204,7 @@ public class ListingController {
             summary = "Get Listings by User",
             description = "Retrieves all listings posted by a specific user using the user ID and returns them in a list."
     )
+    @Transactional(readOnly = true)
     public ResponseEntity<List<ListingResponseDTO>> getAllListingsByUser(@PathVariable UUID userId) {
         System.out.println("[DEBUG][ListingController] GET /get-listings-by-user/" + userId + " hit");
 
@@ -221,6 +224,7 @@ public class ListingController {
             summary = "Get Listings by Category",
             description = "Retrieves all listings under a specific category using the category name and returns them in a list."
     )
+    @Transactional(readOnly = true)
     public ResponseEntity<List<ListingResponseDTO>> getAllListingsByCategory(@PathVariable String categoryName) {
         System.out.println("[DEBUG][ListingController] GET /get-listings-by-category/" + categoryName + " hit");
 
