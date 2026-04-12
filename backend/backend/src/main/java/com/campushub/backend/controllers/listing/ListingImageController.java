@@ -22,7 +22,7 @@
     import static com.campushub.backend.configurations.togglz.Features.*;
 
     @RestController
-    @RequestMapping("/listingImage")
+    @RequestMapping({"/listingImage", "/api/listingImage"})
     @Tag(name = "Listing Image", description = "Listing Image related operations")
     public class ListingImageController {
 
