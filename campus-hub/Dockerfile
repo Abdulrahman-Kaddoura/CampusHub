@@ -28,6 +28,11 @@ RUN rm -rf /usr/share/nginx/html/*
 # Copy built assets from build stage
 COPY --from=build /app/dist /usr/share/nginx/html
 
+# Replace the default nginx config with one that supports SPA routing.
+# Without try_files, refreshing on any React Router path (e.g. /cart)
+# would return 404 because nginx looks for a real file at that path.
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 # Expose web port
 EXPOSE 80
 
