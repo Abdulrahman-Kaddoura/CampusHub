@@ -48,9 +48,31 @@ public class ListingController {
     private ListingResponseDTO toListingResponseDTO(Listing listing) {
         ListingResponseDTO response = modelMapper.map(listing, ListingResponseDTO.class);
 
-        if (listing.getListingImages() != null && !listing.getListingImages().isEmpty()) {
-            ListingImage firstImage = listing.getListingImages().get(0);
-            response.setFirstImageId(firstImage.getImageId());
+        System.out.println("[DEBUG][ListingController] toListingResponseDTO — listingId=" + listing.getListingId()
+                + ", title='" + listing.getTitle() + "'");
+
+        try {
+            int imageCount = listing.getListingImages() != null ? listing.getListingImages().size() : 0;
+            System.out.println("[DEBUG][ListingController] listingImages count=" + imageCount);
+            if (imageCount > 0) {
+                ListingImage firstImage = listing.getListingImages().get(0);
+                response.setFirstImageId(firstImage.getImageId());
+                System.out.println("[DEBUG][ListingController] firstImageId=" + firstImage.getImageId());
+            } else {
+                System.out.println("[DEBUG][ListingController] No images found for listing — firstImageId will be null");
+            }
+        } catch (Exception e) {
+            System.out.println("[DEBUG][ListingController] ERROR accessing listingImages: " + e.getClass().getSimpleName() + " — " + e.getMessage());
+        }
+
+        try {
+            if (listing.getUser() != null) {
+                String userName = listing.getUser().getFirstName() + " " + listing.getUser().getLastName();
+                response.setUserName(userName);
+                System.out.println("[DEBUG][ListingController] userName='" + userName + "'");
+            }
+        } catch (Exception e) {
+            System.out.println("[DEBUG][ListingController] ERROR accessing user for userName: " + e.getMessage());
         }
 
         return response;

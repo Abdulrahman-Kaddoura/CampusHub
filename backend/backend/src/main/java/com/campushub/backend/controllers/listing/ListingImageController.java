@@ -42,16 +42,22 @@
         )
         public ResponseEntity<ListingImageResponseDTO> uploadImage(@PathVariable UUID listingId,
                 @RequestParam("file") MultipartFile file) {
+            System.out.println("[DEBUG][ListingImageController] POST /upload-listing-image/" + listingId
+                    + " — fileName=" + file.getOriginalFilename() + ", size=" + file.getSize());
             if (!featureManager.isActive(UPLOAD_LISTING_IMAGE)) {
+                System.out.println("[DEBUG][ListingImageController] BLOCKED by feature flag UPLOAD_LISTING_IMAGE");
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             }
             try {
                 ListingImage image = listingImageService.uploadImage(file, listingId);
                 ListingImageResponseDTO listingImageResponseDTO = modelMapper.map(image, ListingImageResponseDTO.class);
+                System.out.println("[DEBUG][ListingImageController] Upload succeeded — imageId=" + image.getImageId());
                 return new ResponseEntity<>(listingImageResponseDTO, HttpStatus.CREATED);
             } catch (IOException e) {
+                System.out.println("[DEBUG][ListingImageController] Upload IOException: " + e.getMessage());
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             } catch (IllegalArgumentException e) {
+                System.out.println("[DEBUG][ListingImageController] Upload rejected (bad request): " + e.getMessage());
                 return ResponseEntity.badRequest().build();
             }
         }
@@ -64,18 +70,23 @@
                         "so it can be displayed directly in the browser or saved by the client."
         )
         public ResponseEntity<byte[]> downloadImage(@PathVariable UUID imageId) {
+            System.out.println("[DEBUG][ListingImageController] GET /download-listing-image/" + imageId);
             if (!featureManager.isActive(DOWNLOAD_LISTING_IMAGE)) {
+                System.out.println("[DEBUG][ListingImageController] BLOCKED by feature flag DOWNLOAD_LISTING_IMAGE");
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             }
             try {
                 ListingImage image = listingImageService.getImage(imageId);
-
+                System.out.println("[DEBUG][ListingImageController] Serving image — fileName=" + image.getFileName()
+                        + ", fileType=" + image.getFileType()
+                        + ", dataLength=" + (image.getImageData() != null ? image.getImageData().length : "null"));
                 return ResponseEntity.ok()
                         .contentType(MediaType.parseMediaType(image.getFileType()))
                         .header(HttpHeaders.CONTENT_DISPOSITION,
                                 "inline; filename=\"" + image.getFileName() + "\"")
                         .body(image.getImageData());
             } catch (RuntimeException e) {
+                System.out.println("[DEBUG][ListingImageController] Download failed — imageId=" + imageId + " error=" + e.getMessage());
                 return ResponseEntity.notFound().build();
             }
         }

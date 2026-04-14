@@ -53,7 +53,9 @@ export default function Cart() {
     const params = new URLSearchParams(location.search);
     const paymentStatus = params.get("payment");
 
-    if (!paymentStatus || paymentHandledRef.current) return;
+    if (!paymentStatus) return;
+    if (authLoading) return;
+    if (paymentHandledRef.current) return;
     paymentHandledRef.current = true;
 
     const finalize = async () => {
@@ -79,7 +81,7 @@ export default function Cart() {
     };
 
     finalize();
-  }, [location.search]);
+  }, [location.search, authLoading, isAuthenticated]);
 
   const handleRemove = async (cartItemId) => {
     setRemovingId(cartItemId);
@@ -106,9 +108,10 @@ export default function Cart() {
         token
       );
       if (!session?.checkoutUrl) throw new Error("Stripe checkout URL is missing.");
-      window.location.assign(session.checkoutUrl);
+      window.open(session.checkoutUrl, "_blank");
     } catch (err) {
       setCheckoutError(err.message || "Could not start checkout.");
+    } finally {
       setIsCheckingOut(false);
     }
   };
@@ -166,7 +169,7 @@ export default function Cart() {
               onClick={handleCheckout}
               disabled={isCheckingOut}
             >
-              {isCheckingOut ? "Redirecting to Stripe..." : "Checkout with Stripe"}
+              {isCheckingOut ? "Opening Stripe..." : "Checkout with Stripe"}
             </button>
           </div>
         </>
