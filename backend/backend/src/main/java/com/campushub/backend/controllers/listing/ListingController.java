@@ -46,7 +46,14 @@ public class ListingController {
     private static final Logger log = LoggerFactory.getLogger(ListingController.class);
 
     private ListingResponseDTO toListingResponseDTO(Listing listing) {
-        ListingResponseDTO response = modelMapper.map(listing, ListingResponseDTO.class);
+        ListingResponseDTO response = new ListingResponseDTO();
+        response.setListingId(listing.getListingId());
+        response.setTitle(listing.getTitle());
+        response.setDescription(listing.getDescription());
+        response.setPrice(listing.getPrice());
+        response.setStatus(listing.getListingStatus());
+        response.setCreatedAt(listing.getCreatedAt());
+        response.setUpdatedAt(listing.getUpdatedAt());
 
         System.out.println("[DEBUG][ListingController] toListingResponseDTO — listingId=" + listing.getListingId()
                 + ", title='" + listing.getTitle() + "'");
@@ -67,12 +74,29 @@ public class ListingController {
 
         try {
             if (listing.getUser() != null) {
+                response.setUserId(listing.getUser().getId());
                 String userName = listing.getUser().getFirstName() + " " + listing.getUser().getLastName();
                 response.setUserName(userName);
                 System.out.println("[DEBUG][ListingController] userName='" + userName + "'");
             }
         } catch (Exception e) {
             System.out.println("[DEBUG][ListingController] ERROR accessing user for userName: " + e.getMessage());
+        }
+
+        try {
+            if (listing.getBuyer() != null) {
+                response.setBuyerId(listing.getBuyer().getId());
+            }
+        } catch (Exception e) {
+            System.out.println("[DEBUG][ListingController] ERROR accessing buyer: " + e.getMessage());
+        }
+
+        try {
+            if (listing.getCategory() != null) {
+                response.setCategoryName(listing.getCategory().getName());
+            }
+        } catch (Exception e) {
+            System.out.println("[DEBUG][ListingController] ERROR accessing category: " + e.getMessage());
         }
 
         return response;
