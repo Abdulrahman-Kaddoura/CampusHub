@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createTutoringPost, fetchTutoringPosts } from "../api/tutoring";
 import { useAuth } from "../context/AuthContext";
 import { FEATURE_FLAGS } from "../config/features";
@@ -167,10 +167,12 @@ const FEATURED_AUB_TUTORING = [
 
 function Tutoring() {
   const { currentUser, token, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [selectedFormat, setSelectedFormat] = useState("All Formats");
   const [maxRate, setMaxRate] = useState("100");
   const [showRequestedOnly, setShowRequestedOnly] = useState(false);
+  const [showSavedOnly, setShowSavedOnly] = useState(false);
   const [requestedTutorIds, setRequestedTutorIds] = useState(() =>
     parseStoredIds(REQUESTED_TUTORING_STORAGE_KEY)
   );
@@ -246,10 +248,11 @@ function Tutoring() {
       const hasRateCap = maxRate !== "" && Number.isFinite(rateCap);
       const matchesRate = !hasRateCap || Number(offer.hourlyRate || 0) <= rateCap;
       const matchesRequest = !showRequestedOnly || requestedTutorIds.includes(getOfferId(offer));
+      const matchesSaved = !showSavedOnly || savedTutorIds.includes(getOfferId(offer));
 
-      return matchesSearch && matchesFormat && matchesRate && matchesRequest;
+      return matchesSearch && matchesFormat && matchesRate && matchesRequest && matchesSaved;
     });
-  }, [offers, search, selectedFormat, maxRate, showRequestedOnly, requestedTutorIds]);
+  }, [offers, search, selectedFormat, maxRate, showRequestedOnly, requestedTutorIds, showSavedOnly, savedTutorIds]);
 
   const handleCreateTutoring = async (event) => {
     event.preventDefault();
@@ -288,15 +291,18 @@ function Tutoring() {
     }
   };
 
-  const toggleRequested = (offerId) => {
+  const toggleRequested = (offer) => {
     if (!isAuthenticated) {
       setInteractionError("Please log in to request tutoring sessions.");
       return;
     }
     setInteractionError("");
+    const offerId = getOfferId(offer);
     setRequestedTutorIds((prev) =>
       prev.includes(offerId) ? prev.filter((id) => id !== offerId) : [...prev, offerId]
     );
+    const partnerId = offer.userId;
+    navigate(partnerId ? `/chat?partner=${partnerId}` : "/chat");
   };
 
   const toggleSaved = (offerId) => {
@@ -446,6 +452,16 @@ function Tutoring() {
           />
           Show requested sessions only
         </label>
+
+        <label className="saved-only-toggle" htmlFor="saved-tutoring-toggle">
+          <input
+            id="saved-tutoring-toggle"
+            type="checkbox"
+            checked={showSavedOnly}
+            onChange={(event) => setShowSavedOnly(event.target.checked)}
+          />
+          Show saved only
+        </label>
       </section>
 
       {apiError && <p className="empty-state">{apiError}</p>}
@@ -483,7 +499,7 @@ function Tutoring() {
                 <div className="card-actions-row">
                   <button
                     type="button"
-                    onClick={() => toggleRequested(offerId)}
+                    onClick={() => toggleRequested(offer)}
                     className={isRequested ? "is-secondary" : ""}
                     aria-pressed={isRequested}
                   >

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createCourseExchangePost, fetchCourseExchangePosts } from "../api/courseExchange";
 import { useAuth } from "../context/AuthContext";
 import { FEATURE_FLAGS } from "../config/features";
@@ -99,6 +99,7 @@ const FEATURED_AUB_EXCHANGES = [
 
 function CourseExchange() {
   const { currentUser, token, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All Statuses");
   const [showSavedOnly, setShowSavedOnly] = useState(false);
@@ -222,15 +223,18 @@ function CourseExchange() {
     );
   };
 
-  const markContacted = (postId) => {
+  const markContacted = (post) => {
     if (!isAuthenticated) {
       setInteractionError("Please log in to contact students.");
       return;
     }
     setInteractionError("");
+    const postId = getPostId(post);
     setContactedPostIds((prev) =>
       prev.includes(postId) ? prev.filter((id) => id !== postId) : [...prev, postId]
     );
+    const partnerId = post.userId;
+    navigate(partnerId ? `/chat?partner=${partnerId}` : "/chat");
   };
 
   return (
@@ -365,7 +369,7 @@ function CourseExchange() {
                 <div className="card-actions-row">
                   <button
                     type="button"
-                    onClick={() => markContacted(postId)}
+                    onClick={() => markContacted(post)}
                     className={isContacted ? "is-secondary" : ""}
                     aria-pressed={isContacted}
                   >
