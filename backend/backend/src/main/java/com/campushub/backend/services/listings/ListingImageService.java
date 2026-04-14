@@ -25,25 +25,37 @@ public class ListingImageService {
 
     @Transactional
     public ListingImage uploadImage(MultipartFile file, UUID listingId) throws IOException {
+        System.out.println("[DEBUG][ListingImageService] uploadImage() called — listingId=" + listingId
+                + ", fileName=" + file.getOriginalFilename()
+                + ", contentType=" + file.getContentType()
+                + ", size=" + file.getSize());
+
         // Validate file
         if (file.isEmpty()) {
+            System.out.println("[DEBUG][ListingImageService] REJECTED: file is empty");
             throw new IllegalArgumentException("Cannot upload empty file");
         }
 
         // Validate file type
         String contentType = file.getContentType();
         if (contentType == null || !contentType.startsWith("image/")) {
+            System.out.println("[DEBUG][ListingImageService] REJECTED: invalid contentType=" + contentType);
             throw new IllegalArgumentException("Only image files are allowed");
         }
 
         // Validate file size (e.g., max 5MB)
         if (file.getSize() > 5 * 1024 * 1024) {
+            System.out.println("[DEBUG][ListingImageService] REJECTED: file too large (" + file.getSize() + " bytes)");
             throw new IllegalArgumentException("File size exceeds maximum limit of 5MB");
         }
 
         // Find listing
         Listing listing = listingRepository.findById(listingId)
-                .orElseThrow(() -> new RuntimeException("Listing not found with id: " + listingId));
+                .orElseThrow(() -> {
+                    System.out.println("[DEBUG][ListingImageService] FAILED: listing not found for id=" + listingId);
+                    return new RuntimeException("Listing not found with id: " + listingId);
+                });
+        System.out.println("[DEBUG][ListingImageService] Found listing — title='" + listing.getTitle() + "'");
 
         // Create image entity
         ListingImage image = new ListingImage();
@@ -54,18 +66,32 @@ public class ListingImageService {
         image.setUploadDate(LocalDateTime.now());
         image.setListing(listing);
 
-        return listingImageRepository.save(image);
+        ListingImage saved = listingImageRepository.save(image);
+        System.out.println("[DEBUG][ListingImageService] Image saved — imageId=" + saved.getImageId()
+                + ", listingId=" + listingId);
+        return saved;
     }
 
     @Transactional(readOnly = true)
     public ListingImage getImage(UUID imageId) {
-        return listingImageRepository.findById(imageId)
-                .orElseThrow(() -> new RuntimeException("Image not found with id: " + imageId));
+        System.out.println("[DEBUG][ListingImageService] getImage() called — imageId=" + imageId);
+        ListingImage img = listingImageRepository.findById(imageId)
+                .orElseThrow(() -> {
+                    System.out.println("[DEBUG][ListingImageService] FAILED: image not found for id=" + imageId);
+                    return new RuntimeException("Image not found with id: " + imageId);
+                });
+        System.out.println("[DEBUG][ListingImageService] Found image — fileName=" + img.getFileName()
+                + ", fileType=" + img.getFileType()
+                + ", size=" + img.getFileSize());
+        return img;
     }
 
     @Transactional(readOnly = true)
     public List<ListingImage> getImagesByListing(UUID listingId) {
-        return listingImageRepository.findByListing_ListingId(listingId);
+        List<ListingImage> images = listingImageRepository.findByListing_ListingId(listingId);
+        System.out.println("[DEBUG][ListingImageService] getImagesByListing() — listingId=" + listingId
+                + ", found " + images.size() + " image(s)");
+        return images;
     }
 
     @Transactional

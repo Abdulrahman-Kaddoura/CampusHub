@@ -32,6 +32,8 @@ public class ListingResponseDTO {
 
     private UUID userId;
 
+    private String userName;
+
     private UUID buyerId;
 
     private String categoryName;

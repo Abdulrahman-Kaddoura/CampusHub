@@ -51,9 +51,9 @@ public class ListingService {
     }
 
     public List<Listing> getAllListings() {
-        System.out.println("[DEBUG][ListingService] getAllListings() called — querying DB");
-        List<Listing> results = listingRepository.findAll();
-        System.out.println("[DEBUG][ListingService] getAllListings() — DB returned " + results.size() + " records");
+        System.out.println("[DEBUG][ListingService] getAllListings() called — querying DB for PUBLISHED listings only");
+        List<Listing> results = listingRepository.findByListingStatus(ListingStatus.PUBLISHED);
+        System.out.println("[DEBUG][ListingService] getAllListings() — DB returned " + results.size() + " PUBLISHED records");
         return results;
     }
 
@@ -65,8 +65,8 @@ public class ListingService {
     }
 
     public List<Listing> getAllListingsByCategory(String categoryName) {
-        System.out.println("[DEBUG][ListingService] getAllListingsByCategory() called — categoryName='" + categoryName + "'");
-        List<Listing> results = listingRepository.findByCategoryName(categoryName);
+        System.out.println("[DEBUG][ListingService] getAllListingsByCategory() called — categoryName='" + categoryName + "', PUBLISHED only");
+        List<Listing> results = listingRepository.findByCategoryNameAndListingStatus(categoryName, ListingStatus.PUBLISHED);
         System.out.println("[DEBUG][ListingService] getAllListingsByCategory() — DB returned " + results.size() + " records");
         return results;
     }
