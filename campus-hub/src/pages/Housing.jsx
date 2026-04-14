@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createDormListing, fetchDormListings } from "../api/dorms";
 import { useAuth } from "../context/AuthContext";
 import { FEATURE_FLAGS } from "../config/features";
@@ -86,12 +86,14 @@ const formatDate = (dateString) =>
 
 function Housing() {
   const { currentUser, token, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [selectedType, setSelectedType] = useState("All Types");
   const [selectedArea, setSelectedArea] = useState("All Areas");
   const [minBudget, setMinBudget] = useState(400);
   const [maxBudget, setMaxBudget] = useState(1600);
   const [showContactedOnly, setShowContactedOnly] = useState(false);
+  const [showSavedOnly, setShowSavedOnly] = useState(false);
   const [contactedListingIds, setContactedListingIds] = useState(() =>
     parseStoredIds(CONTACTED_LISTINGS_STORAGE_KEY)
   );
@@ -209,8 +211,10 @@ function Housing() {
       const matchesBudget = rent >= normalizedMinBudget && rent <= normalizedMaxBudget;
       const matchesContacted =
         !showContactedOnly || contactedListingIds.includes(getListingId(item));
+      const matchesSaved =
+        !showSavedOnly || savedListingIds.includes(getListingId(item));
 
-      return matchesSearch && matchesType && matchesArea && matchesBudget && matchesContacted;
+      return matchesSearch && matchesType && matchesArea && matchesBudget && matchesContacted && matchesSaved;
     });
   }, [
     listings,
@@ -221,17 +225,22 @@ function Housing() {
     normalizedMaxBudget,
     showContactedOnly,
     contactedListingIds,
+    showSavedOnly,
+    savedListingIds,
   ]);
 
-  const toggleContacted = (listingId) => {
+  const toggleContacted = (listing) => {
     if (!isAuthenticated) {
       setInteractionError("Please log in to contact landlords.");
       return;
     }
     setInteractionError("");
+    const listingId = getListingId(listing);
     setContactedListingIds((prev) =>
       prev.includes(listingId) ? prev.filter((id) => id !== listingId) : [...prev, listingId]
     );
+    const partnerId = listing.userId;
+    navigate(partnerId ? `/chat?partner=${partnerId}` : "/chat");
   };
 
   const toggleSaved = (listingId) => {
@@ -469,6 +478,16 @@ function Housing() {
           />
           Show contacted listings only
         </label>
+
+        <label className="saved-only-toggle" htmlFor="saved-listings-toggle">
+          <input
+            id="saved-listings-toggle"
+            type="checkbox"
+            checked={showSavedOnly}
+            onChange={(event) => setShowSavedOnly(event.target.checked)}
+          />
+          Show saved listings only
+        </label>
       </section>
 
       {apiError && <p className="empty-state">{apiError}</p>}
@@ -509,7 +528,7 @@ function Housing() {
               <div className="card-actions-row">
                 <button
                   type="button"
-                  onClick={() => toggleContacted(listingId)}
+                  onClick={() => toggleContacted(listing)}
                   className={isContacted ? "is-secondary" : ""}
                   aria-pressed={isContacted}
                 >

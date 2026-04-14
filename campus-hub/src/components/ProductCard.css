@@ -167,6 +167,13 @@
   color: #64748b;
 }
 
+.product-card-success {
+  margin-top: 8px;
+  font-size: 0.78rem;
+  color: #16a34a;
+  font-weight: 600;
+}
+
 .product-card-error {
   margin-top: 8px;
   font-size: 0.78rem;

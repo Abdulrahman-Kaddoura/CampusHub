@@ -83,7 +83,7 @@ export const ProductCard = ({ data, onDelete }) => {
             {isAddingToCart ? "Adding..." : "Add to Cart"}
           </button>
         ) : null}
-        {cartMessage ? <p className={cartMessage === "Added to cart!" ? "product-card-hint" : "product-card-error"}>{cartMessage}</p> : null}
+        {cartMessage ? <p className={cartMessage === "Added to cart!" ? "product-card-success" : "product-card-error"}>{cartMessage}</p> : null}
 
         {canChat ? (
           <button
