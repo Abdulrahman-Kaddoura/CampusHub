@@ -3,6 +3,7 @@ package com.campushub.backend.models.user;
 import com.campushub.backend.models.user.User;
 import com.campushub.backend.enums.user.UserStatus;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -28,7 +29,11 @@ public class SecurityUser implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(); // Return roles/authorities here later
+        return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+    }
+
+    public User getUser() {
+        return user;
     }
 
     @Override

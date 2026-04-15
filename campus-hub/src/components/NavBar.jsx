@@ -7,6 +7,7 @@ import { FEATURE_FLAGS } from "../config/features";
 
 function NavBar() {
   const { currentUser, isAuthenticated, logout } = useAuth();
+  const isAdmin = currentUser?.role === "ADMIN";
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -96,6 +97,13 @@ function NavBar() {
               <li className="list-item">
                 <NavLink to="/chat" className={({ isActive }) => (isActive ? "active" : "")} onClick={closeMenu}>
                   Chat
+                </NavLink>
+              </li>
+            ) : null}
+            {FEATURE_FLAGS.admin && isAdmin ? (
+              <li className="list-item">
+                <NavLink to="/admin" className={({ isActive }) => (isActive ? "active" : "")} onClick={closeMenu}>
+                  Admin
                 </NavLink>
               </li>
             ) : null}

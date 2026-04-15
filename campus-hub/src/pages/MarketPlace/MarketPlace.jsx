@@ -76,6 +76,11 @@ export default function MarketPlace() {
       setIsSubmitting(false);
       return;
     }
+    if (!imageFile) {
+      setError("An image is required. Please choose a photo for your listing.");
+      setIsSubmitting(false);
+      return;
+    }
     try {
       const payload = {
         title: formState.title,
@@ -85,7 +90,7 @@ export default function MarketPlace() {
         userId: currentUserId,
       };
       const created = await createListing(payload, token);
-      if (imageFile && created?.listingId) {
+      if (created?.listingId) {
         await uploadListingImage(created.listingId, imageFile, token);
       }
       setFormState({ title: "", description: "", price: "", categoryName: "" });
@@ -190,12 +195,13 @@ export default function MarketPlace() {
           </div>
           <div className="form-row">
             <label className="listing-form-image-label">
-              <span>Image (optional)</span>
+              <span>Image <span className="required-star">*</span></span>
               <input
                 type="file"
                 accept=".jpg,.jpeg,.png,.gif,.webp,.svg,.bmp,.ico,image/*"
                 onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
                 className="listing-form-image-input"
+                required
               />
               {imageFile ? (
                 <span className="listing-form-image-name">{imageFile.name}</span>

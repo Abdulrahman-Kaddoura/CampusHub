@@ -154,6 +154,11 @@
   font-style: italic;
 }
 
+.required-star {
+  color: #c0392b;
+  font-weight: 700;
+}
+
 .form-actions {
   display: flex;
   gap: 12px;

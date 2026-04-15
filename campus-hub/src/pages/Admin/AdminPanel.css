@@ -1,0 +1,169 @@
+.admin-panel {
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 0 1.5rem 3rem;
+}
+
+.admin-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #2e2a33;
+}
+
+/* Tabs */
+.admin-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #e5e5e5;
+}
+
+.admin-tab {
+  padding: 0.6rem 1.2rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #666;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.admin-tab:hover {
+  color: #2e2a33;
+}
+
+.admin-tab.active {
+  color: #008ecc;
+  border-bottom-color: #008ecc;
+}
+
+/* Feedback */
+.admin-error {
+  color: #c0392b;
+  background: #fdf2f2;
+  border: 1px solid #f5c6cb;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.admin-loading {
+  color: #666;
+  font-style: italic;
+}
+
+/* Dashboard stat cards */
+.admin-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.admin-stat-card {
+  background: #f7f7f7;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  padding: 1.2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  text-align: center;
+}
+
+.admin-stat-card.stat-green {
+  border-color: #c3e6cb;
+  background: #f0faf2;
+}
+
+.admin-stat-card.stat-yellow {
+  border-color: #ffeeba;
+  background: #fffdf0;
+}
+
+.admin-stat-card.stat-red {
+  border-color: #f5c6cb;
+  background: #fdf2f2;
+}
+
+.admin-stat-card.stat-blue {
+  border-color: #bee5eb;
+  background: #f0f9fc;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2e2a33;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #666;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Users table */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.admin-table th {
+  text-align: left;
+  padding: 0.75rem 0.75rem;
+  border-bottom: 2px solid #e5e5e5;
+  color: #555;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid #f0f0f0;
+  color: #333;
+  vertical-align: middle;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table tr:hover td {
+  background: #fafafa;
+}
+
+.admin-empty {
+  text-align: center;
+  color: #999;
+  padding: 2rem !important;
+  font-style: italic;
+}
+
+.admin-select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 0.85rem;
+  background: #fff;
+  cursor: pointer;
+}
+
+.admin-select.status-active { color: #155724; border-color: #c3e6cb; background: #f0faf2; }
+.admin-select.status-suspended { color: #856404; border-color: #ffeeba; background: #fffdf0; }
+.admin-select.status-banned { color: #721c24; border-color: #f5c6cb; background: #fdf2f2; }
+.admin-select.status-pending { color: #666; }
+.admin-select.status-deleted { color: #999; }
