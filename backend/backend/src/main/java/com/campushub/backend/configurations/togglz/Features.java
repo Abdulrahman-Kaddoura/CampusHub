@@ -280,7 +280,19 @@ public enum Features implements Feature {
 
     @Label("ADMIN - UpdateUserRole")
     @EnabledByDefault
-    ADMIN_UPDATE_USER_ROLE;
+    ADMIN_UPDATE_USER_ROLE,
+
+    @Label("ADMIN - GetPosts")
+    @EnabledByDefault
+    ADMIN_GET_POSTS,
+
+    @Label("ADMIN - DeletePost")
+    @EnabledByDefault
+    ADMIN_DELETE_POST,
+
+    @Label("ADMIN - UpdatePost")
+    @EnabledByDefault
+    ADMIN_UPDATE_POST;
 
     public boolean isActive(){
         return FeatureContext.getFeatureManager().isActive(this);

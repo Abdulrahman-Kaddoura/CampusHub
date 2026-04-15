@@ -185,6 +185,13 @@ public class UserService {
         userRepository.save(user);
     }
 
+    public void requireNotSuspended() {
+        User user = getAuthenticatedUser();
+        if (user.getStatus() == UserStatus.SUSPENDED) {
+            throw new AccessDeniedException("Your account is suspended. You cannot perform this action.");
+        }
+    }
+
     public User requireAuthenticatedUser(UUID requestedUserId) {
         System.out.println("[DEBUG][UserService] requireAuthenticatedUser() — requestedUserId=" + requestedUserId);
         User actingUser = getAuthenticatedUser();

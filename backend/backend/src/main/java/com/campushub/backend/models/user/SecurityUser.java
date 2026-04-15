@@ -49,6 +49,7 @@ public class SecurityUser implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return user.getStatus() == UserStatus.ACTIVE;
+        // SUSPENDED users can log in and browse but are blocked from write actions at the service layer
+        return user.getStatus() == UserStatus.ACTIVE || user.getStatus() == UserStatus.SUSPENDED;
     }
 }
