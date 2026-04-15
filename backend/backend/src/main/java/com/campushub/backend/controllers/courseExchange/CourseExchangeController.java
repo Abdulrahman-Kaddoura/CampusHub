@@ -48,6 +48,7 @@ public class CourseExchangeController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Course exchange post contains inappropriate content.");
         }
 
+        userService.requireNotSuspended();
         User user = userService.getAuthenticatedUser();
         if (!requestDTO.getUserId().equals(user.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only create course exchange posts for your own account");

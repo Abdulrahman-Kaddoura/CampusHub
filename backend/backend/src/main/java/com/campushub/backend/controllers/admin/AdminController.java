@@ -1,10 +1,7 @@
 package com.campushub.backend.controllers.admin;
 
 import com.campushub.backend.configurations.togglz.Features;
-import com.campushub.backend.dtos.admin.AdminDashboardDTO;
-import com.campushub.backend.dtos.admin.AdminUserDTO;
-import com.campushub.backend.dtos.admin.UpdateUserRoleDTO;
-import com.campushub.backend.dtos.admin.UpdateUserStatusDTO;
+import com.campushub.backend.dtos.admin.*;
 import com.campushub.backend.services.admin.AdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,14 +26,18 @@ public class AdminController {
     @Autowired
     private FeatureManager featureManager;
 
+    // ─── Analytics ────────────────────────────────────────────────────────────
+
     @GetMapping("/dashboard")
-    @Operation(summary = "Get platform dashboard stats")
+    @Operation(summary = "Get platform analytics / dashboard stats")
     public ResponseEntity<AdminDashboardDTO> getDashboard() {
         if (!featureManager.isActive(Features.ADMIN_GET_DASHBOARD)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         return ResponseEntity.ok(adminService.getDashboard());
     }
+
+    // ─── Users ────────────────────────────────────────────────────────────────
 
     @GetMapping("/users")
     @Operation(summary = "Get all users")
@@ -67,5 +68,133 @@ public class AdminController {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         return ResponseEntity.ok(adminService.updateUserRole(userId, dto.getRole()));
+    }
+
+    // ─── Posts: Listings ──────────────────────────────────────────────────────
+
+    @GetMapping("/posts/listings")
+    @Operation(summary = "Get all marketplace listings (admin view)")
+    public ResponseEntity<List<AdminListingDTO>> getAllListings() {
+        if (!featureManager.isActive(Features.ADMIN_GET_POSTS)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return ResponseEntity.ok(adminService.getAllListings());
+    }
+
+    @DeleteMapping("/posts/listings/{listingId}")
+    @Operation(summary = "Delete a marketplace listing")
+    public ResponseEntity<Void> deleteListing(@PathVariable UUID listingId) {
+        if (!featureManager.isActive(Features.ADMIN_DELETE_POST)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        adminService.deleteListing(listingId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/posts/listings/{listingId}")
+    @Operation(summary = "Edit a marketplace listing")
+    public ResponseEntity<AdminListingDTO> updateListing(
+            @PathVariable UUID listingId,
+            @RequestBody AdminUpdateListingDTO dto) {
+        if (!featureManager.isActive(Features.ADMIN_UPDATE_POST)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return ResponseEntity.ok(adminService.updateListing(listingId, dto));
+    }
+
+    // ─── Posts: Dorms ─────────────────────────────────────────────────────────
+
+    @GetMapping("/posts/dorms")
+    @Operation(summary = "Get all housing/dorm posts (admin view)")
+    public ResponseEntity<List<AdminDormDTO>> getAllDorms() {
+        if (!featureManager.isActive(Features.ADMIN_GET_POSTS)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return ResponseEntity.ok(adminService.getAllDorms());
+    }
+
+    @DeleteMapping("/posts/dorms/{dormId}")
+    @Operation(summary = "Delete a housing/dorm post")
+    public ResponseEntity<Void> deleteDorm(@PathVariable UUID dormId) {
+        if (!featureManager.isActive(Features.ADMIN_DELETE_POST)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        adminService.deleteDorm(dormId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/posts/dorms/{dormId}")
+    @Operation(summary = "Edit a housing/dorm post")
+    public ResponseEntity<AdminDormDTO> updateDorm(
+            @PathVariable UUID dormId,
+            @RequestBody AdminUpdateDormDTO dto) {
+        if (!featureManager.isActive(Features.ADMIN_UPDATE_POST)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return ResponseEntity.ok(adminService.updateDorm(dormId, dto));
+    }
+
+    // ─── Posts: Tutoring ──────────────────────────────────────────────────────
+
+    @GetMapping("/posts/tutoring")
+    @Operation(summary = "Get all tutoring posts (admin view)")
+    public ResponseEntity<List<AdminTutoringDTO>> getAllTutoring() {
+        if (!featureManager.isActive(Features.ADMIN_GET_POSTS)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return ResponseEntity.ok(adminService.getAllTutoring());
+    }
+
+    @DeleteMapping("/posts/tutoring/{tutoringId}")
+    @Operation(summary = "Delete a tutoring post")
+    public ResponseEntity<Void> deleteTutoring(@PathVariable UUID tutoringId) {
+        if (!featureManager.isActive(Features.ADMIN_DELETE_POST)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        adminService.deleteTutoring(tutoringId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/posts/tutoring/{tutoringId}")
+    @Operation(summary = "Edit a tutoring post")
+    public ResponseEntity<AdminTutoringDTO> updateTutoring(
+            @PathVariable UUID tutoringId,
+            @RequestBody AdminUpdateTutoringDTO dto) {
+        if (!featureManager.isActive(Features.ADMIN_UPDATE_POST)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return ResponseEntity.ok(adminService.updateTutoring(tutoringId, dto));
+    }
+
+    // ─── Posts: Course Exchange ────────────────────────────────────────────────
+
+    @GetMapping("/posts/course-exchange")
+    @Operation(summary = "Get all course exchange posts (admin view)")
+    public ResponseEntity<List<AdminCourseExchangeDTO>> getAllCourseExchanges() {
+        if (!featureManager.isActive(Features.ADMIN_GET_POSTS)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return ResponseEntity.ok(adminService.getAllCourseExchanges());
+    }
+
+    @DeleteMapping("/posts/course-exchange/{courseExchangeId}")
+    @Operation(summary = "Delete a course exchange post")
+    public ResponseEntity<Void> deleteCourseExchange(@PathVariable UUID courseExchangeId) {
+        if (!featureManager.isActive(Features.ADMIN_DELETE_POST)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        adminService.deleteCourseExchange(courseExchangeId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/posts/course-exchange/{courseExchangeId}")
+    @Operation(summary = "Edit a course exchange post")
+    public ResponseEntity<AdminCourseExchangeDTO> updateCourseExchange(
+            @PathVariable UUID courseExchangeId,
+            @RequestBody AdminUpdateCourseExchangeDTO dto) {
+        if (!featureManager.isActive(Features.ADMIN_UPDATE_POST)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return ResponseEntity.ok(adminService.updateCourseExchange(courseExchangeId, dto));
     }
 }

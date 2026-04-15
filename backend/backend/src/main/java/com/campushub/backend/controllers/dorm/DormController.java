@@ -58,6 +58,7 @@ public class DormController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dorm listing contains inappropriate content.");
         }
 
+        userService.requireNotSuspended();
         User user = userService.getAuthenticatedUser();
         // DEBUG: log the authenticated user and the userId from the request to detect mismatches
         log.debug("[DEBUG] createDorm: authenticated user id = {}", user.getId());

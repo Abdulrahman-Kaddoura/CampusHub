@@ -137,6 +137,9 @@ public class ListingController {
         User user;
         try {
             user = userService.getAuthenticatedUser();
+            userService.requireNotSuspended();
+        } catch (org.springframework.security.access.AccessDeniedException ex) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ex.getMessage());
         } catch (Exception ex) {
             if (listingRequestDTO.getUserId() == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userId is required when not authenticated");

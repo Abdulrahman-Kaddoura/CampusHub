@@ -1,7 +1,9 @@
+/* ─── Layout ──────────────────────────────────────────────────────────────── */
+
 .admin-panel {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 2rem auto;
-  padding: 0 1.5rem 3rem;
+  padding: 0 1.5rem 4rem;
 }
 
 .admin-title {
@@ -11,7 +13,8 @@
   color: #2e2a33;
 }
 
-/* Tabs */
+/* ─── Primary Tabs ────────────────────────────────────────────────────────── */
+
 .admin-tabs {
   display: flex;
   gap: 0.5rem;
@@ -20,7 +23,7 @@
 }
 
 .admin-tab {
-  padding: 0.6rem 1.2rem;
+  padding: 0.6rem 1.4rem;
   background: none;
   border: none;
   border-bottom: 3px solid transparent;
@@ -32,16 +35,15 @@
   transition: color 0.15s, border-color 0.15s;
 }
 
-.admin-tab:hover {
-  color: #2e2a33;
-}
+.admin-tab:hover { color: #2e2a33; }
 
 .admin-tab.active {
   color: #008ecc;
   border-bottom-color: #008ecc;
 }
 
-/* Feedback */
+/* ─── Feedback ────────────────────────────────────────────────────────────── */
+
 .admin-error {
   color: #c0392b;
   background: #fdf2f2;
@@ -57,12 +59,25 @@
   font-style: italic;
 }
 
-/* Dashboard stat cards */
+/* ─── Analytics ───────────────────────────────────────────────────────────── */
+
+.analytics-section {
+  margin-bottom: 2rem;
+}
+
+.analytics-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+
 .admin-stat-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
   gap: 1rem;
-  margin-top: 0.5rem;
 }
 
 .admin-stat-card {
@@ -77,25 +92,11 @@
   text-align: center;
 }
 
-.admin-stat-card.stat-green {
-  border-color: #c3e6cb;
-  background: #f0faf2;
-}
-
-.admin-stat-card.stat-yellow {
-  border-color: #ffeeba;
-  background: #fffdf0;
-}
-
-.admin-stat-card.stat-red {
-  border-color: #f5c6cb;
-  background: #fdf2f2;
-}
-
-.admin-stat-card.stat-blue {
-  border-color: #bee5eb;
-  background: #f0f9fc;
-}
+.admin-stat-card.stat-green  { border-color: #c3e6cb; background: #f0faf2; }
+.admin-stat-card.stat-yellow { border-color: #ffeeba; background: #fffdf0; }
+.admin-stat-card.stat-red    { border-color: #f5c6cb; background: #fdf2f2; }
+.admin-stat-card.stat-blue   { border-color: #bee5eb; background: #f0f9fc; }
+.admin-stat-card.stat-purple { border-color: #d6bfee; background: #f7f0fd; }
 
 .stat-value {
   font-size: 2rem;
@@ -105,27 +106,28 @@
 }
 
 .stat-label {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: #666;
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
 }
 
-/* Users table */
+/* ─── Shared Table ────────────────────────────────────────────────────────── */
+
 .admin-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
 }
 
 .admin-table th {
   text-align: left;
-  padding: 0.75rem 0.75rem;
+  padding: 0.75rem;
   border-bottom: 2px solid #e5e5e5;
   color: #555;
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   white-space: nowrap;
@@ -138,13 +140,8 @@
   vertical-align: middle;
 }
 
-.admin-table tr:last-child td {
-  border-bottom: none;
-}
-
-.admin-table tr:hover td {
-  background: #fafafa;
-}
+.admin-table tr:last-child td { border-bottom: none; }
+.admin-table tr:hover td      { background: #fafafa; }
 
 .admin-empty {
   text-align: center;
@@ -152,6 +149,8 @@
   padding: 2rem !important;
   font-style: italic;
 }
+
+/* ─── Users ───────────────────────────────────────────────────────────────── */
 
 .admin-select {
   padding: 0.3rem 0.5rem;
@@ -162,8 +161,163 @@
   cursor: pointer;
 }
 
-.admin-select.status-active { color: #155724; border-color: #c3e6cb; background: #f0faf2; }
+.admin-select.status-active    { color: #155724; border-color: #c3e6cb; background: #f0faf2; }
 .admin-select.status-suspended { color: #856404; border-color: #ffeeba; background: #fffdf0; }
-.admin-select.status-banned { color: #721c24; border-color: #f5c6cb; background: #fdf2f2; }
-.admin-select.status-pending { color: #666; }
-.admin-select.status-deleted { color: #999; }
+.admin-select.status-banned    { color: #721c24; border-color: #f5c6cb; background: #fdf2f2; }
+.admin-select.status-pending   { color: #6c6c6c; }
+.admin-select.status-deleted   { color: #999; }
+
+/* ─── Post Sub-tabs ───────────────────────────────────────────────────────── */
+
+.post-subtabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 2px solid #eee;
+}
+
+.post-subtab {
+  padding: 0.5rem 1.1rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #777;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.post-subtab:hover { color: #2e2a33; }
+
+.post-subtab.active {
+  color: #008ecc;
+  border-bottom-color: #008ecc;
+}
+
+/* ─── Post Table ──────────────────────────────────────────────────────────── */
+
+.post-table-wrapper {
+  overflow-x: auto;
+}
+
+.action-cell {
+  display: flex;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+.action-btn {
+  padding: 0.28rem 0.65rem;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.action-btn:hover { opacity: 0.85; }
+
+.edit-btn   { background: #e8f4fd; color: #0077aa; }
+.delete-btn { background: #fdf2f2; color: #c0392b; }
+
+/* ─── Status badges (posts) ───────────────────────────────────────────────── */
+
+.status-badge {
+  padding: 0.2rem 0.55rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.status-badge.status-published { background: #f0faf2; color: #155724; }
+.status-badge.status-sold      { background: #f0f9fc; color: #0c5460; }
+.status-badge.status-draft     { background: #fffdf0; color: #856404; }
+.status-badge.status-archived  { background: #f4f4f4; color: #666; }
+
+/* ─── Edit Modal ──────────────────────────────────────────────────────────── */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+.modal-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  color: #2e2a33;
+}
+
+.modal-field {
+  margin-bottom: 1rem;
+}
+
+.modal-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.modal-input:focus { border-color: #008ecc; box-shadow: 0 0 0 2px rgba(0,142,204,0.15); }
+
+.modal-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 0.6rem;
+  border: none;
+  border-radius: 7px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.modal-btn:hover { opacity: 0.88; }
+
+.modal-btn-save   { background: #008ecc; color: #fff; }
+.modal-btn-cancel { background: #f0f0f0; color: #555; }
