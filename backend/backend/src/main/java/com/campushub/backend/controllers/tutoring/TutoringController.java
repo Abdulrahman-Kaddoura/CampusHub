@@ -4,6 +4,7 @@ import com.campushub.backend.dtos.tutoring.TutoringRequestDTO;
 import com.campushub.backend.dtos.tutoring.TutoringResponseDTO;
 import com.campushub.backend.models.tutoring.Tutoring;
 import com.campushub.backend.models.user.User;
+import com.campushub.backend.services.listings.HuggingFaceContentModerationService;
 import com.campushub.backend.services.tutoring.TutoringService;
 import com.campushub.backend.services.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,6 +37,7 @@ public class TutoringController {
     private final UserService userService;
     private final ModelMapper modelMapper;
     private final FeatureManager featureManager;
+    private final HuggingFaceContentModerationService contentModerationService;
 
     @PostMapping("/create-tutoring")
     @Operation(summary = "Create tutoring post", description = "Creates a tutoring post for the authenticated user.")
@@ -46,6 +48,12 @@ public class TutoringController {
         if (!createTutoringEnabled) {
             log.debug("[DEBUG] createTutoring: returning 403 because CREATE_TUTORING feature toggle is disabled");
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        String textToScreen = requestDTO.getTutorName() + " "
+                + (requestDTO.getDescription() != null ? requestDTO.getDescription() : "");
+        if (!contentModerationService.isAppropriate(textToScreen)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tutoring post contains inappropriate content.");
         }
 
         User user = userService.getAuthenticatedUser();

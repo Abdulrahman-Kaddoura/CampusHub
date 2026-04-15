@@ -8,8 +8,10 @@ import com.campushub.backend.models.cart.CartItem;
 import com.campushub.backend.repositories.cart.CartItemRepository;
 import com.campushub.backend.repositories.cart.CartRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -36,6 +38,10 @@ public class CartItemService {
         }
         if (cartItem.getQuantity() <= 0 || cartItem.getUnitPrice().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Quantity and unit price must be greater than 0");
+        }
+        if (cartItemRepository.existsByCartCartIdAndListingListingId(
+                cart.getCartId(), cartItem.getListing().getListingId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "This item is already in your cart");
         }
         cartItem.setCart(cart);
         cart.getCartItems().add(cartItem);
