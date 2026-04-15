@@ -234,7 +234,13 @@ function ChatPage() {
             <textarea
               value={messageText}
               onChange={(event) => setMessageText(event.target.value)}
-              placeholder="Type your message..."
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && !event.shiftKey) {
+                  event.preventDefault();
+                  handleSendMessage(event);
+                }
+              }}
+              placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
               rows={3}
             />
             <button type="submit" disabled={!selectedPartnerId || !messageText.trim()}>

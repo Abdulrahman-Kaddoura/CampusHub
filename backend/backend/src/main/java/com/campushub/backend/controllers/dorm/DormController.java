@@ -1,8 +1,11 @@
+package com.campushub.backend.controllers.dorm;
+
 import com.campushub.backend.dtos.dorm.DormRequestDTO;
 import com.campushub.backend.dtos.dorm.DormResponseDTO;
 import com.campushub.backend.models.dorm.Dorm;
 import com.campushub.backend.models.user.User;
 import com.campushub.backend.services.dorm.DormService;
+import com.campushub.backend.services.listings.HuggingFaceContentModerationService;
 import com.campushub.backend.services.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,6 +39,7 @@ public class DormController {
     private final UserService userService;
     private final ModelMapper modelMapper;
     private final FeatureManager featureManager;
+    private final HuggingFaceContentModerationService contentModerationService;
 
     @PostMapping("/create-dorm")
     @Operation(summary = "Create Dorm Listing", description = "Creates a dorm listing for the authenticated user.")
@@ -46,6 +50,12 @@ public class DormController {
         if (!createDormEnabled) {
             log.debug("[DEBUG] createDorm: returning 403 because CREATE_DORM feature toggle is disabled");
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        String textToScreen = dormRequestDTO.getTitle() + " "
+                + (dormRequestDTO.getDescription() != null ? dormRequestDTO.getDescription() : "");
+        if (!contentModerationService.isAppropriate(textToScreen)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dorm listing contains inappropriate content.");
         }
 
         User user = userService.getAuthenticatedUser();

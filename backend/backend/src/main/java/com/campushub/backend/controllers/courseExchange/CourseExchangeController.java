@@ -5,6 +5,7 @@ import com.campushub.backend.dtos.courseExchange.CourseExchangeResponseDTO;
 import com.campushub.backend.models.courseExchange.CourseExchange;
 import com.campushub.backend.models.user.User;
 import com.campushub.backend.services.courseExchange.CourseExchangeService;
+import com.campushub.backend.services.listings.HuggingFaceContentModerationService;
 import com.campushub.backend.services.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,12 +33,19 @@ public class CourseExchangeController {
     private final UserService userService;
     private final ModelMapper modelMapper;
     private final FeatureManager featureManager;
+    private final HuggingFaceContentModerationService contentModerationService;
 
     @PostMapping("/create-course-exchange")
     @Operation(summary = "Create course exchange post", description = "Creates a course exchange post for the authenticated user.")
     public ResponseEntity<CourseExchangeResponseDTO> createCourseExchange(@Valid @RequestBody CourseExchangeRequestDTO requestDTO) {
         if (!featureManager.isActive(CREATE_COURSE_EXCHANGE)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        String textToScreen = requestDTO.getCurrentCourse() + " " + requestDTO.getDesiredCourse() + " "
+                + (requestDTO.getNotes() != null ? requestDTO.getNotes() : "");
+        if (!contentModerationService.isAppropriate(textToScreen)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Course exchange post contains inappropriate content.");
         }
 
         User user = userService.getAuthenticatedUser();
