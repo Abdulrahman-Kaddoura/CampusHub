@@ -12,12 +12,23 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Set;
 
 @Service
 public class HuggingFaceContentModerationService {
 
     private static final Logger log = LoggerFactory.getLogger(HuggingFaceContentModerationService.class);
     private static final String MODERATION_MODEL_URL = "https://api-inference.huggingface.co/models/unitary/toxic-bert";
+
+    // unitary/toxic-bert returns scores for these labels; any one exceeding the threshold blocks the content.
+    private static final Set<String> BLOCKING_LABELS = Set.of(
+            "toxic",
+            "severe_toxic",
+            "obscene",
+            "threat",
+            "insult",
+            "identity_hate"
+    );
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpClient httpClient = HttpClient.newBuilder()
@@ -40,9 +51,11 @@ public class HuggingFaceContentModerationService {
             return true;
         }
         if (apiToken == null || apiToken.isBlank()) {
-            log.debug("Hugging Face API token not configured; skipping content moderation.");
+            System.out.println("[Moderation] API token not configured — skipping content moderation.");
             return true;
         }
+
+        System.out.println("[Moderation] Checking text: \"" + text + "\"");
 
         try {
             String requestBody = objectMapper.writeValueAsString(
@@ -56,10 +69,12 @@ public class HuggingFaceContentModerationService {
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                     .build();
 
+            System.out.println("[Moderation] Sending request to " + MODERATION_MODEL_URL);
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            System.out.println("[Moderation] Response status: " + response.statusCode() + ", body: " + response.body());
 
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                log.warn("Content moderation API returned status {}; allowing listing through.", response.statusCode());
+                System.out.println("[Moderation] API returned status " + response.statusCode() + "; allowing listing through.");
                 return true;
             }
 
@@ -67,7 +82,7 @@ public class HuggingFaceContentModerationService {
             return parseModerationResult(root);
 
         } catch (Exception e) {
-            log.warn("Content moderation API call failed; allowing listing through. Reason: {}", e.getMessage());
+            System.out.println("[Moderation] API call failed; allowing listing through. Reason: " + e.getMessage());
             return true;
         }
     }
@@ -82,13 +97,15 @@ public class HuggingFaceContentModerationService {
         }
 
         for (JsonNode labelScore : results) {
-            String label = labelScore.path("label").asText("");
+            String label = labelScore.path("label").asText("").toLowerCase();
             double score = labelScore.path("score").asDouble(0.0);
-            if ("toxic".equalsIgnoreCase(label) && score >= moderationThreshold) {
-                log.info("Content flagged as toxic with score {}; blocking listing.", score);
+            System.out.println("[Moderation] Label: " + label + ", Score: " + score);
+            if (BLOCKING_LABELS.contains(label) && score >= moderationThreshold) {
+                System.out.println("[Moderation] BLOCKED — '" + label + "' score " + score + " >= threshold " + moderationThreshold);
                 return false;
             }
         }
+        System.out.println("[Moderation] ALLOWED — no label exceeded threshold " + moderationThreshold);
         return true;
     }
 }

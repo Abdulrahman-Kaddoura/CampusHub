@@ -134,6 +134,8 @@ public class ListingController {
     public ResponseEntity<ListingResponseDTO> createListing(
             @Valid @RequestBody ListingRequestDTO listingRequestDTO) throws Exception {
 
+        System.out.println("[DEBUG][createListing] Endpoint hit — title='" + listingRequestDTO.getTitle() + "'");
+
         User user;
         try {
             user = userService.getAuthenticatedUser();
