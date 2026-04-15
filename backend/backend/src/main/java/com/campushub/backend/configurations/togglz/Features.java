@@ -242,7 +242,18 @@ public enum Features implements Feature {
 
     @Label("CHAT - GetUsers")
     @EnabledByDefault
-    CHAT_GET_USERS;
+    CHAT_GET_USERS,
+
+    //-----------------------
+    // USER PROFILE APIs
+    //-----------------------
+    @Label("USER - UploadProfilePicture")
+    @EnabledByDefault
+    UPLOAD_PROFILE_PICTURE,
+
+    @Label("USER - GetProfilePicture")
+    @EnabledByDefault
+    GET_PROFILE_PICTURE;
 
     public boolean isActive(){
         return FeatureContext.getFeatureManager().isActive(this);

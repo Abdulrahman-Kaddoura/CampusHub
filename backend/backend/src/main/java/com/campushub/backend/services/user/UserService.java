@@ -14,7 +14,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -146,6 +148,32 @@ public class UserService {
         String email = authentication.getName();
         System.out.println("[DEBUG][UserService] getAuthenticatedUser() — authenticated as: '" + email + "'");
         return findByEmail(email);
+    }
+
+    @Transactional
+    public void uploadProfilePicture(MultipartFile file) throws IOException {
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("Cannot upload empty file");
+        }
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("Only image files are allowed");
+        }
+        if (file.getSize() > 5 * 1024 * 1024) {
+            throw new IllegalArgumentException("File size exceeds 5MB limit");
+        }
+        User user = getAuthenticatedUser();
+        user.setProfilePicture(file.getBytes());
+        user.setProfilePictureContentType(contentType);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void deleteProfilePicture() {
+        User user = getAuthenticatedUser();
+        user.setProfilePicture(null);
+        user.setProfilePictureContentType(null);
+        userRepository.save(user);
     }
 
     public User requireAuthenticatedUser(UUID requestedUserId) {
