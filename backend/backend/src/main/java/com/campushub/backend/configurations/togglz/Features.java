@@ -257,7 +257,30 @@ public enum Features implements Feature {
 
     @Label("USER - UpdateProfile")
     @EnabledByDefault
-    UPDATE_PROFILE;
+    UPDATE_PROFILE,
+
+    //-----------------------
+    // ADMIN APIs
+    //-----------------------
+    @Label("ADMIN - AdminPanel")
+    @EnabledByDefault
+    ADMIN_PANEL,
+
+    @Label("ADMIN - GetDashboard")
+    @EnabledByDefault
+    ADMIN_GET_DASHBOARD,
+
+    @Label("ADMIN - GetUsers")
+    @EnabledByDefault
+    ADMIN_GET_USERS,
+
+    @Label("ADMIN - UpdateUserStatus")
+    @EnabledByDefault
+    ADMIN_UPDATE_USER_STATUS,
+
+    @Label("ADMIN - UpdateUserRole")
+    @EnabledByDefault
+    ADMIN_UPDATE_USER_ROLE;
 
     public boolean isActive(){
         return FeatureContext.getFeatureManager().isActive(this);

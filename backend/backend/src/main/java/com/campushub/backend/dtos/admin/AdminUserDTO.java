@@ -1,4 +1,4 @@
-package com.campushub.backend.dtos.user;
+package com.campushub.backend.dtos.admin;
 
 import com.campushub.backend.enums.user.UserRole;
 import com.campushub.backend.enums.user.UserStatus;
@@ -14,28 +14,15 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserResponseDTO {
+public class AdminUserDTO {
 
     private UUID id;
-
     private String username;
-
     private String firstName;
-
     private String lastName;
-
     private String email;
-
-    private String phoneNumber;
-
     private UserStatus status;
-
     private UserRole role;
-
     private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
-
-    private UUID cartID;
-
+    private int listingCount;
 }

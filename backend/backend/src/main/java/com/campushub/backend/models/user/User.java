@@ -1,5 +1,6 @@
     package com.campushub.backend.models.user;
 
+    import com.campushub.backend.enums.user.UserRole;
     import com.campushub.backend.enums.user.UserStatus;
     import com.campushub.backend.models.cart.Cart;
     import com.campushub.backend.models.courseExchange.CourseExchange;
@@ -63,6 +64,10 @@
         @Enumerated(EnumType.STRING)
         @Column(nullable = false, length = 20)
         private UserStatus status = UserStatus.PENDING;
+
+        @Enumerated(EnumType.STRING)
+        @Column(nullable = false, length = 20)
+        private UserRole role = UserRole.STUDENT;
 
         @Column(name = "password", nullable = false)
         private String password;

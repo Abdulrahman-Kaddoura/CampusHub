@@ -22,5 +22,6 @@ export const FEATURE_FLAGS = {
   courseExchange: readBooleanEnv(import.meta.env.VITE_ENABLE_COURSE_EXCHANGE, true),
   mockData: readBooleanEnv(import.meta.env.VITE_USE_MOCK_DATA, false),
   chat: readBooleanEnv(import.meta.env.VITE_ENABLE_CHAT, true),
+  admin: readBooleanEnv(import.meta.env.VITE_ENABLE_ADMIN, true),
 };
 
