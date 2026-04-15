@@ -51,11 +51,11 @@ public class HuggingFaceContentModerationService {
             return true;
         }
         if (apiToken == null || apiToken.isBlank()) {
-            log.info("[Moderation] API token not configured — skipping content moderation.");
+            System.out.println("[Moderation] API token not configured — skipping content moderation.");
             return true;
         }
 
-        log.info("[Moderation] Checking text: \"{}\"", text);
+        System.out.println("[Moderation] Checking text: \"" + text + "\"");
 
         try {
             String requestBody = objectMapper.writeValueAsString(
@@ -69,12 +69,12 @@ public class HuggingFaceContentModerationService {
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                     .build();
 
-            log.info("[Moderation] Sending request to {}", MODERATION_MODEL_URL);
+            System.out.println("[Moderation] Sending request to " + MODERATION_MODEL_URL);
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            log.info("[Moderation] Response status: {}, body: {}", response.statusCode(), response.body());
+            System.out.println("[Moderation] Response status: " + response.statusCode() + ", body: " + response.body());
 
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                log.warn("[Moderation] API returned status {}; allowing listing through.", response.statusCode());
+                System.out.println("[Moderation] API returned status " + response.statusCode() + "; allowing listing through.");
                 return true;
             }
 
@@ -82,7 +82,7 @@ public class HuggingFaceContentModerationService {
             return parseModerationResult(root);
 
         } catch (Exception e) {
-            log.warn("[Moderation] API call failed; allowing listing through. Reason: {}", e.getMessage());
+            System.out.println("[Moderation] API call failed; allowing listing through. Reason: " + e.getMessage());
             return true;
         }
     }
@@ -99,13 +99,13 @@ public class HuggingFaceContentModerationService {
         for (JsonNode labelScore : results) {
             String label = labelScore.path("label").asText("").toLowerCase();
             double score = labelScore.path("score").asDouble(0.0);
-            log.info("[Moderation] Label: {}, Score: {}", label, score);
+            System.out.println("[Moderation] Label: " + label + ", Score: " + score);
             if (BLOCKING_LABELS.contains(label) && score >= moderationThreshold) {
-                log.info("[Moderation] BLOCKED — '{}' score {} >= threshold {}", label, score, moderationThreshold);
+                System.out.println("[Moderation] BLOCKED — '" + label + "' score " + score + " >= threshold " + moderationThreshold);
                 return false;
             }
         }
-        log.info("[Moderation] ALLOWED — no label exceeded threshold {}", moderationThreshold);
+        System.out.println("[Moderation] ALLOWED — no label exceeded threshold " + moderationThreshold);
         return true;
     }
 }
