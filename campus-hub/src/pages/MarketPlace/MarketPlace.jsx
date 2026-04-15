@@ -193,7 +193,7 @@ export default function MarketPlace() {
               <span>Image (optional)</span>
               <input
                 type="file"
-                accept="image/*"
+                accept=".jpg,.jpeg,.png,.gif,.webp,.svg,.bmp,.ico,image/*"
                 onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
                 className="listing-form-image-input"
               />

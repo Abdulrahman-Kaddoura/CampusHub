@@ -1,5 +1,6 @@
 package com.campushub.backend.controllers.user;
 
+import com.campushub.backend.dtos.user.UpdateUserRequestDTO;
 import com.campushub.backend.dtos.user.UserRequestDTO;
 import com.campushub.backend.dtos.user.UserResponseDTO;
 import com.campushub.backend.models.user.User;
@@ -130,6 +131,17 @@ public class UserController {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(user.getProfilePictureContentType()))
                 .body(user.getProfilePicture());
+    }
+
+    @PutMapping("/update-profile")
+    @Operation(summary = "Update Profile", description = "Updates the authenticated user's first name, last name, and phone number.")
+    public ResponseEntity<UserResponseDTO> updateProfile(@Valid @RequestBody UpdateUserRequestDTO dto) {
+        if (!featureManager.isActive(UPDATE_PROFILE)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        User updatedUser = userService.updateProfile(dto.getFirstName(), dto.getLastName(), dto.getPhoneNumber());
+        UserResponseDTO userResponseDTO = modelMapper.map(updatedUser, UserResponseDTO.class);
+        return new ResponseEntity<>(userResponseDTO, HttpStatus.OK);
     }
 
     @DeleteMapping("/profile-picture")

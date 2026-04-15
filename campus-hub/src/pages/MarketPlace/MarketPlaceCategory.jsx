@@ -6,7 +6,7 @@ import "./MarketPlace.css";
 export default function MarketPlaceCategory() {
   const { categoryName } = useParams();
   const decodedCategory = categoryName ? decodeURIComponent(categoryName) : "";
-  const { items, search, setSearch } = useMarketPlaceData();
+  const { items, search, setSearch, refetch } = useMarketPlaceData();
   const categoryItems = items.filter(
     (p) => (p.categoryName ?? p.category) === decodedCategory
   );
@@ -32,6 +32,7 @@ export default function MarketPlaceCategory() {
         categoryDisplayName={decodedCategory}
         items={categoryItems}
         showViewAll={false}
+        onDelete={refetch}
       />
       {categoryItems.length === 0 && (
         <p className="marketplace-empty">No items in this category yet.</p>

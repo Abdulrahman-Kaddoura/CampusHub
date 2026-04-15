@@ -169,6 +169,15 @@ public class UserService {
     }
 
     @Transactional
+    public User updateProfile(String firstName, String lastName, String phoneNumber) {
+        User user = getAuthenticatedUser();
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setPhoneNumber(phoneNumber);
+        return userRepository.save(user);
+    }
+
+    @Transactional
     public void deleteProfilePicture() {
         User user = getAuthenticatedUser();
         user.setProfilePicture(null);

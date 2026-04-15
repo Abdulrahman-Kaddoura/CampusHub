@@ -12,7 +12,7 @@ import java.util.UUID;
 public class ListingRequestDTO {
 
     @NotBlank(message = "Title is required")
-    @Size(min = 5, max = 100, message = "Title must be between 5 and 100 characters")
+    @Size(min = 3, max = 100, message = "Title must be between 3 and 100 characters")
     private String title;
 
     @Size(max = 500, message = "Description must not exceed 500 characters")
