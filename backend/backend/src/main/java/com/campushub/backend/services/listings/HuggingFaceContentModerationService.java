@@ -51,9 +51,11 @@ public class HuggingFaceContentModerationService {
             return true;
         }
         if (apiToken == null || apiToken.isBlank()) {
-            log.debug("Hugging Face API token not configured; skipping content moderation.");
+            log.info("[Moderation] API token not configured — skipping content moderation.");
             return true;
         }
+
+        log.info("[Moderation] Checking text: \"{}\"", text);
 
         try {
             String requestBody = objectMapper.writeValueAsString(
@@ -67,10 +69,12 @@ public class HuggingFaceContentModerationService {
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                     .build();
 
+            log.info("[Moderation] Sending request to {}", MODERATION_MODEL_URL);
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            log.info("[Moderation] Response status: {}, body: {}", response.statusCode(), response.body());
 
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                log.warn("Content moderation API returned status {}; allowing listing through.", response.statusCode());
+                log.warn("[Moderation] API returned status {}; allowing listing through.", response.statusCode());
                 return true;
             }
 
@@ -78,7 +82,7 @@ public class HuggingFaceContentModerationService {
             return parseModerationResult(root);
 
         } catch (Exception e) {
-            log.warn("Content moderation API call failed; allowing listing through. Reason: {}", e.getMessage());
+            log.warn("[Moderation] API call failed; allowing listing through. Reason: {}", e.getMessage());
             return true;
         }
     }
@@ -95,11 +99,13 @@ public class HuggingFaceContentModerationService {
         for (JsonNode labelScore : results) {
             String label = labelScore.path("label").asText("").toLowerCase();
             double score = labelScore.path("score").asDouble(0.0);
+            log.info("[Moderation] Label: {}, Score: {}", label, score);
             if (BLOCKING_LABELS.contains(label) && score >= moderationThreshold) {
-                log.info("Content flagged as '{}' with score {}; blocking listing.", label, score);
+                log.info("[Moderation] BLOCKED — '{}' score {} >= threshold {}", label, score, moderationThreshold);
                 return false;
             }
         }
+        log.info("[Moderation] ALLOWED — no label exceeded threshold {}", moderationThreshold);
         return true;
     }
 }
