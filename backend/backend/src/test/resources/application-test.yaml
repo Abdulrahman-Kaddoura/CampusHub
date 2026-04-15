@@ -14,6 +14,8 @@ spring:
     port: 2525
     username: test
     password: test
+  flyway:
+    enabled: false
 
 jwt:
   secret:
