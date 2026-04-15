@@ -253,7 +253,11 @@ public enum Features implements Feature {
 
     @Label("USER - GetProfilePicture")
     @EnabledByDefault
-    GET_PROFILE_PICTURE;
+    GET_PROFILE_PICTURE,
+
+    @Label("USER - UpdateProfile")
+    @EnabledByDefault
+    UPDATE_PROFILE;
 
     public boolean isActive(){
         return FeatureContext.getFeatureManager().isActive(this);

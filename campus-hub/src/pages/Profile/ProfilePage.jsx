@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { deleteProfilePicture, uploadProfilePicture } from "../../api/users.jsx";
+import { deleteProfilePicture, updateUserProfile, uploadProfilePicture } from "../../api/users.jsx";
 import Avatar from "../../components/Avatar/Avatar";
 import { useAuth } from "../../context/AuthContext";
 import "./ProfilePage.css";
@@ -54,10 +54,16 @@ function ProfilePage() {
     setIsEditing(false);
   };
 
-  const handleSave = () => {
-    updateProfile(formValues);
-    setSaveMessage("Profile updated locally. Backend sync not yet available.");
-    setIsEditing(false);
+  const handleSave = async () => {
+    setSaveMessage("");
+    try {
+      const updated = await updateUserProfile(formValues, token);
+      updateProfile(updated);
+      setSaveMessage("Profile updated successfully.");
+      setIsEditing(false);
+    } catch (err) {
+      setSaveMessage(err.message || "Failed to update profile.");
+    }
   };
 
   const handlePictureChange = async (event) => {

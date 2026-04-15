@@ -52,6 +52,16 @@ export const uploadProfilePicture = async (file, token) => {
   return parseApiResponse(response, "Failed to upload profile picture");
 };
 
+export const updateUserProfile = async ({ firstName, lastName, phoneNumber }, token) => {
+  const response = await fetch(buildApiUrl(`${BASE_PATH}/update-profile`), {
+    method: "PUT",
+    headers: buildJsonHeaders(token),
+    credentials: "include",
+    body: JSON.stringify({ firstName, lastName, phoneNumber }),
+  });
+  return parseApiResponse(response, "Failed to update profile");
+};
+
 export const deleteProfilePicture = async (token) => {
   const response = await fetch(buildApiUrl(`${BASE_PATH}/profile-picture`), {
     method: "DELETE",
