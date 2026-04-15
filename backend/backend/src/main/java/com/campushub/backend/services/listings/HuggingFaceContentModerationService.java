@@ -12,12 +12,23 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Set;
 
 @Service
 public class HuggingFaceContentModerationService {
 
     private static final Logger log = LoggerFactory.getLogger(HuggingFaceContentModerationService.class);
     private static final String MODERATION_MODEL_URL = "https://api-inference.huggingface.co/models/unitary/toxic-bert";
+
+    // unitary/toxic-bert returns scores for these labels; any one exceeding the threshold blocks the content.
+    private static final Set<String> BLOCKING_LABELS = Set.of(
+            "toxic",
+            "severe_toxic",
+            "obscene",
+            "threat",
+            "insult",
+            "identity_hate"
+    );
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpClient httpClient = HttpClient.newBuilder()
@@ -82,10 +93,10 @@ public class HuggingFaceContentModerationService {
         }
 
         for (JsonNode labelScore : results) {
-            String label = labelScore.path("label").asText("");
+            String label = labelScore.path("label").asText("").toLowerCase();
             double score = labelScore.path("score").asDouble(0.0);
-            if ("toxic".equalsIgnoreCase(label) && score >= moderationThreshold) {
-                log.info("Content flagged as toxic with score {}; blocking listing.", score);
+            if (BLOCKING_LABELS.contains(label) && score >= moderationThreshold) {
+                log.info("Content flagged as '{}' with score {}; blocking listing.", label, score);
                 return false;
             }
         }
