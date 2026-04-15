@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { buildApiUrl, buildJsonHeaders, parseApiResponse } from "./client";
+import { buildApiUrl, buildAuthHeaders, buildJsonHeaders, parseApiResponse } from "./client";
 
 const BASE_PATH = "/api/user";
 const TEMP_USER_STORAGE_KEY = "campusHubTempUserId";
@@ -38,4 +38,25 @@ export const createTempUser = async () => {
 
   localStorage.setItem(TEMP_USER_STORAGE_KEY, userId);
   return userId;
+};
+
+export const uploadProfilePicture = async (file, token) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await fetch(buildApiUrl(`${BASE_PATH}/profile-picture/upload`), {
+    method: "POST",
+    headers: buildAuthHeaders(token),
+    credentials: "include",
+    body: formData,
+  });
+  return parseApiResponse(response, "Failed to upload profile picture");
+};
+
+export const deleteProfilePicture = async (token) => {
+  const response = await fetch(buildApiUrl(`${BASE_PATH}/profile-picture`), {
+    method: "DELETE",
+    headers: buildAuthHeaders(token),
+    credentials: "include",
+  });
+  return parseApiResponse(response, "Failed to delete profile picture");
 };

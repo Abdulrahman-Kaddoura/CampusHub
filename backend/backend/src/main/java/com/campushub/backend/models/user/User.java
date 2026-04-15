@@ -10,6 +10,7 @@
     import lombok.Getter;
     import lombok.Setter;
     import org.hibernate.envers.Audited;
+    import org.hibernate.envers.NotAudited;
 
     import java.time.LocalDateTime;
     import java.util.ArrayList;
@@ -74,6 +75,14 @@
 
         @Column(name = "email_verified_at")
         private LocalDateTime emailVerifiedAt;
+
+        @NotAudited
+        @Column(name = "profile_picture")
+        private byte[] profilePicture;
+
+        @NotAudited
+        @Column(name = "profile_picture_content_type", length = 50)
+        private String profilePictureContentType;
 
         @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
         private List<Listing> postedListings = new ArrayList<>();

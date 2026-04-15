@@ -4,6 +4,38 @@
   padding: 2rem;
 }
 
+.profile-avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  flex-wrap: wrap;
+}
+
+.profile-avatar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.avatar-upload-btn {
+  background: #2f6fff;
+}
+
+.avatar-remove-btn {
+  font-size: 0.85rem;
+  padding: 0.4rem 0.8rem;
+}
+
+.picture-error {
+  width: 100%;
+  color: #c62828;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
 .profile-card {
   width: min(800px, 100%);
   background: #fff;

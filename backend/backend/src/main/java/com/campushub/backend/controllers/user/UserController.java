@@ -10,10 +10,13 @@ import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.togglz.core.manager.FeatureManager;
 
+import java.io.IOException;
 import java.util.UUID;
 
 import static com.campushub.backend.configurations.togglz.Features.*;
@@ -96,5 +99,46 @@ public class UserController {
         User user = userService.findByEmail(email);
         UserResponseDTO userResponseDTO = modelMapper.map(user, UserResponseDTO.class);
         return new ResponseEntity<>(userResponseDTO, HttpStatus.OK);
+    }
+
+    @PostMapping("/profile-picture/upload")
+    @Operation(summary = "Upload Profile Picture", description = "Uploads a profile picture for the authenticated user.")
+    public ResponseEntity<Void> uploadProfilePicture(@RequestParam("file") MultipartFile file) {
+        if (!featureManager.isActive(UPLOAD_PROFILE_PICTURE)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        try {
+            userService.uploadProfilePicture(file);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/profile-picture/{userId}")
+    @Operation(summary = "Get Profile Picture", description = "Returns the profile picture for a given user ID.")
+    public ResponseEntity<byte[]> getProfilePicture(@PathVariable UUID userId) {
+        if (!featureManager.isActive(GET_PROFILE_PICTURE)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        User user = userService.findById(userId);
+        if (user.getProfilePicture() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(user.getProfilePictureContentType()))
+                .body(user.getProfilePicture());
+    }
+
+    @DeleteMapping("/profile-picture")
+    @Operation(summary = "Delete Profile Picture", description = "Removes the profile picture of the authenticated user.")
+    public ResponseEntity<Void> deleteProfilePicture() {
+        if (!featureManager.isActive(UPLOAD_PROFILE_PICTURE)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        userService.deleteProfilePicture();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

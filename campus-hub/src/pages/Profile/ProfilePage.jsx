@@ -1,12 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { deleteProfilePicture, uploadProfilePicture } from "../../api/users.jsx";
+import Avatar from "../../components/Avatar/Avatar";
 import { useAuth } from "../../context/AuthContext";
 import "./ProfilePage.css";
 
 function ProfilePage() {
-  const { currentUser, isAuthenticated, authLoading, updateProfile } = useAuth();
+  const { currentUser, token, isAuthenticated, authLoading, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
+  const [pictureError, setPictureError] = useState("");
+  const [pictureLoading, setPictureLoading] = useState(false);
+  // Incrementing this key forces the Avatar to remount and refetch after an upload
+  const [avatarKey, setAvatarKey] = useState(0);
+  const fileInputRef = useRef(null);
   const [formValues, setFormValues] = useState({
     firstName: "",
     lastName: "",
@@ -15,10 +22,7 @@ function ProfilePage() {
   });
 
   useEffect(() => {
-    if (!currentUser) {
-      return;
-    }
-
+    if (!currentUser) return;
     setFormValues({
       firstName: currentUser.firstName || "",
       lastName: currentUser.lastName || "",
@@ -29,15 +33,12 @@ function ProfilePage() {
 
   const handleFieldChange = (event) => {
     const { name, value } = event.target;
-    setFormValues((previousValues) => ({
-      ...previousValues,
-      [name]: value,
-    }));
+    setFormValues((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleEditToggle = () => {
     setSaveMessage("");
-    setIsEditing((previousState) => !previousState);
+    setIsEditing((prev) => !prev);
   };
 
   const handleCancel = () => {
@@ -55,8 +56,37 @@ function ProfilePage() {
 
   const handleSave = () => {
     updateProfile(formValues);
-    setSaveMessage("Profile updated locally. Changes will be lost on refresh (backend sync not yet available).");
+    setSaveMessage("Profile updated locally. Backend sync not yet available.");
     setIsEditing(false);
+  };
+
+  const handlePictureChange = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setPictureError("");
+    setPictureLoading(true);
+    try {
+      await uploadProfilePicture(file, token);
+      setAvatarKey((k) => k + 1);
+    } catch (err) {
+      setPictureError(err.message || "Failed to upload picture.");
+    } finally {
+      setPictureLoading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleDeletePicture = async () => {
+    setPictureError("");
+    setPictureLoading(true);
+    try {
+      await deleteProfilePicture(token);
+      setAvatarKey((k) => k + 1);
+    } catch (err) {
+      setPictureError(err.message || "Failed to remove picture.");
+    } finally {
+      setPictureLoading(false);
+    }
   };
 
   const fullName = [currentUser?.firstName, currentUser?.lastName]
@@ -85,10 +115,45 @@ function ProfilePage() {
   return (
     <main className="profile-page">
       <section className="profile-card">
+        <div className="profile-avatar-section">
+          <Avatar
+            key={avatarKey}
+            userId={currentUser?.id}
+            name={profileOwnerName}
+            size="lg"
+          />
+          <div className="profile-avatar-actions">
+            <button
+              type="button"
+              className="profile-button avatar-upload-btn"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={pictureLoading}
+            >
+              {pictureLoading ? "Uploading..." : "Change Photo"}
+            </button>
+            <button
+              type="button"
+              className="profile-button secondary avatar-remove-btn"
+              onClick={handleDeletePicture}
+              disabled={pictureLoading}
+            >
+              Remove
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handlePictureChange}
+            />
+          </div>
+          {pictureError && <p className="picture-error">{pictureError}</p>}
+        </div>
+
         <div className="profile-header">
           <div>
             <h1>{profileOwnerName}&apos;s Profile</h1>
-            <p className="profile-subtitle">Manage your account details. Contact: {profilePrimaryContact}</p>
+            <p className="profile-subtitle">Contact: {profilePrimaryContact}</p>
           </div>
           <button type="button" className="profile-button" onClick={handleEditToggle}>
             {isEditing ? "Close Editor" : "Edit Profile"}

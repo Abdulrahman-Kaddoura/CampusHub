@@ -1,13 +1,39 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { fetchChatUsers, fetchConversationMessages, fetchConversations, sendChatMessage } from "../../api/chat";
+import Avatar from "../../components/Avatar/Avatar";
 import { useAuth } from "../../context/AuthContext";
 import "./ChatPage.css";
 
 const formatMessageTime = (dateString) => {
   if (!dateString) return "";
   const date = new Date(dateString);
-  return date.toLocaleString();
+  const now = new Date();
+  const isToday =
+    date.getDate() === now.getDate() &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear();
+  const isYesterday =
+    date.getDate() === now.getDate() - 1 &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear();
+
+  const timeStr = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  if (isToday) return timeStr;
+  if (isYesterday) return `Yesterday, ${timeStr}`;
+  return `${date.toLocaleDateString([], { month: "short", day: "numeric" })}, ${timeStr}`;
+};
+
+const formatConversationTime = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const now = new Date();
+  const isToday =
+    date.getDate() === now.getDate() &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear();
+  if (isToday) return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return date.toLocaleDateString([], { month: "short", day: "numeric" });
 };
 
 function ChatPage() {
@@ -20,43 +46,37 @@ function ChatPage() {
   const [messageText, setMessageText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [newChatOpen, setNewChatOpen] = useState(false);
 
   const messagesEndRef = useRef(null);
   const messagesPollRef = useRef(null);
   const conversationsPollRef = useRef(null);
+  const textareaRef = useRef(null);
 
   const selectedPartner = useMemo(() => {
-    const fromUsers = users.find((user) => user.userId === selectedPartnerId);
+    const fromUsers = users.find((u) => u.userId === selectedPartnerId);
     if (fromUsers) return fromUsers;
-
-    const fromConversations = conversations.find((conversation) => conversation.partnerId === selectedPartnerId);
+    const fromConversations = conversations.find((c) => c.partnerId === selectedPartnerId);
     if (!fromConversations) return null;
-
-    return {
-      userId: fromConversations.partnerId,
-      displayName: fromConversations.partnerName,
-    };
+    return { userId: fromConversations.partnerId, displayName: fromConversations.partnerName };
   }, [users, conversations, selectedPartnerId]);
 
   const loadInitialData = async () => {
     setLoading(true);
     setError("");
-
     try {
       const [chatUsers, chatConversations] = await Promise.all([
         fetchChatUsers(token),
         fetchConversations(token),
       ]);
-
       setUsers(chatUsers || []);
       setConversations(chatConversations || []);
-
       if (!selectedPartnerId) {
-        const initialPartner = chatConversations?.[0]?.partnerId || chatUsers?.[0]?.userId || "";
-        setSelectedPartnerId(initialPartner);
+        const initial = chatConversations?.[0]?.partnerId || chatUsers?.[0]?.userId || "";
+        setSelectedPartnerId(initial);
       }
-    } catch (loadError) {
-      setError(loadError.message || "Unable to load chat data.");
+    } catch (err) {
+      setError(err.message || "Unable to load chat data.");
     } finally {
       setLoading(false);
     }
@@ -83,9 +103,7 @@ function ChatPage() {
   }, [token]);
 
   useEffect(() => {
-    if (!isAuthenticated || !token) {
-      return;
-    }
+    if (!isAuthenticated || !token) return;
     loadInitialData();
   }, [isAuthenticated, token]);
 
@@ -94,27 +112,15 @@ function ChatPage() {
       clearInterval(messagesPollRef.current);
       messagesPollRef.current = null;
     }
-
     if (!selectedPartnerId) {
       setMessages([]);
       return;
     }
-
     let mounted = true;
     fetchConversationMessages(selectedPartnerId, token)
-      .then((conversationMessages) => {
-        if (mounted) {
-          setMessages(conversationMessages || []);
-        }
-      })
-      .catch((loadError) => {
-        if (mounted) {
-          setError(loadError.message || "Unable to load conversation messages.");
-        }
-      });
-
+      .then((msgs) => { if (mounted) setMessages(msgs || []); })
+      .catch((err) => { if (mounted) setError(err.message || "Unable to load messages."); });
     messagesPollRef.current = setInterval(pollMessages, 3000);
-
     return () => {
       mounted = false;
       clearInterval(messagesPollRef.current);
@@ -138,28 +144,23 @@ function ChatPage() {
 
   const handleSendMessage = async (event) => {
     event.preventDefault();
-    if (!selectedPartnerId || !messageText.trim()) {
-      return;
-    }
-
+    if (!selectedPartnerId || !messageText.trim()) return;
     setError("");
-
     try {
-      const created = await sendChatMessage(
-        {
-          recipientId: selectedPartnerId,
-          content: messageText,
-        },
-        token
-      );
-
-      setMessages((previous) => [...previous, created]);
+      const created = await sendChatMessage({ recipientId: selectedPartnerId, content: messageText }, token);
+      setMessages((prev) => [...prev, created]);
       setMessageText("");
-      const refreshedConversations = await fetchConversations(token);
-      setConversations(refreshedConversations || []);
-    } catch (sendError) {
-      setError(sendError.message || "Unable to send message.");
+      textareaRef.current?.focus();
+      const refreshed = await fetchConversations(token);
+      setConversations(refreshed || []);
+    } catch (err) {
+      setError(err.message || "Unable to send message.");
     }
+  };
+
+  const handleSelectConversation = (partnerId) => {
+    setSelectedPartnerId(partnerId);
+    setNewChatOpen(false);
   };
 
   if (!isAuthenticated || !currentUser) {
@@ -171,82 +172,168 @@ function ChatPage() {
     );
   }
 
+  // Users that don't already have a conversation
+  const usersWithoutConversation = users.filter(
+    (u) => !conversations.some((c) => c.partnerId === u.userId)
+  );
+
   return (
     <section className="chat-page">
-      <header className="chat-header">
-        <h1>Campus Chat</h1>
-        <p>Message other students directly.</p>
-      </header>
-
-      {error ? <p className="chat-error">{error}</p> : null}
-
       <div className="chat-grid">
+        {/* ── Sidebar ── */}
         <aside className="chat-sidebar">
-          <h2>Conversations</h2>
-          {loading ? <p>Loading conversations...</p> : null}
+          <div className="chat-sidebar-header">
+            <h2>Messages</h2>
+            <button
+              type="button"
+              className="new-chat-btn"
+              onClick={() => setNewChatOpen((o) => !o)}
+              title="Start new conversation"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </button>
+          </div>
+
+          {newChatOpen && (
+            <div className="new-chat-panel">
+              <p className="new-chat-label">Start a new conversation</p>
+              <select
+                className="chat-user-select"
+                value=""
+                onChange={(e) => {
+                  if (e.target.value) handleSelectConversation(e.target.value);
+                }}
+              >
+                <option value="">Choose a student...</option>
+                {usersWithoutConversation.map((u) => (
+                  <option key={u.userId} value={u.userId}>{u.displayName}</option>
+                ))}
+                {usersWithoutConversation.length === 0 && (
+                  <option disabled>You have conversations with everyone</option>
+                )}
+              </select>
+            </div>
+          )}
+
+          {loading && <p className="chat-loading">Loading...</p>}
+
           <ul className="chat-list">
-            {conversations.map((conversation) => (
-              <li key={conversation.partnerId}>
+            {conversations.map((conv) => (
+              <li key={conv.partnerId}>
                 <button
                   type="button"
-                  className={`chat-list-button ${selectedPartnerId === conversation.partnerId ? "active" : ""}`}
-                  onClick={() => setSelectedPartnerId(conversation.partnerId)}
+                  className={`chat-list-item ${selectedPartnerId === conv.partnerId ? "active" : ""}`}
+                  onClick={() => handleSelectConversation(conv.partnerId)}
                 >
-                  <span>{conversation.partnerName}</span>
-                  <small>{conversation.lastMessage}</small>
+                  <Avatar userId={conv.partnerId} name={conv.partnerName} size="sm" />
+                  <div className="chat-list-item-body">
+                    <span className="chat-list-item-name">{conv.partnerName}</span>
+                    <span className="chat-list-item-preview">{conv.lastMessage}</span>
+                  </div>
+                  {conv.lastMessageAt && (
+                    <span className="chat-list-item-time">{formatConversationTime(conv.lastMessageAt)}</span>
+                  )}
                 </button>
               </li>
             ))}
+            {!loading && conversations.length === 0 && (
+              <li className="chat-empty-state">
+                No conversations yet. Start one above!
+              </li>
+            )}
           </ul>
-
-          <h2>Start new</h2>
-          <select
-            value={selectedPartnerId}
-            onChange={(event) => setSelectedPartnerId(event.target.value)}
-            className="chat-user-select"
-          >
-            <option value="">Choose a student</option>
-            {users.map((user) => (
-              <option key={user.userId} value={user.userId}>
-                {user.displayName}
-              </option>
-            ))}
-          </select>
         </aside>
 
+        {/* ── Thread ── */}
         <div className="chat-thread">
-          <h2>{selectedPartner ? `Chatting with ${selectedPartner.displayName}` : "Select a conversation"}</h2>
+          {selectedPartner ? (
+            <>
+              <div className="chat-thread-header">
+                <Avatar userId={selectedPartner.userId} name={selectedPartner.displayName} size="sm" />
+                <div className="chat-thread-header-info">
+                  <span className="chat-thread-name">{selectedPartner.displayName}</span>
+                  <span className="chat-thread-status">AUB Student</span>
+                </div>
+              </div>
 
-          <div className="chat-messages">
-            {messages.map((message) => {
-              const isMine = message.senderId === currentUser.id;
-              return (
-                <article key={message.messageId} className={`chat-message ${isMine ? "mine" : "theirs"}`}>
-                  <p>{message.content}</p>
-                  <small>{formatMessageTime(message.sentAt)}</small>
-                </article>
-              );
-            })}
-            <div ref={messagesEndRef} />
-          </div>
+              <div className="chat-messages">
+                {messages.length === 0 && (
+                  <p className="chat-no-messages">
+                    Say hello to {selectedPartner.displayName}!
+                  </p>
+                )}
+                {messages.map((msg, idx) => {
+                  const isMine = msg.senderId === currentUser.id;
+                  const prevMsg = messages[idx - 1];
+                  const showSenderInfo = !isMine && (!prevMsg || prevMsg.senderId !== msg.senderId);
+                  return (
+                    <div key={msg.messageId} className={`chat-message-row ${isMine ? "mine" : "theirs"}`}>
+                      {!isMine && (
+                        <div className="chat-message-avatar">
+                          {showSenderInfo ? (
+                            <Avatar userId={msg.senderId} name={msg.senderName} size="xs" />
+                          ) : (
+                            <div className="chat-avatar-spacer" />
+                          )}
+                        </div>
+                      )}
+                      <div className="chat-message-content">
+                        {showSenderInfo && (
+                          <span className="chat-message-sender">{msg.senderName}</span>
+                        )}
+                        <div className={`chat-bubble ${isMine ? "bubble-mine" : "bubble-theirs"}`}>
+                          <p>{msg.content}</p>
+                        </div>
+                        <span className="chat-message-time">{formatMessageTime(msg.sentAt)}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div ref={messagesEndRef} />
+              </div>
 
-          <form className="chat-compose" onSubmit={handleSendMessage}>
-            <textarea
-              value={messageText}
-              onChange={(event) => setMessageText(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" && !event.shiftKey) {
-                  event.preventDefault();
-                  handleSendMessage(event);
-                }
-              }}
-              placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
-              rows={3}
-            />
-            <button type="submit" disabled={!selectedPartnerId || !messageText.trim()}>
-              Send
-            </button>
-          </form>
+              {error && <p className="chat-error">{error}</p>}
+
+              <form className="chat-compose" onSubmit={handleSendMessage}>
+                <textarea
+                  ref={textareaRef}
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage(e);
+                    }
+                  }}
+                  placeholder="Type a message… (Enter to send)"
+                  rows={1}
+                />
+                <button
+                  type="submit"
+                  className="chat-send-btn"
+                  disabled={!messageText.trim()}
+                  aria-label="Send message"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  </svg>
+                </button>
+              </form>
+            </>
+          ) : (
+            <div className="chat-empty-thread">
+              <div className="chat-empty-thread-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#c0c8d4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+              </div>
+              <p>Select a conversation or start a new one.</p>
+            </div>
+          )}
         </div>
       </div>
     </section>

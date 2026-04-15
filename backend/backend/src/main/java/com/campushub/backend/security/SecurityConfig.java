@@ -65,7 +65,9 @@ public class SecurityConfig {
                                 "/api/tutoring/get-tutoring",
                                 "/api/course-exchange/get-course-exchanges",
                                 "/listingImage/download-listing-image/**",
-                                "/api/listingImage/download-listing-image/**")
+                                "/api/listingImage/download-listing-image/**",
+                                "/user/profile-picture/**",
+                                "/api/user/profile-picture/**")
                         .permitAll()
                         .requestMatchers(HttpMethod.POST, "/listings/create-listing", "/api/listings/create-listing")
                         .permitAll()
