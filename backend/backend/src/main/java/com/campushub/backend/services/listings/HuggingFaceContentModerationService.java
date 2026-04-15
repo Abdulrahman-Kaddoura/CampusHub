@@ -18,7 +18,7 @@ import java.util.Set;
 public class HuggingFaceContentModerationService {
 
     private static final Logger log = LoggerFactory.getLogger(HuggingFaceContentModerationService.class);
-    private static final String MODERATION_MODEL_URL = "https://api-inference.huggingface.co/models/unitary/toxic-bert";
+    private static final String MODERATION_MODEL_URL = "https://router.huggingface.co/hf-inference/models/unitary/toxic-bert";
 
     // unitary/toxic-bert returns scores for these labels; any one exceeding the threshold blocks the content.
     private static final Set<String> BLOCKING_LABELS = Set.of(
