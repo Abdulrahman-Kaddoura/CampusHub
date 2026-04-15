@@ -36,29 +36,41 @@ public class HuggingFaceSearchService {
     private String model;
 
     public List<AiSearchResultDTO> rankListings(String query, List<Listing> listings) throws IOException, InterruptedException {
+        System.out.println("[HF Search] rankListings called — query: \"" + query + "\", listings count: " + (listings == null ? 0 : listings.size()));
+
         if (query == null || query.isBlank() || listings == null || listings.isEmpty()) {
+            System.out.println("[HF Search] Returning empty — query or listings are null/empty.");
             return List.of();
         }
         if (apiToken == null || apiToken.isBlank()) {
+            System.out.println("[HF Search] ERROR — HuggingFace API token is not configured.");
             throw new IllegalStateException("Hugging Face API token is not configured");
         }
 
+        System.out.println("[HF Search] Embedding query: \"" + query + "\"");
         double[] queryEmbedding = embedText(query);
+        System.out.println("[HF Search] Query embedding done, dimensions: " + queryEmbedding.length);
+
         List<AiSearchResultDTO> ranked = new ArrayList<>();
 
         for (Listing listing : listings) {
             String listingText = toListingText(listing);
             if (listingText.isBlank()) {
+                System.out.println("[HF Search] Skipping listing " + listing.getListingId() + " — no text.");
                 continue;
             }
             double[] listingEmbedding = embedText(listingText);
             double score = cosineSimilarity(queryEmbedding, listingEmbedding);
+            System.out.println("[HF Search] Listing " + listing.getListingId() + " (\"" + listing.getTitle() + "\") score: " + score);
             ranked.add(new AiSearchResultDTO(listing.getListingId(), score));
         }
 
-        return ranked.stream()
+        List<AiSearchResultDTO> sorted = ranked.stream()
                 .sorted(Comparator.comparingDouble(AiSearchResultDTO::getScore).reversed())
                 .toList();
+
+        System.out.println("[HF Search] Ranking complete. Top result: " + (sorted.isEmpty() ? "none" : sorted.get(0).getListingId() + " score=" + sorted.get(0).getScore()));
+        return sorted;
     }
 
     private String toListingText(Listing listing) {
@@ -74,6 +86,8 @@ public class HuggingFaceSearchService {
         String encodedModel = URLEncoder.encode(model, StandardCharsets.UTF_8);
         URI uri = URI.create(INFERENCE_BASE_URL + encodedModel);
 
+        System.out.println("[HF Search] POST " + uri + " | text length: " + text.length() + " chars");
+
         String requestBody = objectMapper.writeValueAsString(
                 objectMapper.createObjectNode()
                         .put("inputs", text)
@@ -87,8 +101,13 @@ public class HuggingFaceSearchService {
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
 
+        long start = System.currentTimeMillis();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        long elapsed = System.currentTimeMillis() - start;
+        System.out.println("[HF Search] Response status: " + response.statusCode() + " (" + elapsed + "ms) | body length: " + response.body().length() + " chars");
+
         if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            System.out.println("[HF Search] ERROR body: " + response.body());
             throw new IOException("Hugging Face request failed with status " + response.statusCode() + ": " + response.body());
         }
 
