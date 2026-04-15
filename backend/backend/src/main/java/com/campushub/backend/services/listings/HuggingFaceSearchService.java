@@ -22,7 +22,7 @@ import java.util.List;
 @Service
 public class HuggingFaceSearchService {
 
-    private static final String INFERENCE_BASE_URL = "https://api-inference.huggingface.co/pipeline/feature-extraction/";
+    private static final String INFERENCE_BASE_URL = "https://router.huggingface.co/hf-inference/models/";
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpClient httpClient = HttpClient.newBuilder()
