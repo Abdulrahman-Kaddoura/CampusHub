@@ -6,6 +6,7 @@ import com.campushub.backend.dtos.authentication.VerifyEmailRequestDTO;
 import com.campushub.backend.dtos.user.UserRequestDTO;
 import com.campushub.backend.dtos.user.UserResponseDTO;
 import com.campushub.backend.models.user.User;
+import com.campushub.backend.services.listings.HuggingFaceContentModerationService;
 import com.campushub.backend.services.user.AppUserDetailsService;
 import com.campushub.backend.services.user.UserService;
 import com.campushub.backend.util.JwtUtil;
@@ -20,6 +21,7 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.togglz.core.manager.FeatureManager;
 
 import java.util.HashMap;
@@ -48,6 +50,9 @@ public class AuthController {
 
     @Autowired
     JwtUtil jwtUtil;
+
+    @Autowired
+    HuggingFaceContentModerationService contentModerationService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthRequestDTO authRequestDTO) {
@@ -89,6 +94,12 @@ public class AuthController {
     public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody UserRequestDTO userRequestDTO) {
         if (!featureManager.isActive(REGISTER)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        String textToScreen = userRequestDTO.getUsername() + " "
+                + userRequestDTO.getFirstName() + " "
+                + userRequestDTO.getLastName();
+        if (!contentModerationService.isAppropriate(textToScreen)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Registration rejected: your profile contains inappropriate language.");
         }
         User user = modelMapper.map(userRequestDTO, User.class);
         User createdUser = userService.createUser(user);
