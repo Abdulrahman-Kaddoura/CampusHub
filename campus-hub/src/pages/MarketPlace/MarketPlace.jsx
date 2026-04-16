@@ -251,7 +251,7 @@ export default function MarketPlace() {
         <p className="marketplace-empty">No results found for "{search.trim()}". Try a shorter phrase or different wording.</p>
       )}
 
-      {apiError && (
+      {apiError && items.length === 0 && (
         <p className="form-error">Could not load listings: {apiError}</p>
       )}
     </div>
