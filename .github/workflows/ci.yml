@@ -8,9 +8,33 @@ on:
   pull_request:
 
 jobs:
+  changes:
+    name: Detect changed areas
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - '.github/workflows/ci.yml'
+            frontend:
+              - 'campus-hub/**'
+              - '.github/workflows/ci.yml'
+
   frontend:
     name: Frontend (lint, test, build)
     runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ github.event_name == 'push' || needs.changes.outputs.frontend == 'true' }}
     defaults:
       run:
         working-directory: campus-hub
@@ -41,6 +65,8 @@ jobs:
   backend:
     name: Backend (test, build JAR)
     runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ github.event_name == 'push' || needs.changes.outputs.backend == 'true' }}
     defaults:
       run:
         working-directory: backend/backend
