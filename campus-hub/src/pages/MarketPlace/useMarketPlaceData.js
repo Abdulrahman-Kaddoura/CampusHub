@@ -423,11 +423,13 @@ export function useMarketPlaceData() {
 
   const items = useMemo(() => {
     if (isLoading) return [];
-    const sourceListings = FEATURE_FLAGS.mockData
+    const shouldUseFeaturedFallback = FEATURE_FLAGS.mockData
+      || (apiListings.length === 0 && apiError);
+    const sourceListings = shouldUseFeaturedFallback
       ? (apiListings.length > 0 ? apiListings : FEATURED_AUB_MARKETPLACE_ITEMS)
       : apiListings;
     return sourceListings.map(toListingShape);
-  }, [apiListings, isLoading]);
+  }, [apiError, apiListings, isLoading]);
 
   const categoriesWithItems = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
