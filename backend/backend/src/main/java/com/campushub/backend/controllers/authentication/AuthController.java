@@ -76,9 +76,10 @@ public class AuthController {
             error.put("message", "Verify email before logging in");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
         } catch (Exception ex) {
+            System.out.println("[DEBUG][AuthController] login() — unexpected error for email='" + authRequestDTO.getEmail() + "': " + ex.getClass().getSimpleName() + ": " + ex.getMessage());
             Map<String, Object> error = new HashMap<>();
             error.put("error", true);
-            error.put("message", "Authentication failed");
+            error.put("message", "Authentication failed. Please try again.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
         }
     }
@@ -92,18 +93,24 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody UserRequestDTO userRequestDTO) {
+        System.out.println("[DEBUG][AuthController] register() — received registration request for email='" + userRequestDTO.getEmail() + "', username='" + userRequestDTO.getUsername() + "'");
         if (!featureManager.isActive(REGISTER)) {
+            System.out.println("[DEBUG][AuthController] register() — REGISTER feature flag is disabled, returning 403");
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         String textToScreen = userRequestDTO.getUsername() + " "
                 + userRequestDTO.getFirstName() + " "
                 + userRequestDTO.getLastName();
+        System.out.println("[DEBUG][AuthController] register() — running content moderation on: '" + textToScreen + "'");
         if (!contentModerationService.isAppropriate(textToScreen)) {
+            System.out.println("[DEBUG][AuthController] register() — content moderation rejected the registration");
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Registration rejected: your profile contains inappropriate language.");
         }
+        System.out.println("[DEBUG][AuthController] register() — content moderation passed, creating user");
         User user = modelMapper.map(userRequestDTO, User.class);
         User createdUser = userService.createUser(user);
         UserResponseDTO userResponseDTO = modelMapper.map(createdUser, UserResponseDTO.class);
+        System.out.println("[DEBUG][AuthController] register() — registration successful for email='" + createdUser.getEmail() + "'");
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Registration successful. Please verify your email to activate your account.");
         response.put("user", userResponseDTO);
@@ -121,19 +128,23 @@ public class AuthController {
     }
 
     private ResponseEntity<Map<String, Object>> handleVerifyEmail(String email, String token) {
+        System.out.println("[DEBUG][AuthController] handleVerifyEmail() — verifying email='" + email + "'");
         Map<String, Object> response = new HashMap<>();
         try {
             User verifiedUser = userService.verifyEmail(email, token);
-            response.put("message", "Email verified successfully");
+            response.put("message", "Email verified successfully. You can now log in.");
             response.put("user", modelMapper.map(verifiedUser, UserResponseDTO.class));
+            System.out.println("[DEBUG][AuthController] handleVerifyEmail() — verification succeeded for email='" + email + "'");
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException ex) {
+            System.out.println("[DEBUG][AuthController] handleVerifyEmail() — IllegalArgumentException: " + ex.getMessage());
             response.put("error", true);
             response.put("message", ex.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         } catch (Exception ex) {
+            System.out.println("[DEBUG][AuthController] handleVerifyEmail() — unexpected error for email='" + email + "': " + ex.getClass().getSimpleName() + ": " + ex.getMessage());
             response.put("error", true);
-            response.put("message", "Email verification failed");
+            response.put("message", ex.getMessage() != null ? ex.getMessage() : "Email verification failed. Please try again.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
