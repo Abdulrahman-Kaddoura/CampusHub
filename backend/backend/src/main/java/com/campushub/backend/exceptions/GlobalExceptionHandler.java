@@ -44,10 +44,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", ex.getMessage()));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException ex) {
+        System.out.println("[DEBUG][GlobalExceptionHandler] IllegalArgumentException: " + ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", ex.getMessage()));
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         System.out.println("[DEBUG][GlobalExceptionHandler] DataIntegrityViolationException: " + ex.getMessage());
-        String message = "Registration failed due to a conflict with existing data.";
+        String message = "The operation could not be completed due to a data conflict.";
         String cause = ex.getMessage() != null ? ex.getMessage().toLowerCase() : "";
         if (cause.contains("username")) {
             message = "This username is already taken. Please choose a different username.";

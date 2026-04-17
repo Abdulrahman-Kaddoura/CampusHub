@@ -196,6 +196,20 @@
   border-bottom-color: #008ecc;
 }
 
+/* ─── Ban by Email ────────────────────────────────────────────────────────── */
+
+.ban-by-email-form {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.ban-email-input {
+  flex: 1;
+  max-width: 320px;
+}
+
 /* ─── Post Table ──────────────────────────────────────────────────────────── */
 
 .post-table-wrapper {

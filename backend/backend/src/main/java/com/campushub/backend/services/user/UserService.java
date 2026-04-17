@@ -4,7 +4,9 @@ import com.campushub.backend.enums.user.UserStatus;
 import com.campushub.backend.exceptions.user.EmailAlreadyExistsException;
 import com.campushub.backend.exceptions.user.UserNotFoundException;
 import com.campushub.backend.models.cart.Cart;
+import com.campushub.backend.models.listings.Listing;
 import com.campushub.backend.models.user.User;
+import com.campushub.backend.repositories.listing.ListingRepository;
 import com.campushub.backend.repositories.user.UserRepository;
 import com.campushub.backend.services.authentication.EmailVerificationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.util.List;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -35,6 +38,9 @@ public class UserService {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    ListingRepository listingRepository;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -162,7 +168,11 @@ public class UserService {
     public User deleteUserById(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
-        userRepository.deleteById(userId);
+        // Null out buyer_id references to prevent FK violation on purchased listings
+        List<Listing> purchased = listingRepository.findByBuyerId(userId);
+        purchased.forEach(l -> l.setBuyer(null));
+        listingRepository.saveAll(purchased);
+        userRepository.delete(user);
         return user;
     }
 

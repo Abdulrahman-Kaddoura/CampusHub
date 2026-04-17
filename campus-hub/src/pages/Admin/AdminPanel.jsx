@@ -5,6 +5,8 @@ import {
   fetchAdminUsers,
   updateUserStatus,
   updateUserRole,
+  adminDeleteUser,
+  adminBanUserByEmail,
   fetchAdminListings,
   adminDeleteListing,
   adminUpdateListing,
@@ -110,6 +112,8 @@ export default function AdminPanel() {
 
   // Users
   const [users, setUsers] = useState([]);
+  const [banEmail, setBanEmail] = useState("");
+  const [banLoading, setBanLoading] = useState(false);
 
   // Posts
   const [activePostTab, setActivePostTab] = useState("listings");
@@ -196,6 +200,33 @@ export default function AdminPanel() {
       setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
     } catch (err) {
       setActionError(err.message);
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm("Permanently delete this user and all their content? This cannot be undone.")) return;
+    setActionError("");
+    try {
+      await adminDeleteUser(userId, token);
+      setUsers((prev) => prev.filter((u) => u.id !== userId));
+    } catch (err) {
+      setActionError(err.message);
+    }
+  };
+
+  const handleBanByEmail = async (e) => {
+    e.preventDefault();
+    if (!banEmail.trim()) return;
+    setBanLoading(true);
+    setActionError("");
+    try {
+      const updated = await adminBanUserByEmail(banEmail.trim(), token);
+      setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+      setBanEmail("");
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setBanLoading(false);
     }
   };
 
@@ -402,6 +433,19 @@ export default function AdminPanel() {
       {/* ── Users Tab ── */}
       {!loading && activeTab === "users" && (
         <div className="admin-users">
+          <form className="ban-by-email-form" onSubmit={handleBanByEmail}>
+            <input
+              type="email"
+              className="modal-input ban-email-input"
+              placeholder="Ban user by email…"
+              value={banEmail}
+              onChange={(e) => setBanEmail(e.target.value)}
+            />
+            <button type="submit" className="action-btn delete-btn" disabled={banLoading}>
+              {banLoading ? "Banning…" : "Ban by Email"}
+            </button>
+          </form>
+
           <table className="admin-table">
             <thead>
               <tr>
@@ -411,6 +455,7 @@ export default function AdminPanel() {
                 <th>Listings</th>
                 <th>Status</th>
                 <th>Role</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -442,11 +487,19 @@ export default function AdminPanel() {
                       ))}
                     </select>
                   </td>
+                  <td className="action-cell">
+                    <button
+                      className="action-btn delete-btn"
+                      onClick={() => handleDeleteUser(user.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               ))}
               {users.length === 0 && (
                 <tr>
-                  <td colSpan="6" className="admin-empty">No users found.</td>
+                  <td colSpan="7" className="admin-empty">No users found.</td>
                 </tr>
               )}
             </tbody>
