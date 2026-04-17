@@ -8,6 +8,7 @@ import com.campushub.backend.models.user.User;
 import com.campushub.backend.repositories.user.UserRepository;
 import com.campushub.backend.services.authentication.EmailVerificationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -41,9 +43,24 @@ public class UserService {
     EmailVerificationService emailVerificationService;
 
     public User createUser(User user) {
+        System.out.println("[DEBUG][UserService] createUser() — attempting registration for email='" + user.getEmail() + "', username='" + user.getUsername() + "'");
+
         if (userRepository.existsByEmail(user.getEmail())) {
-            throw new EmailAlreadyExistsException("Email already exists");
+            System.out.println("[DEBUG][UserService] createUser() — email already exists: " + user.getEmail());
+            throw new EmailAlreadyExistsException("Email already exists: " + user.getEmail());
         }
+
+        if (userRepository.existsByUsername(user.getUsername())) {
+            System.out.println("[DEBUG][UserService] createUser() — username already taken: " + user.getUsername());
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "This username is already taken. Please choose a different username.");
+        }
+
+        if (user.getPhoneNumber() != null && !user.getPhoneNumber().isBlank()
+                && userRepository.existsByPhoneNumber(user.getPhoneNumber())) {
+            System.out.println("[DEBUG][UserService] createUser() — phone number already registered: " + user.getPhoneNumber());
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "This phone number is already registered. Please use a different phone number.");
+        }
+
         user.setStatus(UserStatus.PENDING);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         String rawVerificationToken = rotateEmailVerificationToken(user);
@@ -51,35 +68,46 @@ public class UserService {
         Cart cart = new Cart();
         cart.setUser(user);
         user.setCart(cart);
+        System.out.println("[DEBUG][UserService] createUser() — saving new user to DB");
         User createdUser = userRepository.save(user);
+        System.out.println("[DEBUG][UserService] createUser() — user saved, id=" + createdUser.getId() + "; sending verification email");
         emailVerificationService.sendVerificationEmail(createdUser, rawVerificationToken);
+        System.out.println("[DEBUG][UserService] createUser() — registration complete for email='" + createdUser.getEmail() + "'");
         return createdUser;
     }
 
     @Transactional
     public User verifyEmail(String email, String token) {
+        System.out.println("[DEBUG][UserService] verifyEmail() — verifying email='" + email + "'");
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+                .orElseThrow(() -> {
+                    System.out.println("[DEBUG][UserService] verifyEmail() — no user found for email='" + email + "'");
+                    return new UserNotFoundException("No account found with email: " + email + ". Please check the email address and try again.");
+                });
 
         if (user.getStatus() == UserStatus.ACTIVE) {
-            throw new IllegalArgumentException("Email is already verified");
+            System.out.println("[DEBUG][UserService] verifyEmail() — email already verified for: " + email);
+            throw new IllegalArgumentException("This email address is already verified. You can log in directly.");
         }
 
         boolean tokenMatches = isTokenMatch(token, user.getEmailVerificationToken());
         boolean tokenNotExpired = user.getEmailVerificationExpiresAt() != null
                 && user.getEmailVerificationExpiresAt().isAfter(LocalDateTime.now());
 
+        System.out.println("[DEBUG][UserService] verifyEmail() — tokenMatches=" + tokenMatches + ", tokenNotExpired=" + tokenNotExpired);
+
         if (!tokenMatches) {
-            throw new IllegalArgumentException("Verification token is invalid");
+            throw new IllegalArgumentException("The verification code you entered is incorrect. Please check your email and try again.");
         }
 
         if (!tokenNotExpired) {
-            throw new IllegalArgumentException("Verification token has expired");
+            throw new IllegalArgumentException("Your verification code has expired (codes are valid for 1 hour). Please request a new verification email.");
         }
         user.setStatus(UserStatus.ACTIVE);
         user.setEmailVerifiedAt(LocalDateTime.now());
         user.setEmailVerificationToken(null);
         user.setEmailVerificationExpiresAt(null);
+        System.out.println("[DEBUG][UserService] verifyEmail() — email verified successfully for: " + email);
         return userRepository.save(user);
     }
 
