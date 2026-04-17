@@ -292,7 +292,15 @@ public enum Features implements Feature {
 
     @Label("ADMIN - UpdatePost")
     @EnabledByDefault
-    ADMIN_UPDATE_POST;
+    ADMIN_UPDATE_POST,
+
+    @Label("ADMIN - DeleteUser")
+    @EnabledByDefault
+    ADMIN_DELETE_USER,
+
+    @Label("ADMIN - BanUserByEmail")
+    @EnabledByDefault
+    ADMIN_BAN_USER_BY_EMAIL;
 
     public boolean isActive(){
         return FeatureContext.getFeatureManager().isActive(this);

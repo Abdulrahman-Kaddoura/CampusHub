@@ -81,6 +81,25 @@ public class AdminService {
     }
 
     @Transactional
+    public void deleteUser(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
+        // Null out buyer references to avoid FK violation on listings purchased by this user
+        List<Listing> purchased = listingRepository.findByBuyerId(userId);
+        purchased.forEach(l -> l.setBuyer(null));
+        listingRepository.saveAll(purchased);
+        userRepository.delete(user);
+    }
+
+    @Transactional
+    public AdminUserDTO banUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("No user found with email: " + email));
+        user.setStatus(UserStatus.BANNED);
+        return toAdminUserDTO(userRepository.save(user));
+    }
+
+    @Transactional
     public AdminUserDTO updateUserStatus(UUID userId, UserStatus newStatus) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));

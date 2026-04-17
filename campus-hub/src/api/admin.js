@@ -44,6 +44,29 @@ export const updateUserRole = async (userId, role, token) => {
   return parseApiResponse(response, "Failed to update user role");
 };
 
+export const adminDeleteUser = async (userId, token) => {
+  const response = await fetch(buildApiUrl(`${BASE_PATH}/users/${userId}`), {
+    method: "DELETE",
+    headers: buildJsonHeaders(token),
+    credentials: "include",
+  });
+  if (!response.ok && response.status !== 204) {
+    let msg = "Failed to delete user";
+    try { msg = (await response.json()).message || msg; } catch (_) {}
+    throw new Error(msg);
+  }
+};
+
+export const adminBanUserByEmail = async (email, token) => {
+  const response = await fetch(buildApiUrl(`${BASE_PATH}/users/ban-by-email`), {
+    method: "PATCH",
+    headers: buildJsonHeaders(token),
+    credentials: "include",
+    body: JSON.stringify({ email }),
+  });
+  return parseApiResponse(response, "Failed to ban user");
+};
+
 // ─── Posts: Listings ─────────────────────────────────────────────────────────
 
 export const fetchAdminListings = async (token) => {
@@ -62,8 +85,9 @@ export const adminDeleteListing = async (listingId, token) => {
     credentials: "include",
   });
   if (!response.ok && response.status !== 204) {
-    const text = await response.text();
-    throw new Error(text || "Failed to delete listing");
+    let msg = "Failed to delete listing";
+    try { msg = (await response.json()).message || msg; } catch (_) {}
+    throw new Error(msg);
   }
 };
 
@@ -95,8 +119,9 @@ export const adminDeleteDorm = async (dormId, token) => {
     credentials: "include",
   });
   if (!response.ok && response.status !== 204) {
-    const text = await response.text();
-    throw new Error(text || "Failed to delete housing post");
+    let msg = "Failed to delete housing post";
+    try { msg = (await response.json()).message || msg; } catch (_) {}
+    throw new Error(msg);
   }
 };
 
@@ -128,8 +153,9 @@ export const adminDeleteTutoring = async (tutoringId, token) => {
     credentials: "include",
   });
   if (!response.ok && response.status !== 204) {
-    const text = await response.text();
-    throw new Error(text || "Failed to delete tutoring post");
+    let msg = "Failed to delete tutoring post";
+    try { msg = (await response.json()).message || msg; } catch (_) {}
+    throw new Error(msg);
   }
 };
 
@@ -161,8 +187,9 @@ export const adminDeleteCourseExchange = async (courseExchangeId, token) => {
     credentials: "include",
   });
   if (!response.ok && response.status !== 204) {
-    const text = await response.text();
-    throw new Error(text || "Failed to delete course exchange post");
+    let msg = "Failed to delete course exchange post";
+    try { msg = (await response.json()).message || msg; } catch (_) {}
+    throw new Error(msg);
   }
 };
 

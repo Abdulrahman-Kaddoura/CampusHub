@@ -59,6 +59,25 @@ public class AdminController {
         return ResponseEntity.ok(adminService.updateUserStatus(userId, dto.getStatus()));
     }
 
+    @DeleteMapping("/users/{userId}")
+    @Operation(summary = "Permanently delete a user and all their content")
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID userId) {
+        if (!featureManager.isActive(Features.ADMIN_DELETE_USER)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        adminService.deleteUser(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/users/ban-by-email")
+    @Operation(summary = "Ban a user by email address")
+    public ResponseEntity<AdminUserDTO> banUserByEmail(@Valid @RequestBody BanUserByEmailDTO dto) {
+        if (!featureManager.isActive(Features.ADMIN_BAN_USER_BY_EMAIL)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return ResponseEntity.ok(adminService.banUserByEmail(dto.getEmail()));
+    }
+
     @PatchMapping("/users/{userId}/role")
     @Operation(summary = "Update a user's role (STUDENT, ADMIN)")
     public ResponseEntity<AdminUserDTO> updateUserRole(

@@ -1,6 +1,7 @@
 package com.campushub.backend.models.listings;
 
 import com.campushub.backend.enums.listings.ListingStatus;
+import com.campushub.backend.models.cart.CartItem;
 import com.campushub.backend.models.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -57,6 +58,9 @@ public class Listing {
 
     @OneToMany(mappedBy = "listing", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ListingImage> listingImages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "listing", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CartItem> cartItems = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
