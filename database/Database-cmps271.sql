@@ -117,6 +117,19 @@ CREATE TABLE IF NOT EXISTS course_exchange_posts (
   CONSTRAINT fk_course_exchange_posts_user FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
+CREATE TABLE IF NOT EXISTS messages (
+  message_id   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  sender_id    UUID NOT NULL,
+  recipient_id UUID NOT NULL,
+  content      VARCHAR(2000) NOT NULL,
+  message_type VARCHAR(20)   NOT NULL DEFAULT 'TEXT',
+  latitude     DOUBLE PRECISION,
+  longitude    DOUBLE PRECISION,
+  sent_at      TIMESTAMP     NOT NULL,
+  CONSTRAINT fk_messages_sender    FOREIGN KEY (sender_id)    REFERENCES users(user_id),
+  CONSTRAINT fk_messages_recipient FOREIGN KEY (recipient_id) REFERENCES users(user_id)
+);
+
 -- Togglz feature flag state table (used by JDBCStateRepository, table name configured in TogglzConfig.java)
 CREATE TABLE IF NOT EXISTS feature_status (
   feature_name VARCHAR(100) PRIMARY KEY,
