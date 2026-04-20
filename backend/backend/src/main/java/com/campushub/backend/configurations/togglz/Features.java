@@ -68,6 +68,10 @@ public enum Features implements Feature {
     @EnabledByDefault
     DELETE_LISTING,
 
+    @Label("LISTING - UpdateListing")
+    @EnabledByDefault
+    UPDATE_LISTING,
+
     @Label("LISTING - AiSearchListings")
     @EnabledByDefault
     AI_SEARCH_LISTINGS,
@@ -148,6 +152,10 @@ public enum Features implements Feature {
     @EnabledByDefault
     DELETE_DORM,
 
+    @Label("DORM - UpdateDorm")
+    @EnabledByDefault
+    UPDATE_DORM,
+
     //-----------------------
     // Tutoring APIs
     //-----------------------
@@ -185,6 +193,10 @@ public enum Features implements Feature {
     @Label("COURSEEXCHANGE - DeleteCourseExchange")
     @EnabledByDefault
     DELETE_COURSE_EXCHANGE,
+
+    @Label("COURSEEXCHANGE - UpdateCourseExchange")
+    @EnabledByDefault
+    UPDATE_COURSE_EXCHANGE,
 
 
     //-----------------------

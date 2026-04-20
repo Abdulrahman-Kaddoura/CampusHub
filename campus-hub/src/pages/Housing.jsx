@@ -90,8 +90,8 @@ function Housing() {
   const [search, setSearch] = useState("");
   const [selectedType, setSelectedType] = useState("All Types");
   const [selectedArea, setSelectedArea] = useState("All Areas");
-  const [minBudget, setMinBudget] = useState(400);
-  const [maxBudget, setMaxBudget] = useState(1600);
+  const [minBudget, setMinBudget] = useState("");
+  const [maxBudget, setMaxBudget] = useState("");
   const [showContactedOnly, setShowContactedOnly] = useState(false);
   const [showSavedOnly, setShowSavedOnly] = useState(false);
   const [contactedListingIds, setContactedListingIds] = useState(() =>
@@ -172,8 +172,8 @@ function Housing() {
     return ["All Areas", ...new Set([...AUB_AREAS, ...dynamicAreas])];
   }, [listings]);
 
-  const normalizedMinBudget = Math.min(minBudget, maxBudget);
-  const normalizedMaxBudget = Math.max(minBudget, maxBudget);
+  const normalizedMinBudget = minBudget !== "" && maxBudget !== "" ? Math.min(Number(minBudget), Number(maxBudget)) : minBudget !== "" ? Number(minBudget) : null;
+  const normalizedMaxBudget = minBudget !== "" && maxBudget !== "" ? Math.max(Number(minBudget), Number(maxBudget)) : maxBudget !== "" ? Number(maxBudget) : null;
 
   const getListingId = (listing) => String(listing.dormId ?? listing.title);
 
@@ -208,7 +208,9 @@ function Housing() {
         selectedArea === "All Areas" ||
         location.toLowerCase().includes(selectedArea.toLowerCase());
       const rent = Number(item.monthlyRent || 0);
-      const matchesBudget = rent >= normalizedMinBudget && rent <= normalizedMaxBudget;
+      const matchesBudget =
+        (normalizedMinBudget === null || rent >= normalizedMinBudget) &&
+        (normalizedMaxBudget === null || rent <= normalizedMaxBudget);
       const matchesContacted =
         !showContactedOnly || contactedListingIds.includes(getListingId(item));
       const matchesSaved =
@@ -454,8 +456,8 @@ function Housing() {
             type="button"
             className="clear-budget"
             onClick={() => {
-              setMinBudget(400);
-              setMaxBudget(1600);
+              setMinBudget("");
+              setMaxBudget("");
               setSelectedArea("All Areas");
               setSelectedType("All Types");
             }}
@@ -464,10 +466,15 @@ function Housing() {
           </button>
         </div>
 
-        <p className="budget-summary">
-          Showing listings between <strong>${normalizedMinBudget}</strong> and
-          <strong> ${normalizedMaxBudget}</strong> / month.
-        </p>
+        {(normalizedMinBudget !== null || normalizedMaxBudget !== null) && (
+          <p className="budget-summary">
+            {normalizedMinBudget !== null && normalizedMaxBudget !== null
+              ? <>Showing listings between <strong>${normalizedMinBudget}</strong> and <strong>${normalizedMaxBudget}</strong> / month.</>
+              : normalizedMinBudget !== null
+              ? <>Showing listings from <strong>${normalizedMinBudget}</strong> / month.</>
+              : <>Showing listings up to <strong>${normalizedMaxBudget}</strong> / month.</>}
+          </p>
+        )}
 
         <label className="saved-only-toggle" htmlFor="contacted-listings-toggle">
           <input

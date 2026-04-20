@@ -5,11 +5,26 @@ import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { FEATURE_FLAGS } from "../config/features";
 
+function useDarkMode() {
+  const [isDark, setIsDark] = useState(() => {
+    const stored = localStorage.getItem("campushub-dark-mode");
+    return stored === "true";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
+    localStorage.setItem("campushub-dark-mode", String(isDark));
+  }, [isDark]);
+
+  return [isDark, setIsDark];
+}
+
 function NavBar() {
   const { currentUser, isAuthenticated, logout } = useAuth();
   const isAdmin = currentUser?.role === "ADMIN";
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isDark, setIsDark] = useDarkMode();
 
   const displayName = useMemo(() => {
     if (!isAuthenticated || !currentUser) return "Guest";
@@ -51,6 +66,15 @@ function NavBar() {
         <Link to="/" className="nav-logo-link" onClick={closeMenu}>
           <img className="logo" src={logo} alt="CampusHub" />
         </Link>
+
+        <button
+          type="button"
+          className="dark-mode-toggle"
+          aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+          onClick={() => setIsDark((d) => !d)}
+        >
+          {isDark ? "☀" : "☾"}
+        </button>
 
         <button
           type="button"

@@ -319,6 +319,30 @@ public class ListingController {
         }
     }
 
+    @PutMapping("/update-listing/{listingId}")
+    @Operation(
+            summary = "Update Listing",
+            description = "Updates title, description, and price of a listing owned by the authenticated user."
+    )
+    public ResponseEntity<ListingResponseDTO> updateListing(
+            @PathVariable UUID listingId,
+            @Valid @RequestBody ListingRequestDTO listingRequestDTO) {
+
+        if (!featureManager.isActive(UPDATE_LISTING)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        User user = userService.getAuthenticatedUser();
+        Listing listing = listingService.updateListing(
+                listingId, user.getId(),
+                listingRequestDTO.getTitle(),
+                listingRequestDTO.getDescription(),
+                listingRequestDTO.getPrice()
+        );
+
+        return ResponseEntity.ok(toListingResponseDTO(listing));
+    }
+
     @DeleteMapping("/delete-listing/{listingId}")
     @Operation(
             summary = "Delete Listing",

@@ -1,5 +1,6 @@
 package com.campushub.backend.services.dorm;
 
+import com.campushub.backend.dtos.dorm.DormRequestDTO;
 import com.campushub.backend.models.dorm.Dorm;
 import com.campushub.backend.repositories.dorm.DormRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,25 @@ public class DormService {
 
     public List<Dorm> getAllDormsByUser(UUID userId) {
         return dormRepository.findByUserId(userId);
+    }
+
+    @Transactional
+    public Dorm updateDorm(UUID dormId, UUID actingUserId, DormRequestDTO dto) {
+        Dorm dorm = dormRepository.findById(dormId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Dorm not found with id: " + dormId));
+
+        if (!dorm.getUser().getId().equals(actingUserId)) {
+            throw new AccessDeniedException("You can only update your own dorm listings");
+        }
+
+        dorm.setTitle(dto.getTitle());
+        dorm.setDescription(dto.getDescription());
+        dorm.setLocation(dto.getLocation());
+        dorm.setRoomType(dto.getRoomType());
+        dorm.setMonthlyRent(dto.getMonthlyRent());
+        dorm.setAvailableFrom(dto.getAvailableFrom());
+
+        return dormRepository.save(dorm);
     }
 
     @Transactional

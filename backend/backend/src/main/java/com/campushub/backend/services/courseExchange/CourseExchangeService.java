@@ -1,5 +1,6 @@
 package com.campushub.backend.services.courseExchange;
 
+import com.campushub.backend.dtos.courseExchange.CourseExchangeRequestDTO;
 import com.campushub.backend.models.courseExchange.CourseExchange;
 import com.campushub.backend.repositories.courseExchange.CourseExchangeRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,24 @@ public class CourseExchangeService {
 
     public List<CourseExchange> getAllCourseExchangesByUser(UUID userId) {
         return courseExchangeRepository.findByUserId(userId);
+    }
+
+    @Transactional
+    public CourseExchange updateCourseExchange(UUID courseExchangeId, UUID actingUserId, CourseExchangeRequestDTO dto) {
+        CourseExchange courseExchange = courseExchangeRepository.findById(courseExchangeId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course exchange post not found with id: " + courseExchangeId));
+
+        if (!courseExchange.getUser().getId().equals(actingUserId)) {
+            throw new AccessDeniedException("You can only update your own course exchange posts");
+        }
+
+        courseExchange.setCurrentCourse(dto.getCurrentCourse());
+        courseExchange.setDesiredCourse(dto.getDesiredCourse());
+        courseExchange.setSection(dto.getSection());
+        courseExchange.setStatus(dto.getStatus());
+        courseExchange.setNotes(dto.getNotes());
+
+        return courseExchangeRepository.save(courseExchange);
     }
 
     @Transactional

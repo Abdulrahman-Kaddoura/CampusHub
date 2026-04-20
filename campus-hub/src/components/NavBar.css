@@ -41,6 +41,25 @@ body.menu-open {
   display: block;
 }
 
+.dark-mode-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  color: #2e2a33;
+}
+
+.dark-mode-toggle:hover {
+  background: #f0f0f0;
+}
+
 .nav-toggle {
   display: none;
   flex-direction: column;

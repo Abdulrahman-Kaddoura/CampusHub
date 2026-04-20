@@ -81,6 +81,23 @@ public class ListingService {
     }
 
     @Transactional
+    public Listing updateListing(UUID listingId, UUID actingUserId, String title, String description,
+                                  java.math.BigDecimal price) {
+        Listing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));
+
+        if (!listing.getUser().getId().equals(actingUserId)) {
+            throw new AccessDeniedException("You can only update your own listings");
+        }
+
+        listing.setTitle(title);
+        listing.setDescription(description);
+        listing.setPrice(price);
+
+        return listingRepository.save(listing);
+    }
+
+    @Transactional
     public Listing deleteListingByIdForUser(UUID listingId, UUID actingUserId) {
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new ListingNotFoundException("Listing not found with id: " + listingId));

@@ -33,6 +33,27 @@ export const buyListing = async (listingId, token) => {
   return parseApiResponse(response, "Failed to mark listing as purchased");
 };
 
+export const fetchListingsByUser = async (userId, token) => {
+  const response = await fetch(buildApiUrl(`${BASE_PATH}/get-listings-by-user/${userId}`), {
+    method: "GET",
+    headers: buildJsonHeaders(token),
+    credentials: "include",
+  });
+
+  return parseApiResponse(response, "Failed to fetch your listings");
+};
+
+export const updateListing = async (listingId, payload, token) => {
+  const response = await fetch(buildApiUrl(`${BASE_PATH}/update-listing/${listingId}`), {
+    method: "PUT",
+    headers: buildJsonHeaders(token),
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+
+  return parseApiResponse(response, "Failed to update listing");
+};
+
 export const deleteListing = async (listingId, token) => {
   const response = await fetch(buildApiUrl(`${BASE_PATH}/delete-listing/${listingId}`), {
     method: "DELETE",
