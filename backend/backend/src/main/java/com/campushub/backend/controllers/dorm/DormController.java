@@ -70,6 +70,7 @@ public class DormController {
         }
 
         Dorm dorm = modelMapper.map(dormRequestDTO, Dorm.class);
+        dorm.setDormId(null);
         dorm.setUser(user);
 
         Dorm createdDorm = dormService.createDorm(dorm);
@@ -118,6 +119,24 @@ public class DormController {
                 .toList();
 
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/update-dorm/{dormId}")
+    @Operation(summary = "Update dorm listing", description = "Updates a dorm listing owned by the authenticated user.")
+    public ResponseEntity<DormResponseDTO> updateDorm(@PathVariable UUID dormId,
+                                                       @Valid @RequestBody DormRequestDTO dormRequestDTO) {
+        if (!featureManager.isActive(UPDATE_DORM)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        User user = userService.getAuthenticatedUser();
+        Dorm updatedDorm = dormService.updateDorm(dormId, user.getId(), dormRequestDTO);
+
+        DormResponseDTO responseDTO = modelMapper.map(updatedDorm, DormResponseDTO.class);
+        responseDTO.setDormId(updatedDorm.getDormId());
+        responseDTO.setUserId(updatedDorm.getUser().getId());
+
+        return ResponseEntity.ok(responseDTO);
     }
 
     @DeleteMapping("/delete-dorm/{dormId}")

@@ -55,6 +55,7 @@ public class CourseExchangeController {
         }
 
         CourseExchange courseExchange = modelMapper.map(requestDTO, CourseExchange.class);
+        courseExchange.setCourseExchangeId(null);
         courseExchange.setUser(user);
 
         CourseExchange createdCourseExchange = courseExchangeService.createCourseExchange(courseExchange);
@@ -103,6 +104,24 @@ public class CourseExchangeController {
                 .toList();
 
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/update-course-exchange/{courseExchangeId}")
+    @Operation(summary = "Update course exchange post", description = "Updates a course exchange post owned by the authenticated user.")
+    public ResponseEntity<CourseExchangeResponseDTO> updateCourseExchange(@PathVariable UUID courseExchangeId,
+                                                                           @Valid @RequestBody CourseExchangeRequestDTO requestDTO) {
+        if (!featureManager.isActive(UPDATE_COURSE_EXCHANGE)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        User user = userService.getAuthenticatedUser();
+        CourseExchange updatedCourseExchange = courseExchangeService.updateCourseExchange(courseExchangeId, user.getId(), requestDTO);
+
+        CourseExchangeResponseDTO responseDTO = modelMapper.map(updatedCourseExchange, CourseExchangeResponseDTO.class);
+        responseDTO.setCourseExchangeId(updatedCourseExchange.getCourseExchangeId());
+        responseDTO.setUserId(updatedCourseExchange.getUser().getId());
+
+        return ResponseEntity.ok(responseDTO);
     }
 
     @DeleteMapping("/delete-course-exchange/{courseExchangeId}")
