@@ -260,3 +260,107 @@
     font-size: 1.5rem;
   }
 }
+
+[data-theme="dark"] .housing-page {
+  background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
+}
+
+[data-theme="dark"] .housing-header h1 {
+  color: #e6edf3;
+}
+
+[data-theme="dark"] .housing-header p,
+[data-theme="dark"] .housing-eyebrow {
+  color: #8b949e;
+}
+
+[data-theme="dark"] .neighborhood-chip {
+  background: #21262d;
+  border-color: #30363d;
+  color: #c9d1d9;
+}
+
+[data-theme="dark"] .neighborhood-chip:hover,
+[data-theme="dark"] .neighborhood-chip.active {
+  background: #1c2d40;
+  border-color: #58a6ff;
+  color: #58a6ff;
+}
+
+[data-theme="dark"] .housing-metrics article {
+  background: #161b22;
+  border-color: #30363d;
+}
+
+[data-theme="dark"] .housing-metrics strong {
+  color: #58a6ff;
+}
+
+[data-theme="dark"] .housing-metrics span {
+  color: #8b949e;
+}
+
+[data-theme="dark"] .housing-filters {
+  background: #161b22;
+  border-color: #30363d;
+}
+
+[data-theme="dark"] .housing-filters input[type="text"],
+[data-theme="dark"] .housing-filters input[type="number"],
+[data-theme="dark"] .housing-filters input[type="date"],
+[data-theme="dark"] .housing-filters select,
+[data-theme="dark"] .budget-range input {
+  background: #0d1117;
+  border-color: #30363d;
+  color: #e6edf3;
+}
+
+[data-theme="dark"] .budget-range label {
+  color: #c9d1d9;
+}
+
+[data-theme="dark"] .budget-summary {
+  color: #8b949e;
+}
+
+[data-theme="dark"] .clear-budget {
+  background: #21262d;
+  color: #c9d1d9;
+}
+
+[data-theme="dark"] .housing-card {
+  background: #161b22;
+  border-color: #30363d;
+}
+
+[data-theme="dark"] .housing-card h2 {
+  color: #e6edf3;
+}
+
+[data-theme="dark"] .housing-card p {
+  color: #c9d1d9;
+}
+
+[data-theme="dark"] .featured-badge {
+  background: #1c2d40;
+  border-color: #30363d;
+  color: #58a6ff;
+}
+
+[data-theme="dark"] .housing-location {
+  background: #1c2d40;
+  color: #58a6ff;
+}
+
+[data-theme="dark"] .card-actions-row .is-secondary {
+  background: #21262d;
+  color: #c9d1d9;
+}
+
+[data-theme="dark"] .saved-only-toggle {
+  color: #c9d1d9;
+}
+
+[data-theme="dark"] .empty-state {
+  color: #8b949e;
+}

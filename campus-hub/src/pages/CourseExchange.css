@@ -184,3 +184,75 @@
     font-size: 1.5rem;
   }
 }
+
+[data-theme="dark"] .course-exchange-page {
+  background: #0d1117;
+}
+
+[data-theme="dark"] .course-exchange-header h1 {
+  color: #e6edf3;
+}
+
+[data-theme="dark"] .course-exchange-header p {
+  color: #8b949e;
+}
+
+[data-theme="dark"] .course-exchange-filters {
+  background: #161b22;
+  border-color: #30363d;
+}
+
+[data-theme="dark"] .course-exchange-filters input,
+[data-theme="dark"] .course-exchange-filters select {
+  background: #0d1117;
+  border-color: #30363d;
+  color: #e6edf3;
+}
+
+[data-theme="dark"] .course-exchange-card {
+  background: #161b22;
+  border-color: #30363d;
+}
+
+[data-theme="dark"] .course-exchange-card h2 {
+  color: #e6edf3;
+}
+
+[data-theme="dark"] .course-exchange-card p {
+  color: #c9d1d9;
+}
+
+[data-theme="dark"] .student-name {
+  color: #58a6ff;
+}
+
+[data-theme="dark"] .status-pill.open {
+  color: #4ade80;
+  background: #052e16;
+  border-color: #166534;
+}
+
+[data-theme="dark"] .status-pill.matched {
+  color: #fbbf24;
+  background: #431407;
+  border-color: #92400e;
+}
+
+[data-theme="dark"] .status-pill.closed {
+  color: #f87171;
+  background: #450a0a;
+  border-color: #7f1d1d;
+}
+
+[data-theme="dark"] .card-actions-row .is-secondary {
+  background: #21262d;
+  color: #c9d1d9;
+}
+
+[data-theme="dark"] .saved-only-toggle {
+  color: #c9d1d9;
+}
+
+[data-theme="dark"] .empty-state {
+  color: #8b949e;
+}

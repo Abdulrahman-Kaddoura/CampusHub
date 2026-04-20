@@ -68,6 +68,9 @@ public class TutoringController {
         }
 
         Tutoring tutoring = modelMapper.map(requestDTO, Tutoring.class);
+        // ModelMapper maps requestDTO.userId → tutoringId; reset it so JPA generates a fresh UUID
+        tutoring.setTutoringId(null);
+        log.debug("[DEBUG] createTutoring: tutoringId reset to null to prevent ModelMapper userId→id leak; user set to id={}", user.getId());
         tutoring.setUser(user);
 
         Tutoring createdTutoring = tutoringService.createTutoring(tutoring);
