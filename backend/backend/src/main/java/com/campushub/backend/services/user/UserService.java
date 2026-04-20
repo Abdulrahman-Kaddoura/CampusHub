@@ -211,7 +211,7 @@ public class UserService {
         User user = getAuthenticatedUser();
         user.setFirstName(firstName);
         user.setLastName(lastName);
-        user.setPhoneNumber(phoneNumber);
+        user.setPhoneNumber(phoneNumber == null || phoneNumber.isBlank() ? null : phoneNumber);
         return userRepository.save(user);
     }
 
