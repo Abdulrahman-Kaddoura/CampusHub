@@ -200,6 +200,13 @@ public enum Features implements Feature {
 
 
     //-----------------------
+    // Payment APIs
+    //-----------------------
+    @Label("PAYMENT - StripeReceiptEmail")
+    @EnabledByDefault
+    STRIPE_RECEIPT_EMAIL,
+
+    //-----------------------
     // Cart APIs
     //-----------------------
     @Label("CART - GetCartByCartId")

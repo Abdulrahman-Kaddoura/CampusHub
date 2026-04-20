@@ -9,6 +9,7 @@ import com.campushub.backend.models.listings.Listing;
 import com.campushub.backend.models.user.User;
 import com.campushub.backend.repositories.listing.ListingRepository;
 import com.campushub.backend.repositories.user.UserRepository;
+import com.campushub.backend.services.payment.StripeReceiptEmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -26,6 +27,7 @@ public class ListingService {
 
     private final ListingRepository listingRepository;
     private final UserRepository userRepository;
+    private final StripeReceiptEmailService stripeReceiptEmailService;
 
     @Transactional
     public Listing createListing(Listing listing) throws Exception {
@@ -134,6 +136,8 @@ public class ListingService {
         buyer.addPurchase(listing);
         listing.setListingStatus(ListingStatus.SOLD);
 
-        return listingRepository.save(listing);
+        Listing saved = listingRepository.save(listing);
+        stripeReceiptEmailService.sendReceiptEmail(buyer, saved);
+        return saved;
     }
 }
