@@ -12,6 +12,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +31,8 @@ import static com.campushub.backend.configurations.togglz.Features.*;
 @RequiredArgsConstructor
 public class CourseExchangeController {
 
+    private static final Logger log = LoggerFactory.getLogger(CourseExchangeController.class);
+
     private final CourseExchangeService courseExchangeService;
     private final UserService userService;
     private final ModelMapper modelMapper;
@@ -38,7 +42,10 @@ public class CourseExchangeController {
     @PostMapping("/create-course-exchange")
     @Operation(summary = "Create course exchange post", description = "Creates a course exchange post for the authenticated user.")
     public ResponseEntity<CourseExchangeResponseDTO> createCourseExchange(@Valid @RequestBody CourseExchangeRequestDTO requestDTO) {
-        if (!featureManager.isActive(CREATE_COURSE_EXCHANGE)) {
+        boolean createCourseExchangeEnabled = featureManager.isActive(CREATE_COURSE_EXCHANGE);
+        log.debug("[DEBUG] createCourseExchange: CREATE_COURSE_EXCHANGE feature toggle active = {}", createCourseExchangeEnabled);
+        if (!createCourseExchangeEnabled) {
+            log.debug("[DEBUG] createCourseExchange: returning 403 because CREATE_COURSE_EXCHANGE feature toggle is disabled");
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
@@ -50,12 +57,17 @@ public class CourseExchangeController {
 
         userService.requireNotSuspended();
         User user = userService.getAuthenticatedUser();
+        log.debug("[DEBUG] createCourseExchange: authenticated user id = {}", user.getId());
+        log.debug("[DEBUG] createCourseExchange: request userId = {}", requestDTO.getUserId());
         if (!requestDTO.getUserId().equals(user.getId())) {
+            log.debug("[DEBUG] createCourseExchange: returning 403 because request userId '{}' does not match authenticated user id '{}'",
+                    requestDTO.getUserId(), user.getId());
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only create course exchange posts for your own account");
         }
 
         CourseExchange courseExchange = modelMapper.map(requestDTO, CourseExchange.class);
         courseExchange.setCourseExchangeId(null);
+        log.debug("[DEBUG] createCourseExchange: courseExchangeId reset to null; user set to id={}", user.getId());
         courseExchange.setUser(user);
 
         CourseExchange createdCourseExchange = courseExchangeService.createCourseExchange(courseExchange);
