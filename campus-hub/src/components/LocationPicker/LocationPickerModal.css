@@ -1,0 +1,108 @@
+.loc-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+.loc-modal {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22);
+  width: 90%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.loc-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid #e1e4e8;
+}
+
+.loc-modal-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111;
+}
+
+.loc-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: #777;
+  cursor: pointer;
+  padding: 0 0.25rem;
+}
+
+.loc-close-btn:hover {
+  color: #111;
+}
+
+.loc-hint {
+  margin: 0.6rem 1.25rem 0.4rem;
+  font-size: 0.8rem;
+  color: #777;
+}
+
+.loc-map-wrap {
+  height: 320px;
+  flex-shrink: 0;
+}
+
+.loc-coords {
+  margin: 0.5rem 1.25rem 0;
+  font-size: 0.78rem;
+  color: #444;
+}
+
+.loc-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding: 0.75rem 1.25rem 1rem;
+}
+
+.loc-btn-cancel {
+  padding: 0.5rem 1.1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #444;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.loc-btn-cancel:hover {
+  background: #f5f5f5;
+}
+
+.loc-btn-confirm {
+  padding: 0.5rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  background: #2f6fff;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.loc-btn-confirm:hover:not(:disabled) {
+  background: #1a4fd6;
+}
+
+.loc-btn-confirm:disabled {
+  background: #c5d4f5;
+  cursor: not-allowed;
+}

@@ -1,5 +1,6 @@
 package com.campushub.backend.dtos.chat;
 
+import com.campushub.backend.enums.chat.MessageType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,5 +16,8 @@ public class ChatMessageResponseDTO {
     private UUID recipientId;
     private String recipientName;
     private String content;
+    private MessageType messageType;
+    private Double latitude;
+    private Double longitude;
     private LocalDateTime sentAt;
 }

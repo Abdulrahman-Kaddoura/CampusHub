@@ -3,6 +3,7 @@ package com.campushub.backend.services.chat;
 import com.campushub.backend.dtos.chat.ChatConversationResponseDTO;
 import com.campushub.backend.dtos.chat.ChatMessageResponseDTO;
 import com.campushub.backend.dtos.chat.ChatUserResponseDTO;
+import com.campushub.backend.enums.chat.MessageType;
 import com.campushub.backend.models.chat.Message;
 import com.campushub.backend.models.user.User;
 import com.campushub.backend.repositories.chat.MessageRepository;
@@ -33,7 +34,7 @@ public class ChatService {
     private UserRepository userRepository;
 
     @Transactional
-    public ChatMessageResponseDTO sendMessage(UUID recipientId, String rawContent) {
+    public ChatMessageResponseDTO sendMessage(UUID recipientId, String rawContent, MessageType messageType, Double latitude, Double longitude) {
         User sender = userService.getAuthenticatedUser();
         if (sender.getId().equals(recipientId)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot message yourself");
@@ -41,15 +42,27 @@ public class ChatService {
 
         User recipient = userService.findById(recipientId);
 
-        String content = rawContent == null ? "" : rawContent.trim();
-        if (content.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Message content must not be blank");
-        }
+        MessageType type = messageType != null ? messageType : MessageType.TEXT;
 
         Message message = new Message();
         message.setSender(sender);
         message.setRecipient(recipient);
-        message.setContent(content);
+        message.setMessageType(type);
+
+        if (type == MessageType.LOCATION) {
+            if (latitude == null || longitude == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Latitude and longitude are required for location messages");
+            }
+            message.setLatitude(latitude);
+            message.setLongitude(longitude);
+            message.setContent("📍 Location");
+        } else {
+            String content = rawContent == null ? "" : rawContent.trim();
+            if (content.isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Message content must not be blank");
+            }
+            message.setContent(content);
+        }
 
         Message created = messageRepository.save(message);
         return toMessageResponse(created);
@@ -109,6 +122,9 @@ public class ChatService {
         response.setRecipientId(message.getRecipient().getId());
         response.setRecipientName(buildDisplayName(message.getRecipient()));
         response.setContent(message.getContent());
+        response.setMessageType(message.getMessageType() != null ? message.getMessageType() : MessageType.TEXT);
+        response.setLatitude(message.getLatitude());
+        response.setLongitude(message.getLongitude());
         response.setSentAt(message.getSentAt());
         return response;
     }

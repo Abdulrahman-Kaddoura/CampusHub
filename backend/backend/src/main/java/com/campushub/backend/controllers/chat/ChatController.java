@@ -28,7 +28,13 @@ public class ChatController {
     @PostMapping("/messages")
     @Operation(summary = "Send message", description = "Sends a chat message from the authenticated user to another user.")
     public ResponseEntity<ChatMessageResponseDTO> sendMessage(@Valid @RequestBody ChatMessageRequestDTO requestDTO) {
-        ChatMessageResponseDTO created = chatService.sendMessage(requestDTO.getRecipientId(), requestDTO.getContent());
+        ChatMessageResponseDTO created = chatService.sendMessage(
+                requestDTO.getRecipientId(),
+                requestDTO.getContent(),
+                requestDTO.getMessageType(),
+                requestDTO.getLatitude(),
+                requestDTO.getLongitude()
+        );
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
