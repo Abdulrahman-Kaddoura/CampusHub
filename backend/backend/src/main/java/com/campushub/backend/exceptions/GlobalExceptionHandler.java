@@ -55,11 +55,11 @@ public class GlobalExceptionHandler {
         System.out.println("[DEBUG][GlobalExceptionHandler] DataIntegrityViolationException: " + ex.getMessage());
         String message = "The operation could not be completed due to a data conflict.";
         String cause = ex.getMessage() != null ? ex.getMessage().toLowerCase() : "";
-        if (cause.contains("username")) {
+        if (cause.contains("key (username)") || cause.contains("users_username_key")) {
             message = "This username is already taken. Please choose a different username.";
-        } else if (cause.contains("phone")) {
+        } else if (cause.contains("key (phone_number)") || cause.contains("users_phone_number_key")) {
             message = "This phone number is already registered. Please use a different phone number.";
-        } else if (cause.contains("email")) {
+        } else if (cause.contains("key (email)") || cause.contains("users_email_key")) {
             message = "An account with this email address already exists.";
         }
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", message));

@@ -57,7 +57,7 @@ export const updateUserProfile = async ({ firstName, lastName, phoneNumber }, to
     method: "PUT",
     headers: buildJsonHeaders(token),
     credentials: "include",
-    body: JSON.stringify({ firstName, lastName, phoneNumber }),
+    body: JSON.stringify({ firstName, lastName, phoneNumber: phoneNumber || null }),
   });
   return parseApiResponse(response, "Failed to update profile");
 };
