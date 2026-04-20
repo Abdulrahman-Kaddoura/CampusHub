@@ -69,8 +69,8 @@ public class StripeCheckoutService {
                                                 .setUnitAmount(amountInCents)
                                                 .setProductData(
                                                         SessionCreateParams.LineItem.PriceData.ProductData.builder()
-                                                                .setName(listing.getTitle() != null ? listing.getTitle() : "CampusHub Listing")
-                                                                .setDescription(listing.getDescription() != null ? listing.getDescription() : "CampusHub marketplace purchase")
+                                                                .setName(listing.getTitle() != null && !listing.getTitle().isBlank() ? listing.getTitle() : "CampusHub Listing")
+                                                                .setDescription(listing.getDescription() != null && !listing.getDescription().isBlank() ? listing.getDescription() : "CampusHub marketplace purchase")
                                                                 .build()
                                                 )
                                                 .build()
@@ -131,8 +131,8 @@ public class StripeCheckoutService {
                                             .setUnitAmount(amountInCents)
                                             .setProductData(
                                                     SessionCreateParams.LineItem.PriceData.ProductData.builder()
-                                                            .setName(listing.getTitle() != null ? listing.getTitle() : "CampusHub Listing")
-                                                            .setDescription(listing.getDescription() != null ? listing.getDescription() : "CampusHub marketplace purchase")
+                                                            .setName(listing.getTitle() != null && !listing.getTitle().isBlank() ? listing.getTitle() : "CampusHub Listing")
+                                                            .setDescription(listing.getDescription() != null && !listing.getDescription().isBlank() ? listing.getDescription() : "CampusHub marketplace purchase")
                                                             .build()
                                             )
                                             .build()
