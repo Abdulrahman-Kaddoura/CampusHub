@@ -1,5 +1,6 @@
 package com.campushub.backend.models.chat;
 
+import com.campushub.backend.enums.chat.MessageType;
 import com.campushub.backend.models.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -31,6 +32,16 @@ public class Message {
 
     @Column(name = "content", nullable = false, length = 2000)
     private String content;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "message_type", nullable = false)
+    private MessageType messageType = MessageType.TEXT;
+
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
 
     @Column(name = "sent_at", nullable = false, updatable = false)
     private LocalDateTime sentAt;
