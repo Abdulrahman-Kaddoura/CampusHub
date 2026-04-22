@@ -67,7 +67,11 @@ public class SecurityConfig {
                                 "/listingImage/download-listing-image/**",
                                 "/api/listingImage/download-listing-image/**",
                                 "/user/profile-picture/**",
-                                "/api/user/profile-picture/**")
+                                "/api/user/profile-picture/**",
+                                "/user/get-user-by-id/**",
+                                "/api/user/get-user-by-id/**",
+                                "/reviews/user/**",
+                                "/api/reviews/user/**")
                         .permitAll()
                         .requestMatchers(HttpMethod.POST, "/listings/create-listing", "/api/listings/create-listing")
                         .permitAll()

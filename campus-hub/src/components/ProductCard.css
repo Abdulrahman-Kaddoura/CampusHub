@@ -179,3 +179,14 @@
   font-size: 0.78rem;
   color: #b91c1c;
 }
+
+.product-card-seller-link {
+  color: #1a1a2e;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 500;
+}
+
+.product-card-seller-link:hover {
+  color: #0d6efd;
+}

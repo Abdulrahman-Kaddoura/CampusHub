@@ -156,3 +156,74 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* Review prompts shown after successful purchase */
+.cart-review-prompts {
+  background: #fffbea;
+  border: 1px solid #f5e6a3;
+  border-radius: 10px;
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cart-review-heading {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #6b4c00;
+  margin: 0 0 0.25rem;
+}
+
+.cart-review-prompt-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.cart-review-prompt-title {
+  font-size: 0.9rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.cart-review-prompt-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.cart-review-btn {
+  padding: 0.35rem 0.85rem;
+  background: #1a1a2e;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cart-review-btn:hover {
+  background: #16213e;
+}
+
+.cart-review-skip {
+  padding: 0.35rem 0.75rem;
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #666;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.cart-review-skip:hover {
+  border-color: #999;
+  color: #333;
+}

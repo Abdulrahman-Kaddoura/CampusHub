@@ -263,3 +263,24 @@
   display: flex;
   gap: 0.5rem;
 }
+
+/* Reviews tab */
+.review-item {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+.review-stars-display {
+  display: flex;
+  gap: 0.1rem;
+}
+
+.profile-star {
+  font-size: 1.1rem;
+  color: #ddd;
+}
+
+.profile-star.filled {
+  color: #f5a623;
+}

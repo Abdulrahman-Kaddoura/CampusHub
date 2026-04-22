@@ -4,6 +4,7 @@ import { deleteProfilePicture, updateUserProfile, uploadProfilePicture } from ".
 import { fetchDormListingsByUser, updateDormListing, deleteDormListing } from "../../api/dorms.jsx";
 import { fetchListingsByUser, updateListing, deleteListing } from "../../api/listings.jsx";
 import { fetchCourseExchangePostsByUser, updateCourseExchangePost, deleteCourseExchangePost } from "../../api/courseExchange.jsx";
+import { getReviewsForUser } from "../../api/reviews.js";
 import Avatar from "../../components/Avatar/Avatar";
 import { useAuth } from "../../context/AuthContext";
 import "./ProfilePage.css";
@@ -28,6 +29,7 @@ function ProfilePage() {
   const [myListings, setMyListings] = useState([]);
   const [myDorms, setMyDorms] = useState([]);
   const [myCourseExchanges, setMyCourseExchanges] = useState([]);
+  const [myReviews, setMyReviews] = useState([]);
   const [postsLoading, setPostsLoading] = useState(false);
   const [postsError, setPostsError] = useState("");
   const [editingPost, setEditingPost] = useState(null);
@@ -50,14 +52,16 @@ function ProfilePage() {
     setPostsLoading(true);
     setPostsError("");
     try {
-      const [listings, dorms, courseExchanges] = await Promise.all([
+      const [listings, dorms, courseExchanges, reviews] = await Promise.all([
         fetchListingsByUser(currentUser.id, token).catch(() => []),
         fetchDormListingsByUser(currentUser.id, token).catch(() => []),
         fetchCourseExchangePostsByUser(currentUser.id, token).catch(() => []),
+        getReviewsForUser(currentUser.id).catch(() => []),
       ]);
       setMyListings(Array.isArray(listings) ? listings : []);
       setMyDorms(Array.isArray(dorms) ? dorms : []);
       setMyCourseExchanges(Array.isArray(courseExchanges) ? courseExchanges : []);
+      setMyReviews(Array.isArray(reviews) ? reviews : []);
     } catch {
       setPostsError("Failed to load your posts.");
     } finally {
@@ -376,6 +380,14 @@ function ProfilePage() {
           >
             Course Exchange ({myCourseExchanges.length})
           </button>
+          <button
+            role="tab"
+            type="button"
+            className={`posts-tab${postsTab === "reviews" ? " active" : ""}`}
+            onClick={() => setPostsTab("reviews")}
+          >
+            Reviews ({myReviews.length})
+          </button>
         </div>
 
         {postsLoading && <p className="posts-empty">Loading your posts...</p>}
@@ -485,6 +497,26 @@ function ProfilePage() {
                     </div>
                   </>
                 )}
+              </article>
+            ))}
+          </div>
+        )}
+        {!postsLoading && postsTab === "reviews" && (
+          <div className="posts-list">
+            {myReviews.length === 0 ? (
+              <p className="posts-empty">You have no reviews yet.</p>
+            ) : myReviews.map((review) => (
+              <article key={review.reviewId} className="post-item review-item">
+                <div className="review-stars-display">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <span key={s} className={`profile-star${s <= review.rating ? " filled" : ""}`}>&#9733;</span>
+                  ))}
+                </div>
+                <div className="post-item-info">
+                  <strong>For: {review.listingTitle}</strong>
+                  <span className="post-meta">By {review.reviewerName} · {new Date(review.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}</span>
+                  {review.comment && <p className="post-desc">{review.comment}</p>}
+                </div>
               </article>
             ))}
           </div>

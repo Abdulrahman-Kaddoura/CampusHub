@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { deleteListing } from "../api/listings";
 import { addItemToCart } from "../api/cart";
 import { useAuth } from "../context/AuthContext";
@@ -69,7 +69,14 @@ export const ProductCard = ({ data, onDelete }) => {
       </div>
       <div className="product-card-info">
         <h4 className="product-card-title">{title}</h4>
-        <p className="product-card-seller">Sold by {userName}</p>
+        <p className="product-card-seller">
+          Sold by{" "}
+          {data.userId ? (
+            <Link to={`/user/${data.userId}`} className="product-card-seller-link">{userName}</Link>
+          ) : (
+            userName
+          )}
+        </p>
         <p className="product-card-price">${displayPrice}</p>
         <p className="product-card-description">{description}</p>
 

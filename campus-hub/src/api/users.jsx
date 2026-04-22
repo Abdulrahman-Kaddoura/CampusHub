@@ -70,3 +70,12 @@ export const deleteProfilePicture = async (token) => {
   });
   return parseApiResponse(response, "Failed to delete profile picture");
 };
+
+export const getUserById = async (userId) => {
+  const response = await fetch(buildApiUrl(`${BASE_PATH}/get-user-by-id/${userId}`), {
+    method: "GET",
+    headers: buildJsonHeaders(),
+    credentials: "include",
+  });
+  return parseApiResponse(response, "Failed to fetch user profile");
+};
