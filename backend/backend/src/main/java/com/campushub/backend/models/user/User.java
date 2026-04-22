@@ -81,6 +81,12 @@
         @Column(name = "email_verified_at")
         private LocalDateTime emailVerifiedAt;
 
+        @Column(name = "password_reset_token", length = 255)
+        private String passwordResetToken;
+
+        @Column(name = "password_reset_expires_at")
+        private LocalDateTime passwordResetExpiresAt;
+
         @NotAudited
         @Column(name = "profile_picture")
         private byte[] profilePicture;

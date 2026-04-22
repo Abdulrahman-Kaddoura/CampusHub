@@ -4,9 +4,7 @@ import com.campushub.backend.enums.user.UserStatus;
 import com.campushub.backend.exceptions.user.EmailAlreadyExistsException;
 import com.campushub.backend.exceptions.user.UserNotFoundException;
 import com.campushub.backend.models.cart.Cart;
-import com.campushub.backend.models.listings.Listing;
 import com.campushub.backend.models.user.User;
-import com.campushub.backend.repositories.listing.ListingRepository;
 import com.campushub.backend.repositories.user.UserRepository;
 import com.campushub.backend.services.authentication.EmailVerificationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.util.List;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -38,9 +35,6 @@ public class UserService {
 
     @Autowired
     UserRepository userRepository;
-
-    @Autowired
-    ListingRepository listingRepository;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -107,7 +101,7 @@ public class UserService {
         }
 
         if (!tokenNotExpired) {
-            throw new IllegalArgumentException("Your verification code has expired (codes are valid for 1 hour). Please request a new verification email.");
+            throw new IllegalArgumentException("Verification token has expired");
         }
         user.setStatus(UserStatus.ACTIVE);
         user.setEmailVerifiedAt(LocalDateTime.now());
@@ -168,11 +162,7 @@ public class UserService {
     public User deleteUserById(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
-        // Null out buyer_id references to prevent FK violation on purchased listings
-        List<Listing> purchased = listingRepository.findByBuyerId(userId);
-        purchased.forEach(l -> l.setBuyer(null));
-        listingRepository.saveAll(purchased);
-        userRepository.delete(user);
+        userRepository.deleteById(userId);
         return user;
     }
 
@@ -221,6 +211,29 @@ public class UserService {
         user.setProfilePicture(null);
         user.setProfilePictureContentType(null);
         userRepository.save(user);
+    }
+
+    @Transactional
+    public User resetPassword(String email, String rawToken, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("No account found with email: " + email));
+
+        boolean tokenMatches = isTokenMatch(rawToken, user.getPasswordResetToken());
+        boolean tokenNotExpired = user.getPasswordResetExpiresAt() != null
+                && user.getPasswordResetExpiresAt().isAfter(LocalDateTime.now());
+
+        if (!tokenMatches) {
+            throw new IllegalArgumentException("Invalid password reset token");
+        }
+
+        if (!tokenNotExpired) {
+            throw new IllegalArgumentException("Password reset token has expired");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setPasswordResetToken(null);
+        user.setPasswordResetExpiresAt(null);
+        return userRepository.save(user);
     }
 
     public void requireNotSuspended() {
