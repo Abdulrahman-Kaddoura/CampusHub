@@ -52,7 +52,7 @@ export const adminDeleteUser = async (userId, token) => {
   });
   if (!response.ok && response.status !== 204) {
     let msg = "Failed to delete user";
-    try { msg = (await response.json()).message || msg; } catch (_) {}
+    try { msg = (await response.json()).message || msg; } catch (_) { /* ignore parse error */ }
     throw new Error(msg);
   }
 };
@@ -86,7 +86,7 @@ export const adminDeleteListing = async (listingId, token) => {
   });
   if (!response.ok && response.status !== 204) {
     let msg = "Failed to delete listing";
-    try { msg = (await response.json()).message || msg; } catch (_) {}
+    try { msg = (await response.json()).message || msg; } catch (_) { /* ignore parse error */ }
     throw new Error(msg);
   }
 };
@@ -120,7 +120,7 @@ export const adminDeleteDorm = async (dormId, token) => {
   });
   if (!response.ok && response.status !== 204) {
     let msg = "Failed to delete housing post";
-    try { msg = (await response.json()).message || msg; } catch (_) {}
+    try { msg = (await response.json()).message || msg; } catch (_) { /* ignore parse error */ }
     throw new Error(msg);
   }
 };
@@ -154,7 +154,7 @@ export const adminDeleteTutoring = async (tutoringId, token) => {
   });
   if (!response.ok && response.status !== 204) {
     let msg = "Failed to delete tutoring post";
-    try { msg = (await response.json()).message || msg; } catch (_) {}
+    try { msg = (await response.json()).message || msg; } catch (_) { /* ignore parse error */ }
     throw new Error(msg);
   }
 };
@@ -188,7 +188,7 @@ export const adminDeleteCourseExchange = async (courseExchangeId, token) => {
   });
   if (!response.ok && response.status !== 204) {
     let msg = "Failed to delete course exchange post";
-    try { msg = (await response.json()).message || msg; } catch (_) {}
+    try { msg = (await response.json()).message || msg; } catch (_) { /* ignore parse error */ }
     throw new Error(msg);
   }
 };

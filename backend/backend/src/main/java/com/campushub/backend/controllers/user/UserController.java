@@ -66,7 +66,7 @@ public class UserController {
         if (!featureManager.isActive(GET_USER_BY_ID)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
-        userService.requireAuthenticatedUser(userId);
+        userService.getAuthenticatedUser();
         User user = userService.findById(userId);
         UserResponseDTO userResponseDTO = modelMapper.map(user, UserResponseDTO.class);
         return new ResponseEntity<>(userResponseDTO, HttpStatus.OK);
