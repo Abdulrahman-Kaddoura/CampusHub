@@ -34,12 +34,48 @@ services:
     networks:
       - campus-net
 
+  backend2:
+    build:
+      context: ./backend/backend
+      dockerfile: Dockerfile
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    environment:
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SERVER_PORT: ${SERVER_PORT}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SERVER_ADDRESS: ${SERVER_ADDRESS}
+      APP_VERIFICATION_BASE_URL: ${APP_VERIFICATION_BASE_URL}
+      APP_PASSWORD_RESET_BASE_URL: ${APP_PASSWORD_RESET_BASE_URL}
+      APP_MAIL_FROM: ${APP_MAIL_FROM}
+      APP_SECURITY_COOKIE_SECURE: ${APP_SECURITY_COOKIE_SECURE}
+      APP_SECURITY_CSRF_COOKIE_DOMAIN: ${APP_SECURITY_CSRF_COOKIE_DOMAIN}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
+      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST}
+      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT}
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
+      SPRING_MAIL_SMTP_AUTH: ${SPRING_MAIL_SMTP_AUTH}
+      SPRING_MAIL_SMTP_STARTTLS_ENABLE: ${SPRING_MAIL_SMTP_STARTTLS_ENABLE}
+      SPRING_MAIL_SMTP_CONNECTION_TIMEOUT: ${SPRING_MAIL_SMTP_CONNECTION_TIMEOUT}
+      SPRING_MAIL_SMTP_TIMEOUT: ${SPRING_MAIL_SMTP_TIMEOUT}
+      SPRING_MAIL_SMTP_WRITE_TIMEOUT: ${SPRING_MAIL_SMTP_WRITE_TIMEOUT}
+      HUGGINGFACE_API_TOKEN: ${HUGGINGFACE_API_TOKEN}
+    networks:
+      - campus-net
+
   frontend:
     build:
       context: ./campus-hub
       dockerfile: Dockerfile
     depends_on:
       - backend1
+      - backend2
     networks:
       - campus-net
 
@@ -55,6 +91,7 @@ services:
     depends_on:
       - frontend
       - backend1
+      - backend2
     networks:
       - campus-net
 
