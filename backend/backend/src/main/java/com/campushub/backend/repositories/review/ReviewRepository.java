@@ -11,4 +11,8 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
     List<Review> findByRevieweeIdOrderByCreatedAtDesc(UUID revieweeId);
 
     boolean existsByReviewerIdAndListingListingId(UUID reviewerId, UUID listingId);
+
+    void deleteByReviewerIdOrRevieweeId(UUID reviewerId, UUID revieweeId);
+
+    void deleteByListingUserId(UUID userId);
 }

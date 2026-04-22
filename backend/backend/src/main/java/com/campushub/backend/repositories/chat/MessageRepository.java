@@ -11,6 +11,8 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
 
     List<Message> findBySenderOrRecipientOrderBySentAtDesc(User sender, User recipient);
 
+    void deleteBySenderOrRecipient(User sender, User recipient);
+
     List<Message> findBySenderAndRecipientOrSenderAndRecipientOrderBySentAtAsc(
             User sender,
             User recipient,
