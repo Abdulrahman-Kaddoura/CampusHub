@@ -10,9 +10,11 @@ import com.campushub.backend.models.dorm.Dorm;
 import com.campushub.backend.models.listings.Listing;
 import com.campushub.backend.models.tutoring.Tutoring;
 import com.campushub.backend.models.user.User;
+import com.campushub.backend.repositories.chat.MessageRepository;
 import com.campushub.backend.repositories.courseExchange.CourseExchangeRepository;
 import com.campushub.backend.repositories.dorm.DormRepository;
 import com.campushub.backend.repositories.listing.ListingRepository;
+import com.campushub.backend.repositories.review.ReviewRepository;
 import com.campushub.backend.repositories.tutoring.TutoringRepository;
 import com.campushub.backend.repositories.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +44,12 @@ public class AdminService {
 
     @Autowired
     private CourseExchangeRepository courseExchangeRepository;
+
+    @Autowired
+    private MessageRepository messageRepository;
+
+    @Autowired
+    private ReviewRepository reviewRepository;
 
     // ─── Analytics ────────────────────────────────────────────────────────────
 
@@ -84,6 +92,12 @@ public class AdminService {
     public void deleteUser(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
+        // Delete messages where user is sender or recipient (non-nullable FKs, no cascade)
+        messageRepository.deleteBySenderOrRecipient(user, user);
+        // Delete reviews on this user's listings before the listings cascade-delete with the user
+        reviewRepository.deleteByListingUserId(userId);
+        // Delete reviews where user is reviewer or reviewee (non-nullable FKs, no cascade)
+        reviewRepository.deleteByReviewerIdOrRevieweeId(userId, userId);
         // Null out buyer references to avoid FK violation on listings purchased by this user
         List<Listing> purchased = listingRepository.findByBuyerId(userId);
         purchased.forEach(l -> l.setBuyer(null));
