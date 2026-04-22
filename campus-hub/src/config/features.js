@@ -23,5 +23,6 @@ export const FEATURE_FLAGS = {
   mockData: readBooleanEnv(import.meta.env.VITE_USE_MOCK_DATA, false),
   chat: readBooleanEnv(import.meta.env.VITE_ENABLE_CHAT, true),
   admin: readBooleanEnv(import.meta.env.VITE_ENABLE_ADMIN, true),
+  reviews: readBooleanEnv(import.meta.env.VITE_ENABLE_REVIEWS, true),
 };
 

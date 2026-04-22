@@ -319,7 +319,18 @@ public enum Features implements Feature {
 
     @Label("ADMIN - BanUserByEmail")
     @EnabledByDefault
-    ADMIN_BAN_USER_BY_EMAIL;
+    ADMIN_BAN_USER_BY_EMAIL,
+
+    //-----------------------
+    // Review APIs
+    //-----------------------
+    @Label("REVIEW - CreateReview")
+    @EnabledByDefault
+    CREATE_REVIEW,
+
+    @Label("REVIEW - GetReviewsByUser")
+    @EnabledByDefault
+    GET_REVIEWS_BY_USER;
 
     public boolean isActive(){
         return FeatureContext.getFeatureManager().isActive(this);

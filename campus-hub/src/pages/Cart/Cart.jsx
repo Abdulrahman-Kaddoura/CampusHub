@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { getCartByUserId, getCartItems, removeCartItem, checkoutCart, buyCart } from "../../api/cart";
+import { canReviewListing } from "../../api/reviews";
+import ReviewModal from "../../components/ReviewModal/ReviewModal";
 import "./Cart.css";
 
 export default function Cart() {
@@ -20,6 +22,11 @@ export default function Cart() {
   const [removingId, setRemovingId] = useState(null);
   const [paymentMessage, setPaymentMessage] = useState("");
   const [paymentError, setPaymentError] = useState("");
+
+  // Review state
+  const [purchasedItems, setPurchasedItems] = useState([]);
+  const [reviewableItems, setReviewableItems] = useState([]);
+  const [activeReview, setActiveReview] = useState(null);
 
   const currentUserId = currentUser?.id ?? currentUser?.userId ?? null;
 
@@ -65,8 +72,28 @@ export default function Cart() {
           return;
         }
         try {
+          // Snapshot items before clearing so we can offer reviews
+          const cart = await getCartByUserId(currentUserId, token);
+          const snapshotItems = await getCartItems(cart.cartId, token);
+          const snapshot = Array.isArray(snapshotItems) ? snapshotItems : Array.from(snapshotItems);
+
           await buyCart(token);
           setPaymentMessage("Payment confirmed! Your items are now marked as sold.");
+
+          // Check which items are now reviewable
+          const reviewable = [];
+          for (const item of snapshot) {
+            if (!item.listingId) continue;
+            try {
+              const eligible = await canReviewListing(item.listingId, token);
+              if (eligible) reviewable.push(item);
+            } catch {
+              // skip if check fails
+            }
+          }
+          setPurchasedItems(snapshot);
+          setReviewableItems(reviewable);
+
           await loadCart();
         } catch (err) {
           setPaymentError(err.message || "Payment succeeded but order finalization failed.");
@@ -116,6 +143,10 @@ export default function Cart() {
     }
   };
 
+  const dismissReviewItem = (listingId) => {
+    setReviewableItems((prev) => prev.filter((i) => i.listingId !== listingId));
+  };
+
   if (authLoading || !isAuthenticated) return null;
 
   return (
@@ -124,6 +155,32 @@ export default function Cart() {
 
       {paymentMessage && <p className="cart-payment-message">{paymentMessage}</p>}
       {paymentError && <p className="cart-error">{paymentError}</p>}
+
+      {/* Review prompts shown after a successful purchase */}
+      {reviewableItems.length > 0 && (
+        <div className="cart-review-prompts">
+          <p className="cart-review-heading">Rate your sellers (optional)</p>
+          {reviewableItems.map((item) => (
+            <div key={item.listingId} className="cart-review-prompt-item">
+              <span className="cart-review-prompt-title">{item.listingTitle ?? "Item"}</span>
+              <div className="cart-review-prompt-actions">
+                <button
+                  className="cart-review-btn"
+                  onClick={() => setActiveReview(item)}
+                >
+                  Leave a Review
+                </button>
+                <button
+                  className="cart-review-skip"
+                  onClick={() => dismissReviewItem(item.listingId)}
+                >
+                  Skip
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {loading && <p className="cart-loading">Loading cart...</p>}
 
@@ -173,6 +230,16 @@ export default function Cart() {
             </button>
           </div>
         </>
+      )}
+
+      {activeReview && (
+        <ReviewModal
+          listingId={activeReview.listingId}
+          listingTitle={activeReview.listingTitle}
+          token={token}
+          onClose={() => setActiveReview(null)}
+          onSubmitted={() => dismissReviewItem(activeReview.listingId)}
+        />
       )}
     </div>
   );

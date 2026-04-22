@@ -9,6 +9,7 @@ import Tutoring from "./pages/Tutoring";
 import NavBar from "./components/NavBar";
 import AuthPage from "./pages/Auth/AuthPage";
 import ProfilePage from "./pages/Profile/ProfilePage";
+import UserProfilePage from "./pages/UserProfile/UserProfilePage";
 import ChatPage from "./pages/Chat/ChatPage";
 import Cart from "./pages/Cart/Cart";
 import AdminPanel from "./pages/Admin/AdminPanel";
@@ -41,6 +42,7 @@ function App() {
           <Route path="/chat" element={FEATURE_FLAGS.chat && FEATURE_FLAGS.auth ? <ChatPage /> : <Navigate to="/" replace />} />
           <Route path="/cart" element={FEATURE_FLAGS.auth ? <Cart /> : <Navigate to="/" replace />} />
           <Route path="/admin" element={FEATURE_FLAGS.admin && isAdmin ? <AdminPanel /> : <Navigate to="/" replace />} />
+          <Route path="/user/:userId" element={<UserProfilePage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
