@@ -1,5 +1,6 @@
 package com.campushub.backend.exceptions;
 
+import com.campushub.backend.exceptions.listing.ListingNotAvailableException;
 import com.campushub.backend.exceptions.user.EmailAlreadyExistsException;
 import com.campushub.backend.exceptions.user.UserNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -42,6 +43,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleUserNotFound(UserNotFoundException ex) {
         System.out.println("[DEBUG][GlobalExceptionHandler] UserNotFoundException: " + ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(ListingNotAvailableException.class)
+    public ResponseEntity<Map<String, String>> handleListingNotAvailable(ListingNotAvailableException ex) {
+        System.out.println("[DEBUG][GlobalExceptionHandler] ListingNotAvailableException: " + ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", ex.getMessage()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

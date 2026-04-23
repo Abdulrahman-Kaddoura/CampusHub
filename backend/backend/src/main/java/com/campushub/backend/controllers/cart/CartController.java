@@ -5,6 +5,8 @@ import com.campushub.backend.dtos.cart.CartResponseDTO;
 import com.campushub.backend.dtos.cartItem.CartItemResponseDTO;
 import com.campushub.backend.dtos.listing.StripeCheckoutRequestDTO;
 import com.campushub.backend.dtos.listing.StripeCheckoutResponseDTO;
+import com.campushub.backend.enums.listings.ListingStatus;
+import com.campushub.backend.exceptions.listing.ListingNotAvailableException;
 import com.campushub.backend.models.cart.Cart;
 import com.campushub.backend.models.cart.CartItem;
 import com.campushub.backend.models.listings.Listing;
@@ -135,6 +137,13 @@ public class CartController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart is empty");
         }
 
+        for (CartItem item : cart.getCartItems()) {
+            if (item.getListing().getListingStatus() != ListingStatus.PUBLISHED) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "\"" + item.getListing().getTitle() + "\" is no longer available. Please remove it from your cart before checking out.");
+            }
+        }
+
         StripeCheckoutResponseDTO responseDTO = stripeCheckoutService.createCartCheckoutSession(
                 cart.getCartItems(),
                 buyer.getId(),
@@ -163,7 +172,11 @@ public class CartController {
         }
 
         for (CartItem item : cart.getCartItems().stream().toList()) {
-            listingService.buyListing(item.getListing().getListingId(), buyer.getId());
+            try {
+                listingService.buyListing(item.getListing().getListingId(), buyer.getId());
+            } catch (ListingNotAvailableException e) {
+                System.out.println("[WARN][CartController] Listing " + item.getListing().getListingId() + " unavailable during buyCart — skipping: " + e.getMessage());
+            }
             cartItemService.deleteCartItem(item.getCartItemId());
         }
 
